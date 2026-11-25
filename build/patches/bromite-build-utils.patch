@@ -3,33 +3,25 @@ Date: Fri, 9 Jun 2023 15:11:46 +0000
 Subject: bromite build utils
 
 ---
- build/android/gyp/java_cpp_enum.py            |  34 +++++-
- build/android/gyp/util/build_utils.py         |  25 +++-
- build/bromite/bromite_utils.gni               |  79 +++++++++++++
- build/bromite/gyp/cpp_bromite_include.py      |  35 ++++++
- build/bromite/gyp/cpp_bromite_include.pydeps  |   9 ++
- build/bromite/gyp/java_bromite_impl.py        | 107 ++++++++++++++++++
- build/bromite/gyp/java_bromite_impl.pydeps    |   9 ++
- build/config/BUILDCONFIG.gn                   |   2 +
- build/config/android/rules.gni                |   6 +-
- .../ChromeAccessibilitySettingsDelegate.java  |   5 +
- chrome/browser/flags/BUILD.gn                 |   8 +-
- .../flags/android/cromite_native_utils.cc     |  94 +++++++++++++++
- .../flags/android/cromite_native_utils.h      |  14 +++
- .../browser/flags/CromiteNativeUtils.java     |  46 ++++++++
- mojo/public/tools/mojom/mojom_parser.py       |  26 ++++-
- tools/grit/grit/grd_reader.py                 |  27 ++++-
- tools/grit/grit_rule.gni                      |   2 +-
- tools/grit/preprocess_if_expr.py              |  32 +++++-
+ build/android/gyp/java_cpp_enum.py                 |  34 +++++--
+ build/android/gyp/util/build_utils.py              |  25 ++++-
+ build/bromite/bromite_utils.gni                    |  79 +++++++++++++++
+ build/bromite/gyp/cpp_bromite_include.py           |  35 +++++++
+ build/bromite/gyp/cpp_bromite_include.pydeps       |   9 ++
+ build/bromite/gyp/java_bromite_impl.py             | 107 +++++++++++++++++++++
+ build/bromite/gyp/java_bromite_impl.pydeps         |   9 ++
+ build/config/BUILDCONFIG.gn                        |   2 +
+ build/config/android/rules.gni                     |   6 +-
+ .../ChromeAccessibilitySettingsDelegate.java       |   5 +
+ chrome/browser/flags/BUILD.gn                      |   8 +-
+ .../browser/flags/android/cromite_native_utils.cc  |  94 ++++++++++++++++++
+ .../browser/flags/android/cromite_native_utils.h   |  14 +++
+ .../chrome/browser/flags/CromiteNativeUtils.java   |  46 +++++++++
+ mojo/public/tools/mojom/mojom_parser.py            |  26 ++++-
+ tools/grit/grit/grd_reader.py                      |  27 +++++-
+ tools/grit/grit_rule.gni                           |   2 +-
+ tools/grit/preprocess_if_expr.py                   |  32 +++++-
  18 files changed, 540 insertions(+), 20 deletions(-)
- create mode 100644 build/bromite/bromite_utils.gni
- create mode 100644 build/bromite/gyp/cpp_bromite_include.py
- create mode 100644 build/bromite/gyp/cpp_bromite_include.pydeps
- create mode 100644 build/bromite/gyp/java_bromite_impl.py
- create mode 100644 build/bromite/gyp/java_bromite_impl.pydeps
- create mode 100755 chrome/browser/flags/android/cromite_native_utils.cc
- create mode 100755 chrome/browser/flags/android/cromite_native_utils.h
- create mode 100755 chrome/browser/flags/android/java/src/org/chromium/chrome/browser/flags/CromiteNativeUtils.java
 
 diff --git a/build/android/gyp/java_cpp_enum.py b/build/android/gyp/java_cpp_enum.py
 --- a/build/android/gyp/java_cpp_enum.py
@@ -135,7 +127,7 @@ diff --git a/build/android/gyp/java_cpp_enum.py b/build/android/gyp/java_cpp_enu
 diff --git a/build/android/gyp/util/build_utils.py b/build/android/gyp/util/build_utils.py
 --- a/build/android/gyp/util/build_utils.py
 +++ b/build/android/gyp/util/build_utils.py
-@@ -441,4 +441,27 @@ def ReadSourcesList(sources_list_file_name):
+@@ -454,4 +454,27 @@ def ReadSourcesList(sources_list_file_name):
      Note that this function should not be used to parse response files.
      """
      with open(sources_list_file_name, encoding='utf-8') as f:
@@ -432,7 +424,7 @@ new file mode 100644
 diff --git a/build/config/BUILDCONFIG.gn b/build/config/BUILDCONFIG.gn
 --- a/build/config/BUILDCONFIG.gn
 +++ b/build/config/BUILDCONFIG.gn
-@@ -878,3 +878,5 @@ if (is_component_build) {
+@@ -892,3 +892,5 @@ if (is_component_build) {
  set_defaults("component") {
    configs = default_component_configs
  }
@@ -441,7 +433,7 @@ diff --git a/build/config/BUILDCONFIG.gn b/build/config/BUILDCONFIG.gn
 diff --git a/build/config/android/rules.gni b/build/config/android/rules.gni
 --- a/build/config/android/rules.gni
 +++ b/build/config/android/rules.gni
-@@ -234,6 +234,10 @@ if (!is_robolectric && enable_java_templates) {
+@@ -236,6 +236,10 @@ if (!is_robolectric && enable_java_templates) {
        _rebased_sources = rebase_path(invoker.sources, root_build_dir)
  
        args = [ "--srcjar=$_rebased_srcjar_path" ] + _rebased_sources
@@ -452,7 +444,7 @@ diff --git a/build/config/android/rules.gni b/build/config/android/rules.gni
        outputs = [ _srcjar_path ]
      }
    }
-@@ -288,7 +292,7 @@ if (!is_robolectric && enable_java_templates) {
+@@ -290,7 +294,7 @@ if (!is_robolectric && enable_java_templates) {
    #   my.java.package.
    template("java_cpp_strings") {
      action_with_pydeps(target_name) {
@@ -464,8 +456,8 @@ diff --git a/build/config/android/rules.gni b/build/config/android/rules.gni
 diff --git a/chrome/android/java/src/org/chromium/chrome/browser/accessibility/settings/ChromeAccessibilitySettingsDelegate.java b/chrome/android/java/src/org/chromium/chrome/browser/accessibility/settings/ChromeAccessibilitySettingsDelegate.java
 --- a/chrome/android/java/src/org/chromium/chrome/browser/accessibility/settings/ChromeAccessibilitySettingsDelegate.java
 +++ b/chrome/android/java/src/org/chromium/chrome/browser/accessibility/settings/ChromeAccessibilitySettingsDelegate.java
-@@ -16,6 +16,11 @@ import org.chromium.components.dom_distiller.core.DistilledPagePrefs;
- import org.chromium.components.user_prefs.UserPrefs;
+@@ -19,6 +19,11 @@ import org.chromium.components.user_prefs.UserPrefs;
+ import org.chromium.components.web_distiller.core.DistilledPagePrefs;
  import org.chromium.content_public.browser.BrowserContextHandle;
  
 +import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -479,7 +471,7 @@ diff --git a/chrome/android/java/src/org/chromium/chrome/browser/accessibility/s
 diff --git a/chrome/browser/flags/BUILD.gn b/chrome/browser/flags/BUILD.gn
 --- a/chrome/browser/flags/BUILD.gn
 +++ b/chrome/browser/flags/BUILD.gn
-@@ -7,7 +7,8 @@ import("//extensions/buildflags/buildflags.gni")
+@@ -8,7 +8,8 @@ import("//extensions/buildflags/buildflags.gni")
  import("//third_party/jni_zero/jni_zero.gni")
  
  android_library("java") {
@@ -489,7 +481,7 @@ diff --git a/chrome/browser/flags/BUILD.gn b/chrome/browser/flags/BUILD.gn
      "android/java/src/org/chromium/chrome/browser/flags/ChromeFeatureList.java",
      "android/java/src/org/chromium/chrome/browser/flags/ChromeFeatureMap.java",
      "android/java/src/org/chromium/chrome/browser/flags/ChromeSessionState.java",
-@@ -33,7 +34,8 @@ android_library("java") {
+@@ -43,7 +44,8 @@ java_flag_generator("java_flags") {
  }
  
  generate_jni("jni_headers") {
@@ -499,7 +491,7 @@ diff --git a/chrome/browser/flags/BUILD.gn b/chrome/browser/flags/BUILD.gn
      "android/java/src/org/chromium/chrome/browser/flags/ChromeFeatureMap.java",
      "android/java/src/org/chromium/chrome/browser/flags/ChromeSessionState.java",
    ]
-@@ -41,6 +43,8 @@ generate_jni("jni_headers") {
+@@ -51,6 +53,8 @@ generate_jni("jni_headers") {
  
  static_library("flags_android") {
    sources = [
@@ -680,7 +672,7 @@ new file mode 100755
 diff --git a/mojo/public/tools/mojom/mojom_parser.py b/mojo/public/tools/mojom/mojom_parser.py
 --- a/mojo/public/tools/mojom/mojom_parser.py
 +++ b/mojo/public/tools/mojom/mojom_parser.py
-@@ -20,6 +20,7 @@ import os
+@@ -19,6 +19,7 @@ import os
  import os.path
  import sys
  import traceback
@@ -688,7 +680,7 @@ diff --git a/mojo/public/tools/mojom/mojom_parser.py b/mojo/public/tools/mojom/m
  from collections import defaultdict
  
  from mojom.generate import module
-@@ -203,14 +204,33 @@ def _CollectAllowedImportsFromBuildMetadata(build_metadata_filename):
+@@ -202,14 +203,33 @@ def _CollectAllowedImportsFromBuildMetadata(build_metadata_filename):
    return allowed_imports
  
  
@@ -724,7 +716,7 @@ diff --git a/mojo/public/tools/mojom/mojom_parser.py b/mojo/public/tools/mojom/m
      conditional_features.RemoveDisabledDefinitions(ast, enabled_features)
      return mojom_abspath, ast
  
-@@ -336,7 +356,7 @@ def _ParseMojoms(
+@@ -335,7 +355,7 @@ def _ParseMojoms(
  
    logging.info('Parsing %d .mojom into ASTs', len(mojom_files_to_parse))
    map_args = (
@@ -773,7 +765,7 @@ diff --git a/tools/grit/grit/grd_reader.py b/tools/grit/grit/grd_reader.py
 diff --git a/tools/grit/grit_rule.gni b/tools/grit/grit_rule.gni
 --- a/tools/grit/grit_rule.gni
 +++ b/tools/grit/grit_rule.gni
-@@ -360,7 +360,7 @@ template("grit") {
+@@ -365,7 +365,7 @@ template("grit") {
        _gritdeps_lines = read_file(invoker.gritdeps, "list lines")
        _gritdeps_entries = filter_exclude(_gritdeps_lines, [ "#*" ])
        inputs += rebase_path(_gritdeps_entries, ".", "//")

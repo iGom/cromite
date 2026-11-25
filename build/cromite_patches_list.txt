@@ -317,7 +317,6 @@ Never-treat-Proguard-warnings-as-errors.patch
 Temp-disable-experimental-web-platform-features.patch
 Block-leakage-of-urls-in-sandbox-iframes.patch
 Fix-chromium-build-bugs.patch
-Temp-use-PREVIEW-for-IDCompositionDevice5.patch
 Temp-Do-not-compress-devtools-frontend-resources-in-non-debug-mode.patch
 
 # adblock patches

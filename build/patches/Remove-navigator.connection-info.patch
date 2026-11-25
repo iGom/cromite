@@ -8,9 +8,9 @@ and disable observers
 Original License: GPL-2.0-or-later - https://spdx.org/licenses/GPL-2.0-or-later.html
 License: GPL-3.0-only - https://spdx.org/licenses/GPL-3.0-only.html
 ---
- .../modules/netinfo/network_information.cc        |  6 +++++-
- .../platform/network/network_state_notifier.cc    | 15 +++++++++++++++
- .../platform/network/network_state_notifier.h     |  2 +-
+ .../blink/renderer/modules/netinfo/network_information.cc |  6 +++++-
+ .../renderer/platform/network/network_state_notifier.cc   | 15 +++++++++++++++
+ .../renderer/platform/network/network_state_notifier.h    |  2 +-
  3 files changed, 21 insertions(+), 2 deletions(-)
 
 diff --git a/third_party/blink/renderer/modules/netinfo/network_information.cc b/third_party/blink/renderer/modules/netinfo/network_information.cc
@@ -85,8 +85,8 @@ diff --git a/third_party/blink/renderer/platform/network/network_state_notifier.
 diff --git a/third_party/blink/renderer/platform/network/network_state_notifier.h b/third_party/blink/renderer/platform/network/network_state_notifier.h
 --- a/third_party/blink/renderer/platform/network/network_state_notifier.h
 +++ b/third_party/blink/renderer/platform/network/network_state_notifier.h
-@@ -121,7 +121,7 @@ class PLATFORM_EXPORT NetworkStateNotifier {
-     scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+@@ -124,7 +124,7 @@ class PLATFORM_EXPORT NetworkStateNotifier {
+     const ObserverListUniqueId id_;
    };
  
 -  NetworkStateNotifier() : has_override_(false) {}

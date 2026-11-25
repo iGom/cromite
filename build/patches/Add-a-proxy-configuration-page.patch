@@ -16,39 +16,34 @@ Credits to @uazo for the LocalState integration.
 
 License: GPL-3.0-only - https://spdx.org/licenses/GPL-3.0-only.html
 ---
- chrome/android/java/res/values/values.xml     |   3 +
- .../java/res/xml/privacy_preferences.xml      |   4 +
- .../privacy/settings/PrivacySettings.java     |   1 +
- .../chrome_autocomplete_provider_client.cc    |   1 +
- chrome/browser/browser_resources.grd          |   3 +
- chrome/browser/net/proxy_service_factory.cc   |  25 +-
- chrome/browser/net/proxy_service_factory.h    |   3 +
- chrome/browser/prefs/browser_prefs.cc         |   2 +
- .../prefs/chrome_command_line_pref_store.cc   |   2 +-
- chrome/browser/resources/proxy_config.css     |  61 +++
- chrome/browser/resources/proxy_config.html    |  77 ++++
- chrome/browser/resources/proxy_config.js      | 278 +++++++++++++
- chrome/browser/ui/webui/BUILD.gn              |   2 +
- .../browser/ui/webui/chrome_web_ui_configs.cc |   3 +
- chrome/browser/ui/webui/proxy_config_ui.cc    | 393 ++++++++++++++++++
- chrome/browser/ui/webui/proxy_config_ui.h     |  41 ++
- chrome/common/webui_url_constants.cc          |   1 +
- chrome/common/webui_url_constants.h           |   2 +
- .../pref_proxy_config_tracker_impl.cc         |   5 +-
- .../proxy_config/proxy_config_dictionary.cc   |  30 +-
- .../proxy_config/proxy_config_dictionary.h    |   7 +-
- .../proxy_config/proxy_policy_handler.cc      |   2 +-
- .../browser/api/proxy/proxy_api_helpers.cc    |   3 +-
- net/features.gni                              |   2 +-
- net/proxy_resolution/pac_file_fetcher_impl.cc |   8 -
- net/proxy_resolution/proxy_config.cc          |  53 ++-
- net/proxy_resolution/proxy_config.h           |   3 +
+ chrome/android/java/res/values/values.xml          |   3 +
+ .../android/java/res/xml/privacy_preferences.xml   |   4 +
+ .../browser/privacy/settings/PrivacySettings.java  |   1 +
+ .../chrome_autocomplete_provider_client.cc         |   1 +
+ chrome/browser/browser_resources.grd               |   3 +
+ chrome/browser/net/proxy_service_factory.cc        |  25 +-
+ chrome/browser/net/proxy_service_factory.h         |   3 +
+ chrome/browser/prefs/browser_prefs.cc              |   2 +
+ .../prefs/chrome_command_line_pref_store.cc        |   2 +-
+ chrome/browser/resources/proxy_config.css          |  61 ++++
+ chrome/browser/resources/proxy_config.html         |  77 ++++
+ chrome/browser/resources/proxy_config.js           | 278 +++++++++++++++
+ chrome/browser/ui/webui/BUILD.gn                   |   2 +
+ chrome/browser/ui/webui/chrome_web_ui_configs.cc   |   3 +
+ chrome/browser/ui/webui/proxy_config_ui.cc         | 393 +++++++++++++++++++++
+ chrome/browser/ui/webui/proxy_config_ui.h          |  41 +++
+ chrome/common/webui_url_constants.cc               |   1 +
+ chrome/common/webui_url_constants.h                |   2 +
+ .../proxy_config/pref_proxy_config_tracker_impl.cc |   5 +-
+ components/proxy_config/proxy_config_dictionary.cc |  30 +-
+ components/proxy_config/proxy_config_dictionary.h  |   7 +-
+ components/proxy_config/proxy_policy_handler.cc    |   2 +-
+ extensions/browser/api/proxy/proxy_api_helpers.cc  |   3 +-
+ net/features.gni                                   |   2 +-
+ net/proxy_resolution/pac_file_fetcher_impl.cc      |   8 -
+ net/proxy_resolution/proxy_config.cc               |  53 ++-
+ net/proxy_resolution/proxy_config.h                |   3 +
  27 files changed, 989 insertions(+), 26 deletions(-)
- create mode 100644 chrome/browser/resources/proxy_config.css
- create mode 100644 chrome/browser/resources/proxy_config.html
- create mode 100644 chrome/browser/resources/proxy_config.js
- create mode 100644 chrome/browser/ui/webui/proxy_config_ui.cc
- create mode 100644 chrome/browser/ui/webui/proxy_config_ui.h
 
 diff --git a/chrome/android/java/res/values/values.xml b/chrome/android/java/res/values/values.xml
 --- a/chrome/android/java/res/values/values.xml
@@ -91,7 +86,7 @@ diff --git a/chrome/android/java/src/org/chromium/chrome/browser/privacy/setting
 diff --git a/chrome/browser/autocomplete/chrome_autocomplete_provider_client.cc b/chrome/browser/autocomplete/chrome_autocomplete_provider_client.cc
 --- a/chrome/browser/autocomplete/chrome_autocomplete_provider_client.cc
 +++ b/chrome/browser/autocomplete/chrome_autocomplete_provider_client.cc
-@@ -458,6 +458,7 @@ ChromeAutocompleteProviderClient::GetBuiltinsToProvideAsUserTypes() {
+@@ -460,6 +460,7 @@ ChromeAutocompleteProviderClient::GetBuiltinsToProvideAsUserTypes() {
    builtins_to_provide.push_back(chrome::kChromeUISettingsURL16);
  #endif
    builtins_to_provide.push_back(chrome::kChromeUIVersionURL16);
@@ -102,7 +97,7 @@ diff --git a/chrome/browser/autocomplete/chrome_autocomplete_provider_client.cc 
 diff --git a/chrome/browser/browser_resources.grd b/chrome/browser/browser_resources.grd
 --- a/chrome/browser/browser_resources.grd
 +++ b/chrome/browser/browser_resources.grd
-@@ -197,6 +197,9 @@
+@@ -199,6 +199,9 @@
        <if expr="_google_chrome">
          <include name="IDR_PREF_HASH_SEED_BIN" file="resources\settings\internal\pref_hash_seed.bin" type="BINDATA" />
        </if>
@@ -133,7 +128,7 @@ diff --git a/chrome/browser/net/proxy_service_factory.cc b/chrome/browser/net/pr
  
  #if BUILDFLAG(IS_CHROMEOS)
  #include "chromeos/ash/components/network/proxy/proxy_config_service_impl.h"
-@@ -59,8 +63,22 @@ ProxyServiceFactory::CreatePrefProxyConfigTrackerOfProfile(
+@@ -60,8 +64,22 @@ ProxyServiceFactory::CreatePrefProxyConfigTrackerOfProfile(
    return std::make_unique<ash::ProxyConfigServiceImpl>(
        profile_prefs, local_state_prefs, nullptr);
  #else
@@ -157,7 +152,7 @@ diff --git a/chrome/browser/net/proxy_service_factory.cc b/chrome/browser/net/pr
        policy_service, enterprise_proxy_service);
  #endif  // BUILDFLAG(IS_CHROMEOS)
  }
-@@ -78,3 +96,8 @@ ProxyServiceFactory::CreatePrefProxyConfigTrackerOfLocalState(
+@@ -79,3 +97,8 @@ ProxyServiceFactory::CreatePrefProxyConfigTrackerOfLocalState(
        /*proxy_config_service_task_runner=*/nullptr, /*policy_service=*/nullptr);
  #endif  // BUILDFLAG(IS_CHROMEOS)
  }
@@ -189,7 +184,7 @@ diff --git a/chrome/browser/net/proxy_service_factory.h b/chrome/browser/net/pro
 diff --git a/chrome/browser/prefs/browser_prefs.cc b/chrome/browser/prefs/browser_prefs.cc
 --- a/chrome/browser/prefs/browser_prefs.cc
 +++ b/chrome/browser/prefs/browser_prefs.cc
-@@ -53,6 +53,7 @@
+@@ -55,6 +55,7 @@
  #include "chrome/browser/metrics/tab_stats/tab_stats_tracker.h"
  #include "chrome/browser/net/net_error_tab_helper.h"
  #include "chrome/browser/net/profile_network_context_service.h"
@@ -197,7 +192,7 @@ diff --git a/chrome/browser/prefs/browser_prefs.cc b/chrome/browser/prefs/browse
  #include "chrome/browser/net/system_network_context_manager.h"
  #include "chrome/browser/new_tab_page/prefs/ntp_pref_names.h"
  #include "chrome/browser/notifications/notification_display_service_impl.h"
-@@ -1515,6 +1516,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
+@@ -1833,6 +1834,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
    ProfileAttributesEntry::RegisterLocalStatePrefs(registry);
    ProfileAttributesStorage::RegisterPrefs(registry);
    ProfileNetworkContextService::RegisterLocalStatePrefs(registry);
@@ -208,7 +203,7 @@ diff --git a/chrome/browser/prefs/browser_prefs.cc b/chrome/browser/prefs/browse
 diff --git a/chrome/browser/prefs/chrome_command_line_pref_store.cc b/chrome/browser/prefs/chrome_command_line_pref_store.cc
 --- a/chrome/browser/prefs/chrome_command_line_pref_store.cc
 +++ b/chrome/browser/prefs/chrome_command_line_pref_store.cc
-@@ -161,7 +161,7 @@ void ChromeCommandLinePrefStore::ApplyProxyMode() {
+@@ -163,7 +163,7 @@ void ChromeCommandLinePrefStore::ApplyProxyMode() {
          command_line()->GetSwitchValueASCII(switches::kProxyBypassList);
      SetValue(proxy_config::prefs::kProxy,
               base::Value(ProxyConfigDictionary::CreateFixedServers(
@@ -652,26 +647,26 @@ diff --git a/chrome/browser/ui/webui/BUILD.gn b/chrome/browser/ui/webui/BUILD.gn
 --- a/chrome/browser/ui/webui/BUILD.gn
 +++ b/chrome/browser/ui/webui/BUILD.gn
 @@ -35,6 +35,8 @@ source_set("configs") {
+   public = [
      "chrome_untrusted_web_ui_configs.h",
-     "chrome_web_ui_configs.cc",
      "chrome_web_ui_configs.h",
 +    "proxy_config_ui.cc",
 +    "proxy_config_ui.h",
    ]
- 
-   configs += [ "//build/config/compiler:wexit_time_destructors" ]
+   sources = [
+     "chrome_untrusted_web_ui_configs.cc",
 diff --git a/chrome/browser/ui/webui/chrome_web_ui_configs.cc b/chrome/browser/ui/webui/chrome_web_ui_configs.cc
 --- a/chrome/browser/ui/webui/chrome_web_ui_configs.cc
 +++ b/chrome/browser/ui/webui/chrome_web_ui_configs.cc
 @@ -49,6 +49,7 @@
- #include "chrome/browser/ui/webui/omnibox/omnibox_ui.h"
+ #include "chrome/browser/ui/webui/omnibox_internals/omnibox_internals_ui.h"
  #include "chrome/browser/ui/webui/policy/policy_ui.h"
  #include "chrome/browser/ui/webui/predictors/predictors_ui.h"
 +#include "chrome/browser/ui/webui/proxy_config_ui.h"
  #include "chrome/browser/ui/webui/regional_capabilities_internals/regional_capabilities_internals_ui.h"
  #include "chrome/browser/ui/webui/saved_tab_groups_unsupported/saved_tab_groups_unsupported_ui.h"
  #include "chrome/browser/ui/webui/segmentation_internals/segmentation_internals_ui.h"
-@@ -481,6 +482,8 @@ void RegisterChromeWebUIConfigs() {
+@@ -512,6 +513,8 @@ void RegisterChromeWebUIConfigs() {
    map.AddWebUIConfig(std::make_unique<SigninEmailConfirmationUIConfig>());
  #endif  //  !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_ANDROID)
  
@@ -1127,7 +1122,7 @@ new file mode 100644
 diff --git a/chrome/common/webui_url_constants.cc b/chrome/common/webui_url_constants.cc
 --- a/chrome/common/webui_url_constants.cc
 +++ b/chrome/common/webui_url_constants.cc
-@@ -120,6 +120,7 @@ bool IsSystemWebUIHost(std::string_view host) {
+@@ -82,6 +82,7 @@ static_assert(std::string_view(kSyncSetupSubPage) ==
  // Add hosts here to be suggested by BuiltinProvider.
  base::span<const base::cstring_view> ChromeURLHosts() {
    static constexpr auto kChromeURLHosts = std::to_array<base::cstring_view>({
@@ -1138,7 +1133,7 @@ diff --git a/chrome/common/webui_url_constants.cc b/chrome/common/webui_url_cons
 diff --git a/chrome/common/webui_url_constants.h b/chrome/common/webui_url_constants.h
 --- a/chrome/common/webui_url_constants.h
 +++ b/chrome/common/webui_url_constants.h
-@@ -217,6 +217,8 @@ inline constexpr char kChromeUINetInternalsHost[] = "net-internals";
+@@ -225,6 +225,8 @@ inline constexpr char kChromeUINetInternalsHost[] = "net-internals";
  inline constexpr char kChromeUINetInternalsURL[] = "chrome://net-internals/";
  inline constexpr char kChromeUINewTabHost[] = "newtab";
  inline constexpr char kChromeUINewTabFooterHost[] = "newtab-footer";
@@ -1150,16 +1145,16 @@ diff --git a/chrome/common/webui_url_constants.h b/chrome/common/webui_url_const
 diff --git a/components/proxy_config/pref_proxy_config_tracker_impl.cc b/components/proxy_config/pref_proxy_config_tracker_impl.cc
 --- a/components/proxy_config/pref_proxy_config_tracker_impl.cc
 +++ b/components/proxy_config/pref_proxy_config_tracker_impl.cc
-@@ -585,7 +585,7 @@ PrefProxyConfigTrackerImpl::GetEffectiveProxyConfig(
+@@ -608,7 +608,7 @@ PrefProxyConfigTrackerImpl::GetEffectiveProxyConfig(
  // static
  void PrefProxyConfigTrackerImpl::RegisterPrefs(PrefRegistrySimple* registry) {
    registry->RegisterDictionaryPref(proxy_config::prefs::kProxy,
 -                                   ProxyConfigDictionary::CreateSystem());
 +                                   ProxyConfigDictionary::CreateDirect());
    registry->RegisterListPref(proxy_config::prefs::kProxyOverrideRules);
- #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
-   registry->RegisterIntegerPref(
-@@ -599,7 +599,7 @@ void PrefProxyConfigTrackerImpl::RegisterPrefs(PrefRegistrySimple* registry) {
+ #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || \
+     BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+@@ -628,7 +628,7 @@ void PrefProxyConfigTrackerImpl::RegisterPrefs(PrefRegistrySimple* registry) {
  void PrefProxyConfigTrackerImpl::RegisterProfilePrefs(
      PrefRegistrySimple* registry) {
    registry->RegisterDictionaryPref(proxy_config::prefs::kProxy,
@@ -1167,8 +1162,8 @@ diff --git a/components/proxy_config/pref_proxy_config_tracker_impl.cc b/compone
 +                                   ProxyConfigDictionary::CreateDirect());
    registry->RegisterBooleanPref(proxy_config::prefs::kUseSharedProxies, false);
    registry->RegisterListPref(proxy_config::prefs::kProxyOverrideRules);
- #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
-@@ -801,6 +801,7 @@ bool PrefProxyConfigTrackerImpl::PrefConfigToNetConfig(
+ #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || \
+@@ -846,6 +846,7 @@ bool PrefProxyConfigTrackerImpl::PrefConfigToNetConfig(
        if (proxy_dict.GetBypassList(&proxy_bypass)) {
          proxy_config.proxy_rules().bypass_rules.ParseFromString(proxy_bypass);
        }
@@ -1330,7 +1325,7 @@ diff --git a/extensions/browser/api/proxy/proxy_api_helpers.cc b/extensions/brow
 diff --git a/net/features.gni b/net/features.gni
 --- a/net/features.gni
 +++ b/net/features.gni
-@@ -61,7 +61,7 @@ declare_args() {
+@@ -75,7 +75,7 @@ declare_args() {
    # Bracketed URIs parsing is only available for debug builds.
    # TODO(crbug.com/365771838): Ensure tests are updated if needed if this
    # feature is changed at all.

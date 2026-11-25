@@ -7,16 +7,16 @@ Allows native-side URI file writing
 Original License: GPL-2.0-or-later - https://spdx.org/licenses/GPL-2.0-or-later.html
 License: GPL-3.0-only - https://spdx.org/licenses/GPL-3.0-only.html
 ---
- base/android/content_uri_utils.cc             | 10 ++++++
- base/android/content_uri_utils.h              |  4 +++
- .../org/chromium/base/ContentUriUtils.java    | 32 +++++++++++++++++++
+ base/android/content_uri_utils.cc                  | 10 +++++++
+ base/android/content_uri_utils.h                   |  4 +++
+ .../src/org/chromium/base/ContentUriUtils.java     | 32 ++++++++++++++++++++++
  3 files changed, 46 insertions(+)
 
 diff --git a/base/android/content_uri_utils.cc b/base/android/content_uri_utils.cc
 --- a/base/android/content_uri_utils.cc
 +++ b/base/android/content_uri_utils.cc
-@@ -157,6 +157,16 @@ bool IsContentUriFromThisApp(const FilePath& content_uri) {
-   return Java_ContentUriUtils_isUriFromThisApp(env, content_uri.value());
+@@ -184,6 +184,16 @@ ContentUriOwner ResolveContentUriOwner(const FilePath& content_uri) {
+       Java_ContentUriUtils_resolveContentUriOwner(env, content_uri.value()));
  }
  
 +File OpenContentUriForWrite(const FilePath& content_uri) {
@@ -35,7 +35,7 @@ diff --git a/base/android/content_uri_utils.cc b/base/android/content_uri_utils.
 diff --git a/base/android/content_uri_utils.h b/base/android/content_uri_utils.h
 --- a/base/android/content_uri_utils.h
 +++ b/base/android/content_uri_utils.h
-@@ -46,6 +46,10 @@ int ContentUriGetFd(
+@@ -55,6 +55,10 @@ int ContentUriGetFd(
  void ContentUriClose(
      const base::android::JavaRef<jobject>& java_parcel_file_descriptor);
  
@@ -57,7 +57,7 @@ diff --git a/base/android/java/src/org/chromium/base/ContentUriUtils.java b/base
  import android.content.ContentResolver;
  import android.content.Context;
  import android.content.pm.PackageManager;
-@@ -18,6 +19,7 @@ import android.os.ParcelFileDescriptor;
+@@ -19,6 +20,7 @@ import android.os.Process;
  import android.provider.DocumentsContract;
  import android.provider.MediaStore;
  import android.provider.OpenableColumns;
@@ -65,7 +65,7 @@ diff --git a/base/android/java/src/org/chromium/base/ContentUriUtils.java b/base
  import android.text.TextUtils;
  import android.webkit.MimeTypeMap;
  
-@@ -79,6 +81,36 @@ public abstract class ContentUriUtils {
+@@ -128,6 +130,36 @@ public abstract class ContentUriUtils {
          StreamUtil.closeQuietly(parcelFileDescriptor);
      }
  

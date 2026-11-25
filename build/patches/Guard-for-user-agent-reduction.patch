@@ -4,22 +4,22 @@ Subject: Guard for user-agent reduction
 
 License: GPL-3.0-only - https://spdx.org/licenses/GPL-3.0-only.html
 ---
- components/embedder_support/user_agent_utils.cc              | 5 +++++
- .../blink/renderer/platform/runtime_enabled_features.json5   | 4 ++--
+ components/embedder_support/user_agent_utils.cc                    | 5 +++++
+ third_party/blink/renderer/platform/runtime_enabled_features.json5 | 4 ++--
  2 files changed, 7 insertions(+), 2 deletions(-)
 
 diff --git a/components/embedder_support/user_agent_utils.cc b/components/embedder_support/user_agent_utils.cc
 --- a/components/embedder_support/user_agent_utils.cc
 +++ b/components/embedder_support/user_agent_utils.cc
-@@ -856,6 +856,7 @@ std::string BuildUserAgentFromProduct(const std::string& product) {
+@@ -818,6 +818,7 @@ std::string BuildUnifiedPlatformUserAgentFromProduct(
  }
  
  std::string BuildModelInfo() {
 +  if ((true)) return std::string();
  #if BUILDFLAG(IS_ANDROID)
-   // Model information is not exposed on Android desktop.
-   if (base::android::device_info::is_desktop()) {
-@@ -898,6 +899,10 @@ std::string GetAndroidOSInfo(
+   // Model information is not exposed on Android desktop unless
+   // kAndroidDesktopUAModel is enabled.
+@@ -854,6 +855,10 @@ std::string GetAndroidOSInfo(
      IncludeAndroidModel include_android_model) {
    std::string android_info_str;
  
@@ -33,7 +33,7 @@ diff --git a/components/embedder_support/user_agent_utils.cc b/components/embedd
 diff --git a/third_party/blink/renderer/platform/runtime_enabled_features.json5 b/third_party/blink/renderer/platform/runtime_enabled_features.json5
 --- a/third_party/blink/renderer/platform/runtime_enabled_features.json5
 +++ b/third_party/blink/renderer/platform/runtime_enabled_features.json5
-@@ -5030,8 +5030,8 @@
+@@ -5523,8 +5523,8 @@
      // This User-Agent Reduction feature has been enabled starting from M101,
      // but we still keep this flag for future phase tests.
      {

@@ -13,29 +13,21 @@ note: needs SitePerProcess and StrictOriginIsolation flags enabled
 License: GPL-3.0-only - https://spdx.org/licenses/GPL-3.0-only.html
 Require: Content-settings-infrastructure.patch
 ---
- .../permission_javascript_jit.png             | Bin 0 -> 433 bytes
- .../permission_javascript_jit.png             | Bin 0 -> 377 bytes
- .../permission_javascript_jit.png             | Bin 0 -> 518 bytes
- .../permission_javascript_jit.png             | Bin 0 -> 629 bytes
- .../permission_javascript_jit.png             | Bin 0 -> 797 bytes
- .../BromiteJavascriptJITContentSetting.java   |  93 ++++++++++++++++++
- .../javascript_jit.grdp                       |  21 ++++
- .../javascript_jit.inc                        |  12 +++
- .../core/browser/content_settings_registry.cc |   2 +-
- .../renderer_host/navigation_request.cc       |   8 +-
- .../renderer_host/render_process_host_impl.cc |   3 +
- content/browser/site_info.cc                  |   7 ++
- content/browser/url_info.cc                   |   6 ++
- content/browser/url_info.h                    |   3 +
+ .../drawable-hdpi/permission_javascript_jit.png    | Bin 0 -> 433 bytes
+ .../drawable-mdpi/permission_javascript_jit.png    | Bin 0 -> 377 bytes
+ .../drawable-xhdpi/permission_javascript_jit.png   | Bin 0 -> 518 bytes
+ .../drawable-xxhdpi/permission_javascript_jit.png  | Bin 0 -> 629 bytes
+ .../drawable-xxxhdpi/permission_javascript_jit.png | Bin 0 -> 797 bytes
+ .../impl/BromiteJavascriptJITContentSetting.java   |  93 +++++++++++++++++++++
+ .../bromite_content_settings/javascript_jit.grdp   |  21 +++++
+ .../bromite_content_settings/javascript_jit.inc    |  12 +++
+ .../core/browser/content_settings_registry.cc      |   2 +-
+ .../browser/renderer_host/navigation_request.cc    |   8 +-
+ .../renderer_host/render_process_host_impl.cc      |   3 +
+ content/browser/site_info.cc                       |   7 ++
+ content/browser/url_info.cc                        |   6 ++
+ content/browser/url_info.h                         |   3 +
  14 files changed, 153 insertions(+), 2 deletions(-)
- create mode 100644 components/browser_ui/site_settings/android/java/res/drawable-hdpi/permission_javascript_jit.png
- create mode 100644 components/browser_ui/site_settings/android/java/res/drawable-mdpi/permission_javascript_jit.png
- create mode 100644 components/browser_ui/site_settings/android/java/res/drawable-xhdpi/permission_javascript_jit.png
- create mode 100644 components/browser_ui/site_settings/android/java/res/drawable-xxhdpi/permission_javascript_jit.png
- create mode 100644 components/browser_ui/site_settings/android/java/res/drawable-xxxhdpi/permission_javascript_jit.png
- create mode 100644 components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/impl/BromiteJavascriptJITContentSetting.java
- create mode 100644 components/browser_ui/strings/bromite_content_settings/javascript_jit.grdp
- create mode 100644 components/content_settings/core/browser/bromite_content_settings/javascript_jit.inc
 
 diff --git a/components/browser_ui/site_settings/android/java/res/drawable-hdpi/permission_javascript_jit.png b/components/browser_ui/site_settings/android/java/res/drawable-hdpi/permission_javascript_jit.png
 new file mode 100644
@@ -279,7 +271,7 @@ new file mode 100644
 diff --git a/components/content_settings/core/browser/content_settings_registry.cc b/components/content_settings/core/browser/content_settings_registry.cc
 --- a/components/content_settings/core/browser/content_settings_registry.cc
 +++ b/components/content_settings/core/browser/content_settings_registry.cc
-@@ -570,7 +570,7 @@ void ContentSettingsRegistry::Init() {
+@@ -549,7 +549,7 @@ void ContentSettingsRegistry::Init() {
             PermissionSettingsInfo::EXCEPTIONS_ON_SECURE_ORIGINS_ONLY);
  
    Register(ContentSettingsType::JAVASCRIPT_JIT, "javascript-jit",
@@ -291,7 +283,7 @@ diff --git a/components/content_settings/core/browser/content_settings_registry.
 diff --git a/content/browser/renderer_host/navigation_request.cc b/content/browser/renderer_host/navigation_request.cc
 --- a/content/browser/renderer_host/navigation_request.cc
 +++ b/content/browser/renderer_host/navigation_request.cc
-@@ -4661,11 +4661,17 @@ UrlInfo NavigationRequest::GetUrlInfo() {
+@@ -4857,11 +4857,17 @@ UrlInfo NavigationRequest::GetUrlInfo() {
    // Compute the WebExposedIsolationInfo that will be bundled into UrlInfo.
    auto web_exposed_isolation_info = ComputeWebExposedIsolationInfo();
  
@@ -309,11 +301,11 @@ diff --git a/content/browser/renderer_host/navigation_request.cc b/content/brows
 +      .WithTopOrigin(top_origin);
  
    if (base::FeatureList::IsEnabled(features::kExcludeAdsFromOriginIsolation)) {
-     // When excluding ads from origin isolation, an ad navigation is treated as
+     // After the final response, use the decision from
 diff --git a/content/browser/renderer_host/render_process_host_impl.cc b/content/browser/renderer_host/render_process_host_impl.cc
 --- a/content/browser/renderer_host/render_process_host_impl.cc
 +++ b/content/browser/renderer_host/render_process_host_impl.cc
-@@ -3812,6 +3812,9 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
+@@ -3880,6 +3880,9 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
    if (IsJitDisabled()) {
      AppendToCommaSeparatedSwitch(
          command_line, blink::switches::kJavaScriptFlags, "--jitless");
@@ -326,7 +318,7 @@ diff --git a/content/browser/renderer_host/render_process_host_impl.cc b/content
 diff --git a/content/browser/site_info.cc b/content/browser/site_info.cc
 --- a/content/browser/site_info.cc
 +++ b/content/browser/site_info.cc
-@@ -329,6 +329,13 @@ SiteInfo SiteInfo::Create(const IsolationContext& isolation_context,
+@@ -357,6 +357,13 @@ SiteInfo SiteInfo::Create(const IsolationContext& isolation_context,
    is_jitless =
        is_jitless || GetContentClient()->browser()->IsJitDisabledForSite(
                          browser_context, agent_cluster_url_or_default);
@@ -351,7 +343,7 @@ diff --git a/content/browser/url_info.cc b/content/browser/url_info.cc
        is_sandboxed(init.is_sandboxed_),
        unique_sandbox_id(init.unique_sandbox_id_),
        storage_partition_config(init.storage_partition_config_),
-@@ -157,6 +158,11 @@ UrlInfoInit& UrlInfoInit::WithOrigin(const url::Origin& origin) {
+@@ -158,6 +159,11 @@ UrlInfoInit& UrlInfoInit::WithOrigin(const url::Origin& origin) {
    return *this;
  }
  

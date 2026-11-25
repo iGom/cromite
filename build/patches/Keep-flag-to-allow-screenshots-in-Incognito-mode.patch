@@ -9,8 +9,8 @@ See also:
 
 License: GPL-3.0-only - https://spdx.org/licenses/GPL-3.0-only.html
 ---
- .../browser/incognito/IncognitoSnapshotController.java      | 2 +-
- chrome/browser/flag-metadata.json                           | 6 +++---
+ .../chrome/browser/incognito/IncognitoSnapshotController.java       | 2 +-
+ chrome/browser/flag-metadata.json                                   | 6 +++---
  2 files changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/chrome/android/java/src/org/chromium/chrome/browser/incognito/IncognitoSnapshotController.java b/chrome/android/java/src/org/chromium/chrome/browser/incognito/IncognitoSnapshotController.java
@@ -28,7 +28,7 @@ diff --git a/chrome/android/java/src/org/chromium/chrome/browser/incognito/Incog
 diff --git a/chrome/browser/flag-metadata.json b/chrome/browser/flag-metadata.json
 --- a/chrome/browser/flag-metadata.json
 +++ b/chrome/browser/flag-metadata.json
-@@ -6354,10 +6354,10 @@
+@@ -6368,10 +6368,10 @@
      "expiry_milestone": 160
    },
    {
@@ -41,5 +41,5 @@ diff --git a/chrome/browser/flag-metadata.json b/chrome/browser/flag-metadata.js
 +    "expiry_milestone": -1          // -
    },
    {
-     "name": "incognito-theme-overlay-testing",
+     "name": "infobar-banner-revamp",
 --

@@ -23,6 +23,6 @@ diff --git a/chrome/browser/intranet_redirect_detector.cc b/chrome/browser/intra
 -    return;
 +  return;
  
-   DCHECK(simple_loaders_.empty() && resulting_origins_.empty());
- 
+   CHECK(simple_loaders_.empty() && resulting_origins_.empty(),
+         base::NotFatalUntil::M162);
 --

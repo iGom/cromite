@@ -16,7 +16,7 @@ License: GPL-2.0-or-later - https://spdx.org/licenses/GPL-2.0-or-later.html
 diff --git a/v8/BUILD.gn b/v8/BUILD.gn
 --- a/v8/BUILD.gn
 +++ b/v8/BUILD.gn
-@@ -8079,6 +8079,12 @@ if (current_toolchain == v8_snapshot_toolchain) {
+@@ -8604,6 +8604,12 @@ if (current_toolchain == v8_snapshot_toolchain) {
        ":disable_icf",
      ]
  
@@ -27,12 +27,12 @@ diff --git a/v8/BUILD.gn b/v8/BUILD.gn
 +    }
 +
      deps = [
+       ":torque_generated_definitions",
        ":v8_base_without_compiler",
-       ":v8_compiler_for_mksnapshot",
 diff --git a/v8/src/snapshot/embedded/embedded-file-writer.cc b/v8/src/snapshot/embedded/embedded-file-writer.cc
 --- a/v8/src/snapshot/embedded/embedded-file-writer.cc
 +++ b/v8/src/snapshot/embedded/embedded-file-writer.cc
-@@ -88,8 +88,10 @@ void EmbeddedFileWriter::WriteBuiltin(PlatformEmbeddedFileWriterBase* w,
+@@ -89,8 +89,10 @@ void EmbeddedFileWriter::WriteBuiltin(PlatformEmbeddedFileWriterBase* w,
    v8::internal::SourcePositionTableIterator positions(
        vpos, SourcePositionTableIterator::kExternalOnly);
  
@@ -46,7 +46,7 @@ diff --git a/v8/src/snapshot/embedded/embedded-file-writer.cc b/v8/src/snapshot/
 diff --git a/v8/src/snapshot/embedded/embedded-file-writer.h b/v8/src/snapshot/embedded/embedded-file-writer.h
 --- a/v8/src/snapshot/embedded/embedded-file-writer.h
 +++ b/v8/src/snapshot/embedded/embedded-file-writer.h
-@@ -103,9 +103,11 @@ class EmbeddedFileWriter : public EmbeddedFileWriterInterface {
+@@ -104,9 +104,11 @@ class EmbeddedFileWriter : public EmbeddedFileWriterInterface {
    }
  
    void WriteExternalFilenames(PlatformEmbeddedFileWriterBase* w) const {

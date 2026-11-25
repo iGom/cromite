@@ -8,33 +8,33 @@ Only cromite-specific components can be enabled.
 
 License: GPL-2.0-or-later - https://spdx.org/licenses/GPL-2.0-or-later.html
 ---
- .../nonembedded/webview_apk_application.cc    |  2 +-
- .../nonembedded/webview_apk_process.cc        | 24 +++++----
- .../nonembedded/webview_apk_process.h         |  4 +-
- .../browser/component_updater/registration.cc |  2 +
- .../elevated_recovery_impl.cc                 |  2 +-
- .../component_updater/component_installer.cc  | 54 ++++++++++++-------
- .../component_updater/component_installer.h   |  6 +--
- .../component_updater_url_constants.cc        |  4 +-
- .../component_updater/configurator_impl.cc    |  8 +--
- .../component_updater/configurator_impl.h     |  2 -
- components/crx_file/crx_build_action_main.cc  | 10 +++-
- components/crx_file/crx_verifier.cc           | 28 ++++++++--
- components/crx_file/crx_verifier.h            |  2 +-
- .../prediction_model_download_manager.cc      |  2 +-
- components/update_client/component.cc         | 13 +++++
- components/update_client/crx_downloader.cc    |  5 ++
- components/update_client/net/network_impl.cc  |  4 +-
- components/update_client/op_install.cc        |  2 +-
- components/update_client/protocol_parser.cc   |  3 ++
- .../update_client/protocol_parser_json.cc     |  2 +
- components/update_client/request_sender.cc    |  7 +--
- components/update_client/unpacker.cc          |  7 +--
- components/update_client/unpacker.h           |  4 +-
- components/update_client/update_checker.cc    |  6 ++-
- components/update_client/update_engine.cc     |  9 ++++
- components/update_client/utils.cc             |  4 ++
- extensions/browser/sandboxed_unpacker.cc      |  2 +-
+ .../nonembedded/webview_apk_application.cc         |  2 +-
+ android_webview/nonembedded/webview_apk_process.cc | 24 ++++++----
+ android_webview/nonembedded/webview_apk_process.h  |  4 +-
+ chrome/browser/component_updater/registration.cc   |  2 +
+ chrome/elevation_service/elevated_recovery_impl.cc |  2 +-
+ .../component_updater/component_installer.cc       | 54 ++++++++++++++--------
+ components/component_updater/component_installer.h |  6 +--
+ .../component_updater_url_constants.cc             |  4 +-
+ components/component_updater/configurator_impl.cc  |  8 +---
+ components/component_updater/configurator_impl.h   |  2 -
+ components/crx_file/crx_build_action_main.cc       | 10 +++-
+ components/crx_file/crx_verifier.cc                | 28 +++++++++--
+ components/crx_file/crx_verifier.h                 |  2 +-
+ .../delivery/prediction_model_download_manager.cc  |  2 +-
+ components/update_client/component.cc              | 13 ++++++
+ components/update_client/crx_downloader.cc         |  5 ++
+ components/update_client/net/network_impl.cc       |  4 +-
+ components/update_client/op_install.cc             |  2 +-
+ components/update_client/protocol_parser.cc        |  3 ++
+ components/update_client/protocol_parser_json.cc   |  2 +
+ components/update_client/request_sender.cc         |  7 +--
+ components/update_client/unpacker.cc               |  7 +--
+ components/update_client/unpacker.h                |  4 +-
+ components/update_client/update_checker.cc         |  6 ++-
+ components/update_client/update_engine.cc          |  9 ++++
+ components/update_client/utils.cc                  |  4 ++
+ extensions/browser/sandboxed_unpacker.cc           |  2 +-
  27 files changed, 152 insertions(+), 66 deletions(-)
 
 diff --git a/android_webview/nonembedded/webview_apk_application.cc b/android_webview/nonembedded/webview_apk_application.cc
@@ -117,7 +117,7 @@ diff --git a/android_webview/nonembedded/webview_apk_process.h b/android_webview
 diff --git a/chrome/browser/component_updater/registration.cc b/chrome/browser/component_updater/registration.cc
 --- a/chrome/browser/component_updater/registration.cc
 +++ b/chrome/browser/component_updater/registration.cc
-@@ -139,6 +139,8 @@ void DeleteOldComponents(const base::FilePath& user_data_dir) {
+@@ -145,6 +145,8 @@ void DeleteOldComponents(const base::FilePath& user_data_dir) {
  void RegisterComponentsForUpdate() {
    auto* const cus = g_browser_process->component_updater();
  
@@ -141,7 +141,7 @@ diff --git a/chrome/elevation_service/elevated_recovery_impl.cc b/chrome/elevati
 diff --git a/components/component_updater/component_installer.cc b/components/component_updater/component_installer.cc
 --- a/components/component_updater/component_installer.cc
 +++ b/components/component_updater/component_installer.cc
-@@ -104,7 +104,9 @@ ComponentInstaller::ComponentInstaller(
+@@ -103,7 +103,9 @@ ComponentInstaller::ComponentInstaller(
  ComponentInstaller::~ComponentInstaller() = default;
  
  void ComponentInstaller::Register(ComponentUpdateService* cus,
@@ -152,7 +152,7 @@ diff --git a/components/component_updater/component_installer.cc b/components/co
    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
    CHECK(cus);
  
-@@ -118,14 +120,16 @@ void ComponentInstaller::Register(ComponentUpdateService* cus,
+@@ -117,14 +119,16 @@ void ComponentInstaller::Register(ComponentUpdateService* cus,
                       base::Unretained(cus)),
        std::move(callback),
        cus->GetRegisteredVersion(registration_info->crx_id),
@@ -171,7 +171,7 @@ diff --git a/components/component_updater/component_installer.cc b/components/co
    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
  
    if (!installer_policy_) {
-@@ -148,7 +152,13 @@ void ComponentInstaller::RegisterWithInfo(
+@@ -147,7 +151,13 @@ void ComponentInstaller::RegisterWithInfo(
      RegisterCallback register_callback,
      base::OnceClosure callback,
      const base::Version& registered_version,
@@ -186,7 +186,7 @@ diff --git a/components/component_updater/component_installer.cc b/components/co
    task_runner_->PostTaskAndReply(
        FROM_HERE,
        base::BindOnce(&ComponentInstaller::StartRegistration, this,
-@@ -166,6 +176,7 @@ Result ComponentInstaller::InstallHelper(const base::FilePath& unpack_path,
+@@ -165,6 +175,7 @@ Result ComponentInstaller::InstallHelper(const base::FilePath& unpack_path,
    std::optional<base::DictValue> local_manifest =
        update_client::ReadManifest(unpack_path);
    if (!local_manifest) {
@@ -194,7 +194,7 @@ diff --git a/components/component_updater/component_installer.cc b/components/co
      return Result(InstallError::BAD_MANIFEST);
    }
  
-@@ -176,7 +187,7 @@ Result ComponentInstaller::InstallHelper(const base::FilePath& unpack_path,
+@@ -175,7 +186,7 @@ Result ComponentInstaller::InstallHelper(const base::FilePath& unpack_path,
  
    const base::Version manifest_version(*version_ascii);
  
@@ -203,7 +203,7 @@ diff --git a/components/component_updater/component_installer.cc b/components/co
            << " current version=" << current_version_.GetString();
  
    if (!manifest_version.IsValid()) {
-@@ -195,11 +206,11 @@ Result ComponentInstaller::InstallHelper(const base::FilePath& unpack_path,
+@@ -194,11 +205,11 @@ Result ComponentInstaller::InstallHelper(const base::FilePath& unpack_path,
      }
    }
  
@@ -217,7 +217,7 @@ diff --git a/components/component_updater/component_installer.cc b/components/co
      base::DeletePathRecursively(local_install_path);
      return Result(InstallError::MOVE_FILES_ERROR);
    }
-@@ -264,6 +275,9 @@ void ComponentInstaller::Install(
+@@ -263,6 +274,9 @@ void ComponentInstaller::Install(
        InstallHelper(unpack_path, &manifest, &version, &install_path);
    base::DeletePathRecursively(unpack_path);
    if (result.result.category != update_client::ErrorCategory::kNone) {
@@ -227,7 +227,7 @@ diff --git a/components/component_updater/component_installer.cc b/components/co
      main_task_runner_->PostTask(FROM_HERE,
                                  base::BindOnce(std::move(callback), result));
      return;
-@@ -303,34 +317,34 @@ bool ComponentInstaller::FindPreinstallation(
+@@ -302,34 +316,34 @@ bool ComponentInstaller::FindPreinstallation(
      scoped_refptr<RegistrationInfo> registration_info) {
    base::FilePath path = root.Append(installer_policy_->GetRelativeInstallDir());
    if (!base::PathExists(path)) {
@@ -268,7 +268,7 @@ diff --git a/components/component_updater/component_installer.cc b/components/co
            << " at " << path.MaybeAsASCII() << " with version " << version
            << ".";
  
-@@ -347,13 +361,13 @@ std::optional<base::DictValue> ComponentInstaller::GetValidInstallationManifest(
+@@ -346,13 +360,13 @@ std::optional<base::DictValue> ComponentInstaller::GetValidInstallationManifest(
      const base::FilePath& path) {
    std::optional<base::DictValue> manifest = update_client::ReadManifest(path);
    if (!manifest) {
@@ -284,7 +284,7 @@ diff --git a/components/component_updater/component_installer.cc b/components/co
               << installer_policy_->GetName() << " (" << path.MaybeAsASCII()
               << ").";
      return std::nullopt;
-@@ -486,7 +500,7 @@ std::optional<base::FilePath> ComponentInstaller::GetComponentDirectory() {
+@@ -485,7 +499,7 @@ std::optional<base::FilePath> ComponentInstaller::GetComponentDirectory() {
    base::FilePath base_dir =
        base_component_dir.Append(installer_policy_->GetRelativeInstallDir());
    if (!base::CreateDirectory(base_dir)) {
@@ -293,7 +293,7 @@ diff --git a/components/component_updater/component_installer.cc b/components/co
               << installer_policy_->GetName() << " (" << base_dir.MaybeAsASCII()
               << ").";
      return std::nullopt;
-@@ -563,14 +577,14 @@ void ComponentInstaller::UninstallOnTaskRunner() {
+@@ -562,14 +576,14 @@ void ComponentInstaller::UninstallOnTaskRunner() {
      }
  
      if (!base::DeletePathRecursively(path)) {
@@ -310,7 +310,7 @@ diff --git a/components/component_updater/component_installer.cc b/components/co
      }
    }
  
-@@ -611,7 +625,7 @@ void ComponentInstaller::FinishRegistration(
+@@ -610,7 +624,7 @@ void ComponentInstaller::FinishRegistration(
    if (registration_info->manifest) {
      ComponentReady(std::move(*registration_info->manifest));
    } else {
@@ -319,7 +319,7 @@ diff --git a/components/component_updater/component_installer.cc b/components/co
    }
  
    if (!callback.is_null()) {
-@@ -620,7 +634,7 @@ void ComponentInstaller::FinishRegistration(
+@@ -619,7 +633,7 @@ void ComponentInstaller::FinishRegistration(
  }
  
  void ComponentInstaller::ComponentReady(base::DictValue manifest) {
@@ -347,9 +347,9 @@ diff --git a/components/component_updater/component_installer.h b/components/com
 -          base::Version(kNullVersion));
 +          base::Version(kNullVersion), bool allowed = false);
  
+   // Overrides for update_client::CrxInstaller.
    void Install(const base::FilePath& unpack_path,
-                const std::string& public_key,
-@@ -215,7 +215,7 @@ class ComponentInstaller final : public update_client::CrxInstaller {
+@@ -217,7 +217,7 @@ class ComponentInstaller final : public update_client::CrxInstaller {
                          RegisterCallback register_callback,
                          base::OnceClosure callback,
                          const base::Version& registered_version,
@@ -376,7 +376,7 @@ diff --git a/components/component_updater/component_updater_url_constants.cc b/c
 diff --git a/components/component_updater/configurator_impl.cc b/components/component_updater/configurator_impl.cc
 --- a/components/component_updater/configurator_impl.cc
 +++ b/components/component_updater/configurator_impl.cc
-@@ -39,8 +39,6 @@ ConfiguratorImpl::ConfiguratorImpl(
+@@ -40,8 +40,6 @@ ConfiguratorImpl::ConfiguratorImpl(
      : background_downloads_enabled_(config_policy.BackgroundDownloadsEnabled()),
        deltas_enabled_(config_policy.DeltaUpdatesEnabled()),
        fast_update_(config_policy.FastUpdate()),
@@ -385,7 +385,7 @@ diff --git a/components/component_updater/configurator_impl.cc b/components/comp
        url_source_override_(config_policy.UrlSourceOverride()),
        initial_delay_(config_policy.InitialDelay()) {
    if (config_policy.TestRequest()) {
-@@ -82,16 +80,14 @@ std::vector<GURL> ConfiguratorImpl::UpdateUrl() const {
+@@ -83,16 +81,14 @@ std::vector<GURL> ConfiguratorImpl::UpdateUrl() const {
  
    std::vector<GURL> urls{GURL(kUpdaterJSONDefaultUrl),
                           GURL(kUpdaterJSONFallbackUrl)};
@@ -407,7 +407,7 @@ diff --git a/components/component_updater/configurator_impl.cc b/components/comp
 diff --git a/components/component_updater/configurator_impl.h b/components/component_updater/configurator_impl.h
 --- a/components/component_updater/configurator_impl.h
 +++ b/components/component_updater/configurator_impl.h
-@@ -106,8 +106,6 @@ class ConfiguratorImpl {
+@@ -109,8 +109,6 @@ class ConfiguratorImpl {
    const bool background_downloads_enabled_;
    const bool deltas_enabled_;
    const bool fast_update_;
@@ -419,7 +419,7 @@ diff --git a/components/component_updater/configurator_impl.h b/components/compo
 diff --git a/components/crx_file/crx_build_action_main.cc b/components/crx_file/crx_build_action_main.cc
 --- a/components/crx_file/crx_build_action_main.cc
 +++ b/components/crx_file/crx_build_action_main.cc
-@@ -10,6 +10,7 @@
+@@ -11,6 +11,7 @@
  #include "base/files/file_path.h"
  #include "base/files/file_util.h"
  #include "base/logging.h"
@@ -427,7 +427,7 @@ diff --git a/components/crx_file/crx_build_action_main.cc b/components/crx_file/
  #include "components/crx_file/crx_creator.h"
  #include "crypto/keypair.h"
  
-@@ -31,8 +32,13 @@ int main(int argc, char** raw_argv) {
+@@ -32,8 +33,13 @@ int main(int argc, char** raw_argv) {
      VLOG(0) << "Failed to read key material from " << argv[3];
      return -1;
    }
@@ -446,7 +446,7 @@ diff --git a/components/crx_file/crx_build_action_main.cc b/components/crx_file/
 diff --git a/components/crx_file/crx_verifier.cc b/components/crx_file/crx_verifier.cc
 --- a/components/crx_file/crx_verifier.cc
 +++ b/components/crx_file/crx_verifier.cc
-@@ -18,6 +18,7 @@
+@@ -19,6 +19,7 @@
  #include <vector>
  
  #include "base/base64.h"
@@ -454,7 +454,7 @@ diff --git a/components/crx_file/crx_verifier.cc b/components/crx_file/crx_verif
  #include "base/feature.h"
  #include "base/feature_list.h"
  #include "base/files/file.h"
-@@ -47,7 +48,12 @@ BASE_FEATURE(kDisallowEocdRecord64TokensInCrx,
+@@ -48,7 +49,12 @@ BASE_FEATURE(kDisallowEocdRecord64TokensInCrx,
               base::FEATURE_ENABLED_BY_DEFAULT);
  
  // The SHA256 hash of the DER SPKI "ecdsa_2017_public" Crx3 key.
@@ -468,7 +468,7 @@ diff --git a/components/crx_file/crx_verifier.cc b/components/crx_file/crx_verif
      0x61, 0xf7, 0xf2, 0xa6, 0xbf, 0xcf, 0x74, 0xcd, 0x0b, 0xc1, 0xfe,
      0x24, 0x97, 0xcc, 0x9b, 0x04, 0x25, 0x4c, 0x65, 0x8f, 0x79, 0xf2,
      0x14, 0x53, 0x92, 0x86, 0x7e, 0xa8, 0x36, 0x63, 0x67, 0xcf};
-@@ -122,7 +128,8 @@ VerifierResult VerifyCrx3(
+@@ -123,7 +129,8 @@ VerifierResult VerifyCrx3(
      std::string* crx_id,
      std::vector<uint8_t>* compressed_verified_contents,
      bool require_publisher_key,
@@ -478,7 +478,7 @@ diff --git a/components/crx_file/crx_verifier.cc b/components/crx_file/crx_verif
    // Parse [header-size] and [header].
    int header_size =
        base::saturated_cast<int>(ReadAndHashLittleEndianUInt32(file, hash));
-@@ -209,9 +216,18 @@ VerifierResult VerifyCrx3(
+@@ -210,9 +217,18 @@ VerifierResult VerifyCrx3(
        }
        auto key_hash = crypto::hash::Sha256(key);
        required_key_set.erase(key_hash);
@@ -498,7 +498,7 @@ diff --git a/components/crx_file/crx_verifier.cc b/components/crx_file/crx_verif
        std::optional<crypto::keypair::PublicKey> pub_key =
            crypto::keypair::PublicKey::FromSubjectPublicKeyInfo(
                base::as_byte_span(key));
-@@ -238,9 +254,11 @@ VerifierResult VerifyCrx3(
+@@ -239,9 +255,11 @@ VerifierResult VerifyCrx3(
        verifiers.push_back(std::move(v));
      }
    }
@@ -510,7 +510,7 @@ diff --git a/components/crx_file/crx_verifier.cc b/components/crx_file/crx_verif
  
    if (require_publisher_key && !found_publisher_key) {
      return VerifierResult::ERROR_REQUIRED_PROOF_MISSING;
-@@ -265,7 +283,7 @@ VerifierResult Verify(
+@@ -266,7 +284,7 @@ VerifierResult Verify(
      const std::vector<uint8_t>& required_file_hash,
      std::string* public_key,
      std::string* crx_id,
@@ -519,7 +519,7 @@ diff --git a/components/crx_file/crx_verifier.cc b/components/crx_file/crx_verif
    std::string public_key_local;
    std::string crx_id_local;
    base::File file(crx_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
-@@ -298,7 +316,7 @@ VerifierResult Verify(
+@@ -299,7 +317,7 @@ VerifierResult Verify(
      result = VerifyCrx3(
          &file, file_hash, required_key_hashes, &public_key_local, &crx_id_local,
          compressed_verified_contents, require_publisher_key,
@@ -543,7 +543,7 @@ diff --git a/components/crx_file/crx_verifier.h b/components/crx_file/crx_verifi
 diff --git a/components/optimization_guide/core/delivery/prediction_model_download_manager.cc b/components/optimization_guide/core/delivery/prediction_model_download_manager.cc
 --- a/components/optimization_guide/core/delivery/prediction_model_download_manager.cc
 +++ b/components/optimization_guide/core/delivery/prediction_model_download_manager.cc
-@@ -320,7 +320,7 @@ bool PredictionModelDownloadManager::VerifyDownload(
+@@ -319,7 +319,7 @@ bool PredictionModelDownloadManager::VerifyDownload(
          download_file_path, crx_file::VerifierFormat::CRX3,
          /*required_key_hashes=*/{},
          /*required_file_hash=*/{}, &public_key,
@@ -555,7 +555,7 @@ diff --git a/components/optimization_guide/core/delivery/prediction_model_downlo
 diff --git a/components/update_client/component.cc b/components/update_client/component.cc
 --- a/components/update_client/component.cc
 +++ b/components/update_client/component.cc
-@@ -378,6 +378,19 @@ void Component::StateChecking::DoHandle() {
+@@ -380,6 +380,19 @@ void Component::StateChecking::DoHandle() {
      return;
    }
  
@@ -578,7 +578,7 @@ diff --git a/components/update_client/component.cc b/components/update_client/co
 diff --git a/components/update_client/crx_downloader.cc b/components/update_client/crx_downloader.cc
 --- a/components/update_client/crx_downloader.cc
 +++ b/components/update_client/crx_downloader.cc
-@@ -32,6 +32,7 @@
+@@ -36,6 +36,7 @@
  #include "components/update_client/url_fetcher_downloader.h"
  #include "components/update_client/utils.h"
  #include "url/gurl.h"
@@ -586,9 +586,9 @@ diff --git a/components/update_client/crx_downloader.cc b/components/update_clie
  
  namespace update_client {
  
-@@ -103,6 +104,9 @@ base::OnceClosure CrxDownloader::StartDownload(
-   current_url_ = urls_.begin();
+@@ -106,6 +107,9 @@ base::OnceClosure CrxDownloader::StartDownload(
    download_callback_ = std::move(download_callback);
+   progress_callback_ = progress_callback;
  
 +  LOG(INFO) << "CrxDownloader: StartDownload"
 +            << " current_url_=" << *current_url_
@@ -596,7 +596,7 @@ diff --git a/components/update_client/crx_downloader.cc b/components/update_clie
    return DoStartDownload(*current_url_);
  }
  
-@@ -140,6 +144,7 @@ void CrxDownloader::OnDownloadComplete(
+@@ -138,6 +142,7 @@ void CrxDownloader::OnDownloadComplete(
                return CrxDownloaderError::NONE;
              }
              DeleteFileAndEmptyParentDirectory(filepath);
@@ -607,7 +607,7 @@ diff --git a/components/update_client/crx_downloader.cc b/components/update_clie
 diff --git a/components/update_client/net/network_impl.cc b/components/update_client/net/network_impl.cc
 --- a/components/update_client/net/network_impl.cc
 +++ b/components/update_client/net/network_impl.cc
-@@ -122,7 +122,7 @@ void NetworkFetcherImpl::PostRequest(
+@@ -127,7 +127,7 @@ void NetworkFetcherImpl::PostRequest(
      PostRequestCompleteCallback post_request_complete_callback) {
    auto resource_request = std::make_unique<network::ResourceRequest>();
    resource_request->url = url;
@@ -616,7 +616,7 @@ diff --git a/components/update_client/net/network_impl.cc b/components/update_cl
    resource_request->load_flags = net::LOAD_DISABLE_CACHE;
    resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
    for (const auto& [name, value] : post_additional_headers) {
-@@ -136,7 +136,9 @@ void NetworkFetcherImpl::PostRequest(
+@@ -141,7 +141,9 @@ void NetworkFetcherImpl::PostRequest(
        network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
    // The `Content-Type` header set by |AttachStringForUpload| overwrites any
    // `Content-Type` header present in the |ResourceRequest| above.
@@ -629,7 +629,7 @@ diff --git a/components/update_client/net/network_impl.cc b/components/update_cl
 diff --git a/components/update_client/op_install.cc b/components/update_client/op_install.cc
 --- a/components/update_client/op_install.cc
 +++ b/components/update_client/op_install.cc
-@@ -202,7 +202,7 @@ void Unpack(base::OnceCallback<void(const Unpacker::Result&)> callback,
+@@ -203,7 +203,7 @@ void Unpack(base::OnceCallback<void(const Unpacker::Result&)> callback,
                &Unpacker::Unpack, id, prod_id, pk_hash,
                // If and only if cached, the original path no longer exists.
                cache_result.has_value() ? cache_result.value() : crx_file,
@@ -650,7 +650,7 @@ diff --git a/components/update_client/protocol_parser.cc b/components/update_cli
  namespace update_client {
  
  ProtocolParser::ProtocolParser() = default;
-@@ -48,6 +50,7 @@ void ProtocolParser::ParseError(std::string_view details) {
+@@ -62,6 +64,7 @@ void ProtocolParser::ParseError(std::string_view details) {
      errors_ += "\r\n";
    }
    errors_.append(details);
@@ -661,7 +661,7 @@ diff --git a/components/update_client/protocol_parser.cc b/components/update_cli
 diff --git a/components/update_client/protocol_parser_json.cc b/components/update_client/protocol_parser_json.cc
 --- a/components/update_client/protocol_parser_json.cc
 +++ b/components/update_client/protocol_parser_json.cc
-@@ -13,6 +13,7 @@
+@@ -14,6 +14,7 @@
  
  #include "base/check.h"
  #include "base/json/json_reader.h"
@@ -669,7 +669,7 @@ diff --git a/components/update_client/protocol_parser_json.cc b/components/updat
  #include "base/strings/strcat.h"
  #include "base/types/expected.h"
  #include "base/values.h"
-@@ -262,6 +263,7 @@ bool ProtocolParserJSON::DoParse(std::string_view response_json,
+@@ -263,6 +264,7 @@ bool ProtocolParserJSON::DoParse(std::string_view response_json,
                                   Results* results) {
    CHECK(results);
  
@@ -680,7 +680,7 @@ diff --git a/components/update_client/protocol_parser_json.cc b/components/updat
 diff --git a/components/update_client/request_sender.cc b/components/update_client/request_sender.cc
 --- a/components/update_client/request_sender.cc
 +++ b/components/update_client/request_sender.cc
-@@ -247,7 +247,8 @@ void RequestSender::SendInternal() {
+@@ -230,7 +230,8 @@ void RequestSender::SendInternal() {
    }
    VLOG_IF(2, !url.is_valid()) << "url is not valid.";
  
@@ -690,7 +690,7 @@ diff --git a/components/update_client/request_sender.cc b/components/update_clie
  
    if (!fetcher_factory_) {
      // The request was cancelled.
-@@ -279,8 +280,8 @@ void RequestSender::SendInternalComplete(
+@@ -262,8 +263,8 @@ void RequestSender::SendInternalComplete(
      const std::string& response_set_cookie,
      int retry_after_sec) {
    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -757,9 +757,9 @@ diff --git a/components/update_client/unpacker.h b/components/update_client/unpa
 diff --git a/components/update_client/update_checker.cc b/components/update_client/update_checker.cc
 --- a/components/update_client/update_checker.cc
 +++ b/components/update_client/update_checker.cc
-@@ -263,6 +263,10 @@ void UpdateCheckerImpl::CheckForUpdatesHelper(
-       config_->IsMachineExternallyManaged(), additional_attributes,
-       updater_state_attributes, std::move(apps));
+@@ -261,6 +261,10 @@ void UpdateCheckerImpl::CheckForUpdatesHelper(
+       config_->GetDownloadPreference(), config_->IsMachineExternallyManaged(),
+       additional_attributes, updater_state_attributes, std::move(apps));
  
 +  bool enabled_cup_signing = config_->EnabledCupSigning();
 +#if BUILDFLAG(IS_ANDROID)
@@ -768,7 +768,7 @@ diff --git a/components/update_client/update_checker.cc b/components/update_clie
    cancellation_->OnCancel(
        base::MakeRefCounted<RequestSender>(config_->GetNetworkFetcherFactory())
            ->Send({url},
-@@ -272,7 +276,7 @@ void UpdateCheckerImpl::CheckForUpdatesHelper(
+@@ -270,7 +274,7 @@ void UpdateCheckerImpl::CheckForUpdatesHelper(
                   config_->GetProtocolHandlerFactory()
                       ->CreateSerializer()
                       ->Serialize(request),
@@ -780,7 +780,7 @@ diff --git a/components/update_client/update_checker.cc b/components/update_clie
 diff --git a/components/update_client/update_engine.cc b/components/update_client/update_engine.cc
 --- a/components/update_client/update_engine.cc
 +++ b/components/update_client/update_engine.cc
-@@ -210,6 +210,15 @@ void UpdateEngine::StartOperation(
+@@ -223,6 +223,15 @@ void UpdateEngine::StartOperation(
        component->set_crx_component(*crx_component);
        component->set_previous_version(component->crx_component()->version);
        component->set_previous_fp(component->crx_component()->fingerprint);
@@ -799,7 +799,7 @@ diff --git a/components/update_client/update_engine.cc b/components/update_clien
 diff --git a/components/update_client/utils.cc b/components/update_client/utils.cc
 --- a/components/update_client/utils.cc
 +++ b/components/update_client/utils.cc
-@@ -25,6 +25,7 @@
+@@ -24,6 +24,7 @@
  #include "base/files/memory_mapped_file.h"
  #include "base/functional/callback.h"
  #include "base/functional/function_ref.h"
@@ -807,7 +807,7 @@ diff --git a/components/update_client/utils.cc b/components/update_client/utils.
  #include "base/json/json_file_value_serializer.h"
  #include "base/path_service.h"
  #include "base/strings/string_number_conversions.h"
-@@ -111,6 +112,9 @@ bool VerifyFileHash256(const base::FilePath& filepath,
+@@ -110,6 +111,9 @@ bool VerifyFileHash256(const base::FilePath& filepath,
      return false;
    }
  
@@ -820,7 +820,7 @@ diff --git a/components/update_client/utils.cc b/components/update_client/utils.
 diff --git a/extensions/browser/sandboxed_unpacker.cc b/extensions/browser/sandboxed_unpacker.cc
 --- a/extensions/browser/sandboxed_unpacker.cc
 +++ b/extensions/browser/sandboxed_unpacker.cc
-@@ -915,7 +915,7 @@ bool SandboxedUnpacker::ValidateSignature(
+@@ -927,7 +927,7 @@ bool SandboxedUnpacker::ValidateSignature(
  
    const crx_file::VerifierResult result = crx_file::Verify(
        crx_path, required_format, std::vector<std::vector<uint8_t>>(), hash,

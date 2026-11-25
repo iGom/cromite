@@ -10,18 +10,17 @@ active by default.
 
 License: GPL-2.0-or-later - https://spdx.org/licenses/GPL-2.0-or-later.html
 ---
- components/performance_manager/features.cc                | 6 ++++++
- .../performance_manager/freezing/freezing_policy.cc       | 2 +-
- components/performance_manager/public/features.h          | 3 +++
- components/performance_manager/user_tuning/prefs.cc       | 6 +++---
- .../Enable-freeze-high-cpu-background-usage.inc           | 8 ++++++++
+ components/performance_manager/features.cc                        | 6 ++++++
+ components/performance_manager/freezing/freezing_policy.cc        | 2 +-
+ components/performance_manager/public/features.h                  | 3 +++
+ components/performance_manager/user_tuning/prefs.cc               | 6 +++---
+ .../about_flags_cc/Enable-freeze-high-cpu-background-usage.inc    | 8 ++++++++
  5 files changed, 21 insertions(+), 4 deletions(-)
- create mode 100644 cromite_flags/chrome/browser/about_flags_cc/Enable-freeze-high-cpu-background-usage.inc
 
 diff --git a/components/performance_manager/features.cc b/components/performance_manager/features.cc
 --- a/components/performance_manager/features.cc
 +++ b/components/performance_manager/features.cc
-@@ -176,6 +176,7 @@ BASE_FEATURE(kPMLoadingPageVoter, base::FEATURE_DISABLED_BY_DEFAULT);
+@@ -202,6 +202,7 @@ BASE_FEATURE(kPMLoadingPageVoterV2, base::FEATURE_DISABLED_BY_DEFAULT);
  BASE_FEATURE(kUrgentPageDiscarding, base::FEATURE_ENABLED_BY_DEFAULT);
  
  BASE_FEATURE(kCPUMeasurementInFreezingPolicy, base::FEATURE_ENABLED_BY_DEFAULT);
@@ -29,7 +28,7 @@ diff --git a/components/performance_manager/features.cc b/components/performance
  
  BASE_FEATURE(kMemoryMeasurementInFreezingPolicy,
               base::FEATURE_ENABLED_BY_DEFAULT);
-@@ -255,8 +256,13 @@ BASE_FEATURE_PARAM(int,
+@@ -323,8 +324,13 @@ BASE_FEATURE_PARAM(int,
                     "min_available_percent",
                     10);
  
@@ -41,12 +40,12 @@ diff --git a/components/performance_manager/features.cc b/components/performance
               base::FEATURE_ENABLED_BY_DEFAULT);
 +SET_CROMITE_FEATURE_ENABLED(kResourceAttributionIncludeOrigins);
  
- BASE_FEATURE(kSeamlessRenderFrameSwap, base::FEATURE_ENABLED_BY_DEFAULT);
+ BASE_FEATURE(kUnimportantFramesPriority, base::FEATURE_DISABLED_BY_DEFAULT);
  
 diff --git a/components/performance_manager/freezing/freezing_policy.cc b/components/performance_manager/freezing/freezing_policy.cc
 --- a/components/performance_manager/freezing/freezing_policy.cc
 +++ b/components/performance_manager/freezing/freezing_policy.cc
-@@ -468,7 +468,7 @@ void FreezingPolicy::UpdateFrozenState(
+@@ -484,7 +484,7 @@ void FreezingPolicy::UpdateFrozenState(
        if (browsing_instance_state
                    .highest_cpu_without_battery_saver_cannot_freeze >=
                high_cpu_proportion &&
@@ -58,7 +57,7 @@ diff --git a/components/performance_manager/freezing/freezing_policy.cc b/compon
 diff --git a/components/performance_manager/public/features.h b/components/performance_manager/public/features.h
 --- a/components/performance_manager/public/features.h
 +++ b/components/performance_manager/public/features.h
-@@ -210,6 +210,9 @@ BASE_DECLARE_FEATURE(kDiscardOnCommitLimit);
+@@ -281,6 +281,9 @@ BASE_DECLARE_FEATURE(kDiscardOnCommitLimit);
  // enabled.
  BASE_DECLARE_FEATURE_PARAM(int, kDiscardOnCommitLimit_MinAvailablePercent);
  
