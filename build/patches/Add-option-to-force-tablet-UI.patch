@@ -4,43 +4,71 @@ Subject: Add option to force tablet UI
 
 License: GPL-2.0-or-later - https://spdx.org/licenses/GPL-2.0-or-later.html
 ---
- .../layout/custom_tabs_control_container.xml  |  2 +-
- .../java/res/layout/recent_tabs_page.xml      |  2 +-
- .../java/res/values-sw600dp/dimens.xml        |  3 ++-
- chrome/android/java/res/values/dimens.xml     |  3 ++-
- ...ain_forked_with_secondary_ui_container.xml |  2 +-
- .../browser/ChromeBaseAppCompatActivity.java  |  3 +++
- .../chrome/browser/WarmupManager.java         |  7 +++++--
- .../ChromeAccessibilitySettingsDelegate.java  | 19 +++++++++++++++++++
- .../chrome/browser/app/ChromeActivity.java    |  5 ++++-
- .../layouts/LayoutManagerChromeTablet.java    |  2 +-
- .../layouts/phone/NewTabAnimationLayout.java  |  2 +-
- .../strip/StripLayoutHelperManager.java       |  6 +++++-
- .../scene_layer/TabStripSceneLayer.java       |  8 ++++++++
- .../init/ChromeBrowserInitializer.java        |  2 ++
- .../tabbed_mode/TabbedRootUiCoordinator.java  |  4 +++-
- .../chrome/browser/ui/RootUiCoordinator.java  |  6 +++++-
- chrome/browser/preferences/BUILD.gn           |  1 +
- .../preferences/ChromePreferenceKeys.java     |  1 +
- .../preferences/ChromeSharedPreferences.java  | 12 ++++++++++++
- .../LegacyChromePreferenceKeys.java           |  1 +
- .../ui/desktop_windowing/AppHeaderUtils.java  |  2 ++
- .../omnibox/LocationBarCoordinator.java       |  2 +-
- .../strings/android_chrome_strings.grd        |  7 +++++++
- .../java/res/layout/control_container.xml     |  8 ++++----
- .../java/res/layout/toolbar_tablet.xml        |  2 +-
- .../java/res/values-sw600dp/dimens.xml        |  5 +++--
- .../toolbar/java/res/values/dimens.xml        |  6 ++++--
- .../toolbar/top/ToolbarControlContainer.java  | 10 +++++++++-
- .../browser/toolbar/top/ToolbarLayout.java    |  5 ++++-
- .../tab_strip/HeightTransitionHandler.java    |  2 ++
- .../TabStripTransitionCoordinator.java        |  6 +++++-
- .../res/xml/accessibility_preferences.xml     |  5 +++++
- .../accessibility/AccessibilitySettings.java  | 13 +++++++++++++
- .../AccessibilitySettingsDelegate.java        |  2 ++
- .../chromium/ui/base/DeviceFormFactor.java    | 14 ++++++++++++++
+ chrome/browser/preferences/BUILD.gn                |    1 +
+ .../ui/android/strings/android_chrome_strings.grd  |    7 +++++++
+ .../res/layout/custom_tabs_control_container.xml   |    2 +-
+ .../android/java/res/layout/recent_tabs_page.xml   |    2 +-
+ chrome/android/java/res/values-sw600dp/dimens.xml  |    3 ++-
+ chrome/android/java/res/values/dimens.xml          |    3 ++-
+ .../main_forked_with_secondary_ui_container.xml    |    2 +-
+ .../browser/ChromeBaseAppCompatActivity.java       |    3 +++
+ .../org/chromium/chrome/browser/WarmupManager.java |    7 +++++--
+ .../ChromeAccessibilitySettingsDelegate.java       |   19 +++++++++++++++++++
+ .../chrome/browser/app/ChromeActivity.java         |    5 ++++-
+ .../layouts/LayoutManagerChromeTablet.java         |    2 +-
+ .../layouts/phone/NewTabAnimationLayout.java       |    2 +-
+ .../overlays/strip/StripLayoutHelperManager.java   |    6 +++++-
+ .../compositor/scene_layer/TabStripSceneLayer.java |    8 ++++++++
+ .../browser/init/ChromeBrowserInitializer.java     |    2 ++
+ .../tabbed_mode/TabbedRootUiCoordinator.java       |    4 +++-
+ .../chrome/browser/ui/RootUiCoordinator.java       |    6 +++++-
+ .../browser/preferences/ChromePreferenceKeys.java  |    1 +
+ .../preferences/ChromeSharedPreferences.java       |   12 ++++++++++++
+ .../preferences/LegacyChromePreferenceKeys.java    |    1 +
+ .../ui/desktop_windowing/AppHeaderUtils.java       |    2 ++
+ .../browser/omnibox/LocationBarCoordinator.java    |    2 +-
+ .../toolbar/java/res/layout/control_container.xml  |    8 ++++----
+ .../toolbar/java/res/layout/toolbar_tablet.xml     |    2 +-
+ .../toolbar/java/res/values-sw600dp/dimens.xml     |    5 +++--
+ .../ui/android/toolbar/java/res/values/dimens.xml  |    6 ++++--
+ .../toolbar/top/ToolbarControlContainer.java       |   10 +++++++++-
+ .../chrome/browser/toolbar/top/ToolbarLayout.java  |    5 ++++-
+ .../top/tab_strip/HeightTransitionHandler.java     |    2 ++
+ .../tab_strip/TabStripTransitionCoordinator.java   |    6 +++++-
+ .../java/res/xml/accessibility_preferences.xml     |    5 +++++
+ .../accessibility/AccessibilitySettings.java       |   13 +++++++++++++
+ .../AccessibilitySettingsDelegate.java             |    2 ++
+ .../src/org/chromium/ui/base/DeviceFormFactor.java |   14 ++++++++++++++
  35 files changed, 154 insertions(+), 26 deletions(-)
 
+diff --git a/chrome/browser/preferences/BUILD.gn b/chrome/browser/preferences/BUILD.gn
+--- a/chrome/browser/preferences/BUILD.gn
++++ b/chrome/browser/preferences/BUILD.gn
+@@ -25,6 +25,7 @@ android_library("java") {
+     "//components/cached_flags:java",
+     "//third_party/androidx:androidx_annotation_annotation_java",
+     "//third_party/jni_zero:jni_zero_java",
++    "//ui/android:ui_java",
+   ]
+ 
+   srcjar_deps = [
+diff --git a/chrome/browser/ui/android/strings/android_chrome_strings.grd b/chrome/browser/ui/android/strings/android_chrome_strings.grd
+--- a/chrome/browser/ui/android/strings/android_chrome_strings.grd
++++ b/chrome/browser/ui/android/strings/android_chrome_strings.grd
+@@ -1636,6 +1636,13 @@ Your Google account may have other forms of browsing history like searches and a
+         Privacy guide explanation closed
+       </message>
+ 
++      <message name="IDS_FORCE_TABLET_UI_SUMMARY" desc="Summary of the preference that allows the user to force chromium to use tablet UI.">
++       Open chromium in Tablet Mode
++      </message>
++      <message name="IDS_FORCE_TABLET_UI_TITLE" desc="Title of the preference that allows the user to update force tablet UI settings.">
++        Force Tablet Mode
++      </message>
++
+       <!-- Safety check -->
+       <message name="IDS_PREFS_SAFETY_CHECK" desc="Title of the Safety check element in settings, allowing the user to check multiple areas of browser safety. [CHAR_LIMIT=32]">
+         Safety check
 diff --git a/chrome/android/java/res/layout/custom_tabs_control_container.xml b/chrome/android/java/res/layout/custom_tabs_control_container.xml
 --- a/chrome/android/java/res/layout/custom_tabs_control_container.xml
 +++ b/chrome/android/java/res/layout/custom_tabs_control_container.xml
@@ -312,17 +340,6 @@ diff --git a/chrome/android/java/src/org/chromium/chrome/browser/ui/RootUiCoordi
              stubId = R.id.find_toolbar_tablet_stub;
          }
          return stubId;
-diff --git a/chrome/browser/preferences/BUILD.gn b/chrome/browser/preferences/BUILD.gn
---- a/chrome/browser/preferences/BUILD.gn
-+++ b/chrome/browser/preferences/BUILD.gn
-@@ -27,6 +27,7 @@ android_library("java") {
-     "//components/cached_flags:java",
-     "//third_party/androidx:androidx_annotation_annotation_java",
-     "//third_party/jni_zero:jni_zero_java",
-+    "//ui/android:ui_java",
-   ]
- 
-   srcjar_deps = [
 diff --git a/chrome/browser/preferences/android/java/src/org/chromium/chrome/browser/preferences/ChromePreferenceKeys.java b/chrome/browser/preferences/android/java/src/org/chromium/chrome/browser/preferences/ChromePreferenceKeys.java
 --- a/chrome/browser/preferences/android/java/src/org/chromium/chrome/browser/preferences/ChromePreferenceKeys.java
 +++ b/chrome/browser/preferences/android/java/src/org/chromium/chrome/browser/preferences/ChromePreferenceKeys.java
@@ -405,23 +422,6 @@ diff --git a/chrome/browser/ui/android/omnibox/java/src/org/chromium/chrome/brow
      }
  
      /* package */ LocationBarMediator getMediatorForTesting() {
-diff --git a/chrome/browser/ui/android/strings/android_chrome_strings.grd b/chrome/browser/ui/android/strings/android_chrome_strings.grd
---- a/chrome/browser/ui/android/strings/android_chrome_strings.grd
-+++ b/chrome/browser/ui/android/strings/android_chrome_strings.grd
-@@ -1529,6 +1529,13 @@ Your Google account may have other forms of browsing history like searches and a
-         Privacy guide explanation closed
-       </message>
- 
-+      <message name="IDS_FORCE_TABLET_UI_SUMMARY" desc="Summary of the preference that allows the user to force chromium to use tablet UI.">
-+       Open chromium in Tablet Mode
-+      </message>
-+      <message name="IDS_FORCE_TABLET_UI_TITLE" desc="Title of the preference that allows the user to update force tablet UI settings.">
-+        Force Tablet Mode
-+      </message>
-+
-       <!-- Safety check -->
-       <message name="IDS_PREFS_SAFETY_CHECK" desc="Title of the Safety check element in settings, allowing the user to check multiple areas of browser safety. [CHAR_LIMIT=32]">
-         Safety check
 diff --git a/chrome/browser/ui/android/toolbar/java/res/layout/control_container.xml b/chrome/browser/ui/android/toolbar/java/res/layout/control_container.xml
 --- a/chrome/browser/ui/android/toolbar/java/res/layout/control_container.xml
 +++ b/chrome/browser/ui/android/toolbar/java/res/layout/control_container.xml

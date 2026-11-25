@@ -45,22 +45,21 @@ without impacting standard web platform compatibility.
 Original License: GPL-2.0-or-later - https://spdx.org/licenses/GPL-2.0-or-later.html
 License: GPL-3.0-only - https://spdx.org/licenses/GPL-3.0-only.html
 ---
- .../renderer_host/render_frame_host_impl.cc   |  2 +
- .../Partition-blobs-by-top-frame-URL.inc      |  1 +
- storage/browser/blob/blob_url_registry.cc     | 31 +++++++++-
- storage/browser/blob/blob_url_registry.h      | 11 +++-
- storage/browser/blob/blob_url_store_impl.cc   | 58 +++++++++++++++++--
- storage/browser/blob/blob_url_store_impl.h    | 15 ++++-
- storage/browser/blob/features.cc              |  1 +
- .../public/mojom/blob/blob_url_store.mojom    | 13 ++++-
- .../core/fileapi/public_url_manager.cc        | 57 +++++++++++++++++-
- 9 files changed, 174 insertions(+), 15 deletions(-)
- create mode 100644 cromite_flags/third_party/blink/common/features_cc/Partition-blobs-by-top-frame-URL.inc
+ .../renderer_host/render_frame_host_impl.cc        |    2 +
+ .../Partition-blobs-by-top-frame-URL.inc           |    1 
+ storage/browser/blob/blob_url_registry.cc          |   31 +++++++++-
+ storage/browser/blob/blob_url_registry.h           |   11 +++
+ storage/browser/blob/blob_url_store_impl.cc        |   65 ++++++++++++++++++--
+ storage/browser/blob/blob_url_store_impl.h         |   22 +++++--
+ storage/browser/blob/features.cc                   |    1 
+ .../blink/public/mojom/blob/blob_url_store.mojom   |   13 +++-
+ .../renderer/core/fileapi/public_url_manager.cc    |   56 ++++++++++++++++-
+ 9 files changed, 181 insertions(+), 21 deletions(-)
 
 diff --git a/content/browser/renderer_host/render_frame_host_impl.cc b/content/browser/renderer_host/render_frame_host_impl.cc
 --- a/content/browser/renderer_host/render_frame_host_impl.cc
 +++ b/content/browser/renderer_host/render_frame_host_impl.cc
-@@ -13754,6 +13754,8 @@ void RenderFrameHostImpl::ReportBlockingCrossPartitionBlobURL(
+@@ -14061,6 +14061,8 @@ void RenderFrameHostImpl::ReportBlockingCrossPartitionBlobURL(
  }
  
  bool RenderFrameHostImpl::IsFullCookieAccessAllowed() {
@@ -88,8 +87,8 @@ diff --git a/storage/browser/blob/blob_url_registry.cc b/storage/browser/blob/bl
 +    const std::optional<net::SchemefulSite>& unsafe_top_level_site) {
    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
    DCHECK(!BlobUrlUtils::UrlHasFragment(blob_url));
-   if (IsUrlMapped(blob_url, storage_key) ==
-       BlobUrlRegistry::MappingStatus::kIsMapped) {
+   if (IsUrlMapped(blob_url, storage_key) !=
+       BlobUrlRegistry::MappingStatus::kNotMappedOther) {
      return false;
    }
 +  url_to_unsafe_agent_cluster_id_[blob_url] = unsafe_agent_cluster_id;
@@ -139,7 +138,7 @@ diff --git a/storage/browser/blob/blob_url_registry.cc b/storage/browser/blob/bl
 diff --git a/storage/browser/blob/blob_url_registry.h b/storage/browser/blob/blob_url_registry.h
 --- a/storage/browser/blob/blob_url_registry.h
 +++ b/storage/browser/blob/blob_url_registry.h
-@@ -96,7 +96,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobUrlRegistry {
+@@ -99,7 +99,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobUrlRegistry {
                       mojo::PendingRemote<blink::mojom::Blob> blob,
                       const blink::StorageKey& storage_key,
                       const url::Origin& renderer_origin,
@@ -150,7 +149,7 @@ diff --git a/storage/browser/blob/blob_url_registry.h b/storage/browser/blob/blo
  
    // Removes the given URL mapping associated with `storage_key`. Returns false
    // if the URL wasn't mapped.
-@@ -107,6 +109,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobUrlRegistry {
+@@ -110,6 +112,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobUrlRegistry {
    MappingStatus IsUrlMapped(const GURL& blob_url,
                              const blink::StorageKey& storage_key) const;
  
@@ -162,7 +161,7 @@ diff --git a/storage/browser/blob/blob_url_registry.h b/storage/browser/blob/blo
    // Returns the blob from the given url. Returns a null remote if the mapping
    // doesn't exist.
    mojo::PendingRemote<blink::mojom::Blob> GetBlobFromUrl(const GURL& url);
-@@ -162,6 +169,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobUrlRegistry {
+@@ -165,6 +172,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobUrlRegistry {
    };
  
    std::map<GURL, BlobUrlData> url_to_data_;
@@ -174,10 +173,13 @@ diff --git a/storage/browser/blob/blob_url_registry.h b/storage/browser/blob/blo
 diff --git a/storage/browser/blob/blob_url_store_impl.cc b/storage/browser/blob/blob_url_store_impl.cc
 --- a/storage/browser/blob/blob_url_store_impl.cc
 +++ b/storage/browser/blob/blob_url_store_impl.cc
-@@ -115,9 +115,33 @@ BlobURLStoreImpl::~BlobURLStoreImpl() {
+@@ -116,19 +116,52 @@ BlobURLStoreImpl::~BlobURLStoreImpl() {
    }
  }
  
+-void BlobURLStoreImpl::Register(mojo::PendingRemote<blink::mojom::Blob> blob,
+-                                bool security_origin_serializes_as_null,
+-                                RegisterCallback callback) {
 +bool BlobURLStoreImpl::IsSamePartition(
 +    const GURL& blob_url,
 +    const base::UnguessableToken& unsafe_agent_cluster_id,
@@ -200,16 +202,16 @@ diff --git a/storage/browser/blob/blob_url_store_impl.cc b/storage/browser/blob/
 +  return is_same_partition;
 +}
 +
- void BlobURLStoreImpl::Register(
-     mojo::PendingRemote<blink::mojom::Blob> blob,
-     const GURL& url,
++void BlobURLStoreImpl::Register(
++    mojo::PendingRemote<blink::mojom::Blob> blob,
++    bool security_origin_serializes_as_null,
 +    const base::UnguessableToken& unsafe_agent_cluster_id,
 +    const std::optional<net::SchemefulSite>& unsafe_top_level_site,
-     RegisterCallback callback) {
-   // TODO(crbug.com/40061399): Generate blob URLs here, rather than
-   // validating the URLs the renderer process generated.
-@@ -125,10 +149,18 @@ void BlobURLStoreImpl::Register(
-     std::move(callback).Run();
++    RegisterCallback callback) {
+   const GURL url = blink::CreateBlobUrl(renderer_origin_,
+                                         security_origin_serializes_as_null);
+   if (!BlobUrlIsValid(url, "Register")) {
+     std::move(callback).Run(GURL());
      return;
    }
 +  // LOG(INFO) << "---BlobURLStoreImpl Register"
@@ -226,9 +228,9 @@ diff --git a/storage/browser/blob/blob_url_store_impl.cc b/storage/browser/blob/
 +                             renderer_origin_, render_process_host_id_,
 +                             unsafe_agent_cluster_id, unsafe_top_level_site);
    urls_.insert(url);
-   std::move(callback).Run();
+   std::move(callback).Run(url);
  }
-@@ -150,7 +182,7 @@ bool BlobURLStoreImpl::ShouldPartitionBlobUrlAccess(
+@@ -150,7 +183,7 @@ bool BlobURLStoreImpl::ShouldPartitionBlobUrlAccess(
            features::kBlockCrossPartitionBlobUrlFetching) &&
        !partitioning_disabled_by_policy_;
  
@@ -237,7 +239,7 @@ diff --git a/storage/browser/blob/blob_url_store_impl.cc b/storage/browser/blob/
        has_storage_access_handle &&
        mapping_status ==
            BlobUrlRegistry::MappingStatus::
-@@ -160,7 +192,9 @@ bool BlobURLStoreImpl::ShouldPartitionBlobUrlAccess(
+@@ -160,7 +193,9 @@ bool BlobURLStoreImpl::ShouldPartitionBlobUrlAccess(
  
  void BlobURLStoreImpl::ResolveAsURLLoaderFactory(
      const GURL& url,
@@ -248,7 +250,7 @@ diff --git a/storage/browser/blob/blob_url_store_impl.cc b/storage/browser/blob/
    if (!registry_) {
      BlobURLLoaderFactory::Create(mojo::NullRemote(), url, std::move(receiver));
      return;
-@@ -183,6 +217,7 @@ void BlobURLStoreImpl::ResolveAsURLLoaderFactory(
+@@ -183,6 +218,7 @@ void BlobURLStoreImpl::ResolveAsURLLoaderFactory(
      if (IsBlobUrlAccessCrossPartitionSameOrigin(mapping_status)) {
        if (ShouldPartitionBlobUrlAccess(has_storage_access_handle,
                                         mapping_status)) {
@@ -256,7 +258,7 @@ diff --git a/storage/browser/blob/blob_url_store_impl.cc b/storage/browser/blob/
          partitioning_blob_url_closure_.Run(
              url, blink::mojom::PartitioningBlobURLInfo::
                       kBlockedCrossPartitionFetching);
-@@ -194,6 +229,12 @@ void BlobURLStoreImpl::ResolveAsURLLoaderFactory(
+@@ -194,6 +230,12 @@ void BlobURLStoreImpl::ResolveAsURLLoaderFactory(
      }
    }
  
@@ -269,7 +271,7 @@ diff --git a/storage/browser/blob/blob_url_store_impl.cc b/storage/browser/blob/
    BlobURLLoaderFactory::Create(registry_->GetBlobFromUrl(url), url,
                                 std::move(receiver));
  }
-@@ -201,7 +242,9 @@ void BlobURLStoreImpl::ResolveAsURLLoaderFactory(
+@@ -201,7 +243,9 @@ void BlobURLStoreImpl::ResolveAsURLLoaderFactory(
  void BlobURLStoreImpl::ResolveAsBlobURLToken(
      const GURL& url,
      mojo::PendingReceiver<blink::mojom::BlobURLToken> token,
@@ -280,7 +282,7 @@ diff --git a/storage/browser/blob/blob_url_store_impl.cc b/storage/browser/blob/
    // This function is known to be heap allocation heavy and performance
    // critical. Extra memory safety checks can introduce regression
    // (https://crbug.com/414710225) and these are disabled here.
-@@ -218,6 +261,7 @@ void BlobURLStoreImpl::ResolveAsBlobURLToken(
+@@ -218,6 +262,7 @@ void BlobURLStoreImpl::ResolveAsBlobURLToken(
          registry_->IsUrlMapped(BlobUrlUtils::ClearUrlFragment(url),
                                 storage_key_);
      if (IsBlobUrlAccessCrossPartitionSameOrigin(mapping_status)) {
@@ -288,7 +290,7 @@ diff --git a/storage/browser/blob/blob_url_store_impl.cc b/storage/browser/blob/
        if (ShouldPartitionBlobUrlAccess(has_storage_access_handle,
                                         mapping_status)) {
          partitioning_blob_url_closure_.Run(
-@@ -228,12 +272,16 @@ void BlobURLStoreImpl::ResolveAsBlobURLToken(
+@@ -228,12 +273,16 @@ void BlobURLStoreImpl::ResolveAsBlobURLToken(
        partitioning_blob_url_closure_.Run(url, std::nullopt);
      }
    }
@@ -309,13 +311,19 @@ diff --git a/storage/browser/blob/blob_url_store_impl.cc b/storage/browser/blob/
 diff --git a/storage/browser/blob/blob_url_store_impl.h b/storage/browser/blob/blob_url_store_impl.h
 --- a/storage/browser/blob/blob_url_store_impl.h
 +++ b/storage/browser/blob/blob_url_store_impl.h
-@@ -55,16 +55,22 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobURLStoreImpl
-   void Register(
-       mojo::PendingRemote<blink::mojom::Blob> blob,
-       const GURL& url,
+@@ -52,18 +52,25 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobURLStoreImpl
+ 
+   ~BlobURLStoreImpl() override;
+ 
+-  void Register(mojo::PendingRemote<blink::mojom::Blob> blob,
+-                bool security_origin_serializes_as_null,
+-                RegisterCallback callback) override;
++  void Register(
++      mojo::PendingRemote<blink::mojom::Blob> blob,
++      bool security_origin_serializes_as_null,
 +      const base::UnguessableToken& unsafe_agent_cluster_id,
 +      const std::optional<net::SchemefulSite>& unsafe_top_level_site,
-       RegisterCallback callback) override;
++      RegisterCallback callback) override;
    void Revoke(const GURL& url) override;
    void ResolveAsURLLoaderFactory(
        const GURL& url,
@@ -334,7 +342,7 @@ diff --git a/storage/browser/blob/blob_url_store_impl.h b/storage/browser/blob/b
  
   private:
    // Checks if the passed in url is a valid blob url for this blob url store.
-@@ -77,6 +83,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobURLStoreImpl
+@@ -74,6 +81,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobURLStoreImpl
        bool has_storage_access_handle,
        BlobUrlRegistry::MappingStatus mapping_status);
  
@@ -349,7 +357,7 @@ diff --git a/storage/browser/blob/blob_url_store_impl.h b/storage/browser/blob/b
 diff --git a/storage/browser/blob/features.cc b/storage/browser/blob/features.cc
 --- a/storage/browser/blob/features.cc
 +++ b/storage/browser/blob/features.cc
-@@ -12,6 +12,7 @@ BASE_FEATURE(kBlobURLFetchRangeHeaderValidation,
+@@ -14,6 +14,7 @@ BASE_FEATURE(kBlobURLFetchRangeHeaderValidation,
  
  BASE_FEATURE(kBlockCrossPartitionBlobUrlFetching,
               base::FEATURE_ENABLED_BY_DEFAULT);
@@ -368,18 +376,18 @@ diff --git a/third_party/blink/public/mojom/blob/blob_url_store.mojom b/third_pa
  import "services/network/public/mojom/url_loader_factory.mojom";
  import "third_party/blink/public/mojom/blob/blob.mojom";
  import "url/mojom/url.mojom";
-@@ -19,7 +20,9 @@ interface BlobURLStore {
-   // new blob: URL rather than letting the caller in the renderer provide one.
+@@ -22,7 +23,9 @@ interface BlobURLStore {
+   // TODO(crbug.com/568014518): remove `security_origin_serializes_as_null`.
    [Sync] Register(
        pending_remote<blink.mojom.Blob> blob,
--      url.mojom.Url url) => ();
-+      url.mojom.Url url,
+-      bool security_origin_serializes_as_null) => (url.mojom.Url url);
++      bool security_origin_serializes_as_null,
 +      mojo_base.mojom.UnguessableToken unsafe_agent_cluster_id,
-+      network.mojom.SchemefulSite? unsafe_top_level_site) => ();
++      network.mojom.SchemefulSite? unsafe_top_level_site) => (url.mojom.Url url);
  
    // Revokes a public Blob URL.
    Revoke(url.mojom.Url url);
-@@ -33,7 +36,9 @@ interface BlobURLStore {
+@@ -36,7 +39,9 @@ interface BlobURLStore {
    // both the blob URL and all other references to the blob have been dropped.
    ResolveAsURLLoaderFactory(
      url.mojom.Url url,
@@ -390,7 +398,7 @@ diff --git a/third_party/blink/public/mojom/blob/blob_url_store.mojom b/third_pa
  
    // Resolves a public Blob URL into a BlobURLToken. The BlobURLToken can be
    // used by the browser process to securely look up the blob a URL used to
-@@ -48,7 +53,9 @@ interface BlobURLStore {
+@@ -51,7 +56,9 @@ interface BlobURLStore {
    // as a duplicate of https://crbug.com/475586390.
    ResolveAsBlobURLToken(url.mojom.Url url,
                         pending_receiver<BlobURLToken> token,
@@ -404,8 +412,8 @@ diff --git a/third_party/blink/public/mojom/blob/blob_url_store.mojom b/third_pa
 diff --git a/third_party/blink/renderer/core/fileapi/public_url_manager.cc b/third_party/blink/renderer/core/fileapi/public_url_manager.cc
 --- a/third_party/blink/renderer/core/fileapi/public_url_manager.cc
 +++ b/third_party/blink/renderer/core/fileapi/public_url_manager.cc
-@@ -37,8 +37,10 @@
- #include "third_party/blink/renderer/core/frame/local_frame.h"
+@@ -39,8 +39,10 @@
+ #include "third_party/blink/renderer/core/frame/local_frame_client.h"
  #include "third_party/blink/renderer/core/html/media/media_source_attachment.h"
  #include "third_party/blink/renderer/core/html/media/media_source_registry.h"
 +#include "third_party/blink/renderer/core/workers/dedicated_worker_global_scope.h"
@@ -414,8 +422,8 @@ diff --git a/third_party/blink/renderer/core/fileapi/public_url_manager.cc b/thi
 +#include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
  #include "third_party/blink/renderer/platform/blob/blob_url.h"
  #include "third_party/blink/renderer/platform/blob/blob_url_null_origin_map.h"
- #include "third_party/blink/renderer/platform/scheduler/main_thread/task_type_names.h"
-@@ -56,6 +58,49 @@ void RemoveFromNullOriginMapIfNecessary(const KURL& blob_url) {
+ #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+@@ -57,6 +59,49 @@ void RemoveFromNullOriginMapIfNecessary(const KURL& blob_url) {
      BlobURLNullOriginMap::GetInstance()->Remove(blob_url);
  }
  
@@ -465,18 +473,17 @@ diff --git a/third_party/blink/renderer/core/fileapi/public_url_manager.cc b/thi
  }  // namespace
  
  PublicURLManager::PublicURLManager(ExecutionContext* execution_context)
-@@ -169,7 +214,9 @@ String PublicURLManager::RegisterUrl(Blob* blob) {
-   mojo::PendingReceiver<mojom::blink::Blob> blob_receiver =
-       blob_remote.InitWithNewPipeAndPassReceiver();
+@@ -190,7 +235,8 @@ String PublicURLManager::RegisterUrl(Blob* blob) {
+   if (!GetBlobURLStore().Register(
+           std::move(blob_remote),
+           GetExecutionContext()->GetSecurityOrigin()->SerializesAsNull(),
+-          &url)) {
++          GetExecutionContext()->GetAgentClusterID(),
++          GetInsecureTopLevelSite(GetExecutionContext()), &url)) {
+     return String();
+   }
  
--  GetBlobURLStore().Register(std::move(blob_remote), url);
-+  GetBlobURLStore().Register(
-+      std::move(blob_remote), url, GetExecutionContext()->GetAgentClusterID(),
-+      GetInsecureTopLevelSite(GetExecutionContext()));
- 
-   mojo_urls_.insert(url_string);
-   blob->CloneMojoBlob(std::move(blob_receiver));
-@@ -224,7 +271,9 @@ void PublicURLManager::Resolve(
+@@ -240,7 +286,9 @@ void PublicURLManager::Resolve(
  
    DCHECK(url.ProtocolIs("blob"));
  
@@ -487,7 +494,7 @@ diff --git a/third_party/blink/renderer/core/fileapi/public_url_manager.cc b/thi
  }
  
  void PublicURLManager::ResolveAsBlobURLToken(
-@@ -237,7 +286,9 @@ void PublicURLManager::ResolveAsBlobURLToken(
+@@ -253,7 +301,9 @@ void PublicURLManager::ResolveAsBlobURLToken(
    DCHECK(url.ProtocolIs("blob"));
  
    GetBlobURLStore().ResolveAsBlobURLToken(url, std::move(token_receiver),
@@ -498,4 +505,5 @@ diff --git a/third_party/blink/renderer/core/fileapi/public_url_manager.cc b/thi
  }
  
  void PublicURLManager::ContextDestroyed() {
+
 --

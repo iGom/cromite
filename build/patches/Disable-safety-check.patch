@@ -4,28 +4,27 @@ Subject: Disable safety check
 
 License: GPL-3.0-only - https://spdx.org/licenses/GPL-3.0-only.html
 ---
- chrome/android/BUILD.gn                       |  5 ---
- chrome/android/chrome_java_sources.gni        |  1 -
- .../android/java/res/xml/main_preferences.xml |  2 +-
- .../PasswordCheckupLauncher.java              | 25 -------------
- .../settings/FragmentDependencyProvider.java  | 35 -------------------
- .../chrome/browser/settings/MainSettings.java |  2 +-
- .../settings/SettingsFragmentRegistry.java    |  2 --
- .../settings/SettingsNavigationImpl.java      |  5 +--
- .../search/SearchIndexProviderRegistry.java   |  2 --
- chrome/browser/android/BUILD.gn               |  1 -
- .../privacy_page/privacy_page_index.ts        |  2 +-
- chrome/browser/safety_check/android/BUILD.gn  |  2 --
- .../safety_check/SafetyCheckBridge.java       |  4 +--
- .../suggestions/action/OmniboxPedal.java      |  3 --
- .../Disable-safety-check.inc                  |  1 +
+ chrome/android/BUILD.gn                            |    5 ---
+ chrome/android/chrome_java_sources.gni             |    1 -
+ chrome/browser/android/BUILD.gn                    |    1 -
+ .../settings/privacy_page/privacy_page_index.ts    |    2 +
+ chrome/browser/safety_check/android/BUILD.gn       |    2 -
+ .../chrome_features_cc/Disable-safety-check.inc    |    1 +
+ chrome/android/java/res/xml/main_preferences.xml   |    2 +
+ .../password_manager/PasswordCheckupLauncher.java  |   25 --------------
+ .../settings/FragmentDependencyProvider.java       |   35 --------------------
+ .../chrome/browser/settings/MainSettings.java      |    2 +
+ .../browser/settings/SettingsFragmentRegistry.java |    2 -
+ .../browser/settings/SettingsNavigationImpl.java   |    5 +--
+ .../search/SearchIndexProviderRegistry.java        |    2 -
+ .../browser/safety_check/SafetyCheckBridge.java    |    4 +-
+ .../omnibox/suggestions/action/OmniboxPedal.java   |    3 --
  15 files changed, 7 insertions(+), 85 deletions(-)
- create mode 100644 cromite_flags/chrome/common/chrome_features_cc/Disable-safety-check.inc
 
 diff --git a/chrome/android/BUILD.gn b/chrome/android/BUILD.gn
 --- a/chrome/android/BUILD.gn
 +++ b/chrome/android/BUILD.gn
-@@ -498,7 +498,6 @@ if (_is_default_toolchain) {
+@@ -481,7 +481,6 @@ if (_is_default_toolchain) {
        "//chrome/browser/recent_tabs:java",
        "//chrome/browser/regional_capabilities/android:java",
        "//chrome/browser/safe_browsing/android:java",
@@ -33,16 +32,16 @@ diff --git a/chrome/android/BUILD.gn b/chrome/android/BUILD.gn
        "//chrome/browser/safety_hub/android:java",
        "//chrome/browser/safety_promo:java",
        "//chrome/browser/search_engines/android:java",
-@@ -1227,8 +1226,6 @@ if (_is_default_toolchain) {
+@@ -1247,8 +1246,6 @@ if (_is_default_toolchain) {
        "//chrome/browser/recent_tabs:junit",
        "//chrome/browser/recent_tabs/internal:junit",
        "//chrome/browser/safe_browsing/android:junit",
 -      "//chrome/browser/safety_check/android:junit",
 -      "//chrome/browser/safety_hub/android:junit",
+       "//chrome/browser/safety_promo:junit",
        "//chrome/browser/search_engines/android:junit",
        "//chrome/browser/serial/android:junit",
-       "//chrome/browser/signin/services/android:junit",
-@@ -1560,8 +1557,6 @@ if (_is_default_toolchain) {
+@@ -1574,8 +1571,6 @@ if (_is_default_toolchain) {
        "//chrome/browser/quick_delete:javatests",
        "//chrome/browser/renderer_host/android:javatests",
        "//chrome/browser/safe_browsing/android:javatests",
@@ -54,7 +53,7 @@ diff --git a/chrome/android/BUILD.gn b/chrome/android/BUILD.gn
 diff --git a/chrome/android/chrome_java_sources.gni b/chrome/android/chrome_java_sources.gni
 --- a/chrome/android/chrome_java_sources.gni
 +++ b/chrome/android/chrome_java_sources.gni
-@@ -1072,7 +1072,6 @@ chrome_java_sources = [
+@@ -1068,7 +1068,6 @@ chrome_java_sources = [
    "java/src/org/chromium/chrome/browser/safe_browsing/SafeBrowsingReferringAppBridge.java",
    "java/src/org/chromium/chrome/browser/safe_browsing/SafeBrowsingSettingsNavigation.java",
    "java/src/org/chromium/chrome/browser/safe_browsing/SafeBrowsingSuspiciousSiteDialogBridge.java",
@@ -62,6 +61,55 @@ diff --git a/chrome/android/chrome_java_sources.gni b/chrome/android/chrome_java
    "java/src/org/chromium/chrome/browser/screenshotprovider/ScreenshotContentProviderImpl.java",
    "java/src/org/chromium/chrome/browser/searchwidget/SearchActivity.java",
    "java/src/org/chromium/chrome/browser/searchwidget/SearchActivityClientImpl.java",
+diff --git a/chrome/browser/android/BUILD.gn b/chrome/browser/android/BUILD.gn
+--- a/chrome/browser/android/BUILD.gn
++++ b/chrome/browser/android/BUILD.gn
+@@ -783,7 +783,6 @@ if (is_android) {
+       "//chrome/browser/recent_tabs:jni_headers",
+       "//chrome/browser/regional_capabilities",
+       "//chrome/browser/safe_browsing/android:safe_browsing_enums",
+-      "//chrome/browser/safety_check/android",
+       "//chrome/browser/safety_hub/android",
+       "//chrome/browser/serial/android:jni_headers",
+       "//chrome/browser/signin/services/android:jni_headers",
+diff --git a/chrome/browser/resources/settings/privacy_page/privacy_page_index.ts b/chrome/browser/resources/settings/privacy_page/privacy_page_index.ts
+--- a/chrome/browser/resources/settings/privacy_page/privacy_page_index.ts
++++ b/chrome/browser/resources/settings/privacy_page/privacy_page_index.ts
+@@ -226,7 +226,7 @@ export class SettingsPrivacyPageIndexElement extends
+     }
+ 
+     if (this.showPage_(this.pageVisibility_.safetyHub)) {
+-      defaultViews.push('safetyHubEntryPoint');
++      // defaultViews.push('safetyHubEntryPoint');
+     }
+ 
+     return defaultViews;
+diff --git a/chrome/browser/safety_check/android/BUILD.gn b/chrome/browser/safety_check/android/BUILD.gn
+--- a/chrome/browser/safety_check/android/BUILD.gn
++++ b/chrome/browser/safety_check/android/BUILD.gn
+@@ -14,7 +14,6 @@ generate_jni("jni_headers") {
+ source_set("android") {
+   sources = [ "safety_check_bridge.cc" ]
+   deps = [
+-    ":jni_headers",
+     "//chrome/browser/profiles:profile",
+     "//chrome/browser/signin",
+     "//components/password_manager/core/browser/leak_detection",
+@@ -71,7 +70,6 @@ android_library("java") {
+ 
+   srcjar_deps = [
+     ":bulk_leak_check_service_enums",
+-    ":jni_headers",
+     ":safety_check_enums",
+   ]
+   resources_package = "org.chromium.chrome.browser.safety_check"
+diff --git a/cromite_flags/chrome/common/chrome_features_cc/Disable-safety-check.inc b/cromite_flags/chrome/common/chrome_features_cc/Disable-safety-check.inc
+new file mode 100644
+--- /dev/null
++++ b/cromite_flags/chrome/common/chrome_features_cc/Disable-safety-check.inc
+@@ -0,0 +1 @@
++// intentionally empty
+
 diff --git a/chrome/android/java/res/xml/main_preferences.xml b/chrome/android/java/res/xml/main_preferences.xml
 --- a/chrome/android/java/res/xml/main_preferences.xml
 +++ b/chrome/android/java/res/xml/main_preferences.xml
@@ -262,48 +310,6 @@ diff --git a/chrome/android/java/src/org/chromium/chrome/browser/settings/search
                      TabsSettings.SEARCH_INDEX_DATA_PROVIDER,
                      ManageSyncSettings.SEARCH_INDEX_DATA_PROVIDER,
                      ThemeSettingsFragment.SEARCH_INDEX_DATA_PROVIDER,
-diff --git a/chrome/browser/android/BUILD.gn b/chrome/browser/android/BUILD.gn
---- a/chrome/browser/android/BUILD.gn
-+++ b/chrome/browser/android/BUILD.gn
-@@ -556,7 +556,6 @@ if (is_android) {
-       "//chrome/browser/recent_tabs:jni_headers",
-       "//chrome/browser/regional_capabilities",
-       "//chrome/browser/safe_browsing/android:safe_browsing_enums",
--      "//chrome/browser/safety_check/android",
-       "//chrome/browser/safety_hub/android",
-       "//chrome/browser/serial/android:jni_headers",
-       "//chrome/browser/signin/services/android:jni_headers",
-diff --git a/chrome/browser/resources/settings/privacy_page/privacy_page_index.ts b/chrome/browser/resources/settings/privacy_page/privacy_page_index.ts
---- a/chrome/browser/resources/settings/privacy_page/privacy_page_index.ts
-+++ b/chrome/browser/resources/settings/privacy_page/privacy_page_index.ts
-@@ -222,7 +222,7 @@ export class SettingsPrivacyPageIndexElement extends
-     }
- 
-     if (this.showPage_(this.pageVisibility_.safetyHub)) {
--      defaultViews.push('safetyHubEntryPoint');
-+      // defaultViews.push('safetyHubEntryPoint');
-     }
- 
-     return defaultViews;
-diff --git a/chrome/browser/safety_check/android/BUILD.gn b/chrome/browser/safety_check/android/BUILD.gn
---- a/chrome/browser/safety_check/android/BUILD.gn
-+++ b/chrome/browser/safety_check/android/BUILD.gn
-@@ -14,7 +14,6 @@ generate_jni("jni_headers") {
- source_set("android") {
-   sources = [ "safety_check_bridge.cc" ]
-   deps = [
--    ":jni_headers",
-     "//chrome/browser/profiles:profile",
-     "//chrome/browser/signin",
-     "//components/password_manager/core/browser/leak_detection",
-@@ -72,7 +71,6 @@ android_library("java") {
- 
-   srcjar_deps = [
-     ":bulk_leak_check_service_enums",
--    ":jni_headers",
-     ":safety_check_enums",
-   ]
-   resources_package = "org.chromium.chrome.browser.safety_check"
 diff --git a/chrome/browser/safety_check/android/java/src/org/chromium/chrome/browser/safety_check/SafetyCheckBridge.java b/chrome/browser/safety_check/android/java/src/org/chromium/chrome/browser/safety_check/SafetyCheckBridge.java
 --- a/chrome/browser/safety_check/android/java/src/org/chromium/chrome/browser/safety_check/SafetyCheckBridge.java
 +++ b/chrome/browser/safety_check/android/java/src/org/chromium/chrome/browser/safety_check/SafetyCheckBridge.java
@@ -338,10 +344,4 @@ diff --git a/chrome/browser/ui/android/omnibox/java/src/org/chromium/chrome/brow
              case OmniboxPedalId.MANAGE_SITE_SETTINGS:
                  delegate.openSettingsPage(SettingsFragment.SITE);
                  break;
-diff --git a/cromite_flags/chrome/common/chrome_features_cc/Disable-safety-check.inc b/cromite_flags/chrome/common/chrome_features_cc/Disable-safety-check.inc
-new file mode 100644
---- /dev/null
-+++ b/cromite_flags/chrome/common/chrome_features_cc/Disable-safety-check.inc
-@@ -0,0 +1 @@
-+// intentionally empty
 --

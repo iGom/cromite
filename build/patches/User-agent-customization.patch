@@ -10,51 +10,46 @@ whereas the content setting is intended for use in a specific site.
 Original License: GPL-2.0-or-later - https://spdx.org/licenses/GPL-2.0-or-later.html
 License: GPL-3.0-only - https://spdx.org/licenses/GPL-3.0-only.html
 ---
- base/base_switches.h                          |   2 +
- chrome/android/chrome_java_resources.gni      |   2 +
- chrome/android/chrome_java_sources.gni        |   1 +
- .../layout/custom_useragent_preferences.xml   | 106 ++++++++++
- .../android/java/res/xml/main_preferences.xml |   5 +
- .../java/res/xml/useragent_preferences.xml    |  25 +++
- .../chrome/browser/app/ChromeActivity.java    |   5 +-
- .../init/ChromeBrowserInitializer.java        |   3 +
- .../PrivacyPreferencesManagerImpl.java        |  42 ++++
- .../settings/UserAgentPreferences.java        | 189 ++++++++++++++++++
- .../chromium/chrome/browser/tab/TabImpl.java  |  59 +++++-
- .../chromium/chrome/browser/tab/TabUtils.java |   8 +-
- .../browser/android/content/content_utils.cc  |  29 +++
- .../preferences/browser_prefs_android.cc      |   7 +
- .../privacy_preferences_manager_impl.cc       | 110 ++++++++++
- ...ktop_site_web_contents_observer_android.cc |  12 ++
- .../preferences/ChromePreferenceKeys.java     |   2 -
- .../settings/PrivacyPreferencesManager.java   |   8 +
- .../org/chromium/chrome/browser/tab/Tab.java  |   2 +
- .../browser/tabwindow/TabWindowManager.java   |   2 +
- .../tabwindow/TabWindowManagerImpl.java       |  18 ++
- .../desktop_site/DesktopSiteUtils.java        |   1 +
- .../strings/android_chrome_strings.grd        |  26 +++
- chrome/common/pref_names.h                    |   8 +
- ...omiteRequestDesktopSiteContentSetting.java |  76 +++++++
- .../request_desktop_site.grdp                 |  18 ++
- .../widget/RadioButtonWithEditText.java       |  11 +
- .../navigation_controller_android.cc          |   4 +
- .../navigation_controller_android.h           |   1 +
- .../renderer_host/render_process_host_impl.cc |   1 +
- .../browser/web_contents/web_contents_impl.cc |   6 +-
- .../framehost/NavigationControllerImpl.java   |   3 +-
- content/renderer/render_thread_impl.cc        |   1 -
+ base/base_switches.h                               |    2 
+ chrome/android/chrome_java_resources.gni           |    2 
+ chrome/android/chrome_java_sources.gni             |    1 
+ ...t_desktop_site_web_contents_observer_android.cc |   12 +
+ .../ui/android/strings/android_chrome_strings.grd  |   26 +++
+ chrome/common/pref_names.h                         |    8 +
+ .../request_desktop_site.grdp                      |   18 ++
+ .../renderer_host/navigation_controller_android.cc |    4 
+ .../renderer_host/navigation_controller_android.h  |    1 
+ .../renderer_host/render_process_host_impl.cc      |    1 
+ content/browser/web_contents/web_contents_impl.cc  |    6 -
+ content/renderer/render_thread_impl.cc             |    1 
+ .../res/layout/custom_useragent_preferences.xml    |  106 +++++++++++
+ chrome/android/java/res/xml/main_preferences.xml   |    5 +
+ .../android/java/res/xml/useragent_preferences.xml |   25 +++
+ .../chrome/browser/app/ChromeActivity.java         |    5 -
+ .../browser/init/ChromeBrowserInitializer.java     |    3 
+ .../settings/PrivacyPreferencesManagerImpl.java    |   42 ++++
+ .../browser/settings/UserAgentPreferences.java     |  189 ++++++++++++++++++++
+ .../org/chromium/chrome/browser/tab/TabImpl.java   |   59 ++++++
+ .../org/chromium/chrome/browser/tab/TabUtils.java  |    8 -
+ chrome/browser/android/content/content_utils.cc    |   29 +++
+ .../android/preferences/browser_prefs_android.cc   |    7 +
+ .../privacy_preferences_manager_impl.cc            |  110 ++++++++++++
+ .../browser/preferences/ChromePreferenceKeys.java  |    2 
+ .../settings/PrivacyPreferencesManager.java        |    8 +
+ .../src/org/chromium/chrome/browser/tab/Tab.java   |    2 
+ .../chrome/browser/tabwindow/TabWindowManager.java |    2 
+ .../browser/tabwindow/TabWindowManagerImpl.java    |   18 ++
+ .../browser/desktop_site/DesktopSiteUtils.java     |    1 
+ .../BromiteRequestDesktopSiteContentSetting.java   |   76 ++++++++
+ .../browser_ui/widget/RadioButtonWithEditText.java |   11 +
+ .../framehost/NavigationControllerImpl.java        |    3 
  33 files changed, 776 insertions(+), 17 deletions(-)
- create mode 100644 chrome/android/java/res/layout/custom_useragent_preferences.xml
- create mode 100644 chrome/android/java/res/xml/useragent_preferences.xml
- create mode 100644 chrome/android/java/src/org/chromium/chrome/browser/settings/UserAgentPreferences.java
- create mode 100644 components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/impl/BromiteRequestDesktopSiteContentSetting.java
- create mode 100644 components/browser_ui/strings/bromite_content_settings/request_desktop_site.grdp
 
 diff --git a/base/base_switches.h b/base/base_switches.h
 --- a/base/base_switches.h
 +++ b/base/base_switches.h
-@@ -195,6 +195,8 @@ inline constexpr char kPackageName[] = "package-name";
- inline constexpr char kPackageVersionName[] = "package-version-name";
+@@ -177,6 +177,8 @@ inline constexpr char kEnableIdleTracing[] = "enable-idle-tracing";
+ inline constexpr char kForceDesktopAndroid[] = "force-desktop-android";
  #endif
  
 +inline constexpr char kDesktopModeViewportMetaEnabled[] = "dm-viewport-meta-enabled";
@@ -65,8 +60,8 @@ diff --git a/base/base_switches.h b/base/base_switches.h
 diff --git a/chrome/android/chrome_java_resources.gni b/chrome/android/chrome_java_resources.gni
 --- a/chrome/android/chrome_java_resources.gni
 +++ b/chrome/android/chrome_java_resources.gni
-@@ -691,6 +691,8 @@ chrome_java_resources = [
-   "java/res/xml/search_widget_info.xml",
+@@ -689,6 +689,8 @@ chrome_java_resources = [
+   "java/res/xml/tab_position_preferences.xml",
    "java/res/xml/tracing_preferences.xml",
    "java/res/xml/unified_account_settings_preferences.xml",
 +  "java/res/xml/useragent_preferences.xml",
@@ -77,7 +72,7 @@ diff --git a/chrome/android/chrome_java_resources.gni b/chrome/android/chrome_ja
 diff --git a/chrome/android/chrome_java_sources.gni b/chrome/android/chrome_java_sources.gni
 --- a/chrome/android/chrome_java_sources.gni
 +++ b/chrome/android/chrome_java_sources.gni
-@@ -1023,6 +1023,7 @@ chrome_java_sources = [
+@@ -990,6 +990,7 @@ chrome_java_sources = [
    "java/src/org/chromium/chrome/browser/payments/ui/DimmingDialog.java",
    "java/src/org/chromium/chrome/browser/payments/ui/LineItem.java",
    "java/src/org/chromium/chrome/browser/payments/ui/PaymentAppComparator.java",
@@ -85,6 +80,201 @@ diff --git a/chrome/android/chrome_java_sources.gni b/chrome/android/chrome_java
    "java/src/org/chromium/chrome/browser/payments/ui/PaymentInformation.java",
    "java/src/org/chromium/chrome/browser/payments/ui/PaymentRequestBottomBar.java",
    "java/src/org/chromium/chrome/browser/payments/ui/PaymentRequestHeader.java",
+diff --git a/chrome/browser/content_settings/request_desktop_site_web_contents_observer_android.cc b/chrome/browser/content_settings/request_desktop_site_web_contents_observer_android.cc
+--- a/chrome/browser/content_settings/request_desktop_site_web_contents_observer_android.cc
++++ b/chrome/browser/content_settings/request_desktop_site_web_contents_observer_android.cc
+@@ -14,10 +14,12 @@
+ #include "base/metrics/histogram_functions.h"
+ #include "base/strings/string_split.h"
+ #include "base/strings/string_util.h"
++#include "chrome/browser/android/tab_android.h"
+ #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+ #include "chrome/browser/flags/android/chrome_feature_list.h"
+ #include "chrome/browser/preferences/android/chrome_shared_preferences.h"
+ #include "chrome/browser/profiles/profile.h"
++#include "chrome/browser/ui/android/tab_model/tab_model.h"
+ #include "chrome/common/chrome_switches.h"
+ #include "components/content_settings/core/common/content_settings_utils.h"
+ #include "components/content_settings/core/common/pref_names.h"
+@@ -62,6 +64,16 @@ void RequestDesktopSiteWebContentsObserverAndroid::DidStartNavigation(
+     return;
+   }
+ 
++  // Stop UA override if there is a tab level setting.
++  auto* tab_android = TabAndroid::FromWebContents(web_contents());
++  TabModel::TabUserAgent tabSetting =
++      tab_android
++          ? static_cast<TabModel::TabUserAgent>(tab_android->GetUserAgent())
++          : TabModel::TabUserAgent::DEFAULT;
++  if (tabSetting != TabModel::TabUserAgent::DEFAULT) {
++    return;
++  }
++
+   const GURL& url = navigation_handle->GetParentFrameOrOuterDocument()
+                         ? navigation_handle->GetParentFrameOrOuterDocument()
+                               ->GetOutermostMainFrame()
+diff --git a/chrome/browser/ui/android/strings/android_chrome_strings.grd b/chrome/browser/ui/android/strings/android_chrome_strings.grd
+--- a/chrome/browser/ui/android/strings/android_chrome_strings.grd
++++ b/chrome/browser/ui/android/strings/android_chrome_strings.grd
+@@ -260,6 +260,32 @@ CHAR_LIMIT guidelines:
+         Visit help page
+       </message>
+ 
++      <!-- User Agent settings -->
++      <message name="IDS_PREFS_USERAGENT_SETTINGS" desc="Title of the User Agent preference. [CHAR-LIMIT=32]">
++        User Agent
++      </message>
++      <message name="IDS_USERAGENT_SETTINGS_TITLE" desc="Title of the User Agent screen. [CHAR-LIMIT=32]">
++        Customize User Agent
++      </message>
++      <message name="IDS_CUSTOM_UA_FLAG_ON" desc="The label of the option that allows users to define custom user agent.">
++        Use custom user agent
++      </message>
++      <message name="IDS_CUSTOM_UA_FLAG_OFF" desc="The label of the option that revert the user agent to actual value.">
++        Use standard user agent
++      </message>
++      <message name="IDS_CUSTOM_UA_PLACEHOLDER" desc="The label of the placeholder for user agent textbox.">
++        Insert a valid user agent
++      </message>
++      <message name="IDS_CUSTOM_UA_TEXT" desc="The label of the placeholder for user agent textbox.">
++        Mobile User Agent
++      </message>
++      <message name="IDS_CUSTOM_DESKTOP_UA_TEXT" desc="The label of the placeholder for user agent textbox.">
++        Desktop Mode User Agent
++      </message>
++      <message name="IDS_DESKTOP_MODE_VIEWPORTMETA_CHECKBOX" desc="The label of the enable viewport meta checkbox for user desktop mode.">
++        Enable processing of the viewport meta tag also for desktop mode
++      </message>
++
+       <!-- Notification channels -->
+       <message name="IDS_NOTIFICATION_CATEGORY_GROUP_GENERAL" desc='Subheading for "General" section of a list of notification categories. [CHAR_LIMIT=32]'>
+         General
+diff --git a/chrome/common/pref_names.h b/chrome/common/pref_names.h
+--- a/chrome/common/pref_names.h
++++ b/chrome/common/pref_names.h
+@@ -1043,6 +1043,14 @@ inline constexpr char kNaviOnboardGroup[] = "browser.navi_onboard_group";
+ inline constexpr char kHadThreeConsecutiveNotificationPermissionDenies[] =
+     "profile.content_settings.had_three_consecutive_denies.notifications";
+ 
++#if BUILDFLAG(IS_ANDROID)
++inline constexpr char kOverrideUserAgentEnabled[] = "override_user_agent_enabled";
++inline constexpr char kOverrideUserAgent[] = "override_user_agent";
++inline constexpr char kOverrideUserAgentDesktopModeEnabled[] = "override_user_agent_dm_enabled";
++inline constexpr char kOverrideUserAgentDesktopMode[] = "override_user_agent_dm";
++inline constexpr char kDesktopModeViewportMetaEnabled[] = "dm-viewport-meta-enabled";
++#endif
++
+ // Boolean indicating whether support for Data URLs in SVGUseElement should be
+ // removed.
+ inline constexpr char kDataUrlInSvgUseEnabled[] =
+diff --git a/components/browser_ui/strings/bromite_content_settings/request_desktop_site.grdp b/components/browser_ui/strings/bromite_content_settings/request_desktop_site.grdp
+new file mode 100644
+--- /dev/null
++++ b/components/browser_ui/strings/bromite_content_settings/request_desktop_site.grdp
+@@ -0,0 +1,18 @@
++<?xml version="1.0" encoding="utf-8"?>
++<grit-part>
++  <message name="IDS_SITE_SETTINGS_TYPE_REQUEST_DESKTOP_SITE" desc="The label used for request desktop site site settings controls." formatter_data="android_java">
++    Request desktop site
++  </message>
++
++  <message name="IDS_SETTINGS_SITE_SETTINGS_REQUEST_DESKTOP_SITE_DESCRIPTION" desc="" formatter_data="android_java">
++    Request desktop site
++  </message>
++
++  <message name="IDS_WEBSITE_SETTINGS_CATEGORY_REQUEST_DESKTOP_SITE_ENABLED" desc="" formatter_data="android_java">
++    Request desktop site
++  </message>
++
++  <message name="IDS_WEBSITE_SETTINGS_CATEGORY_REQUEST_DESKTOP_SITE_DISABLED" desc="" formatter_data="android_java">
++    Request mobile site
++  </message>
++</grit-part>
+diff --git a/content/browser/renderer_host/navigation_controller_android.cc b/content/browser/renderer_host/navigation_controller_android.cc
+--- a/content/browser/renderer_host/navigation_controller_android.cc
++++ b/content/browser/renderer_host/navigation_controller_android.cc
+@@ -234,6 +234,7 @@ base::android::ScopedJavaLocalRef<jobject> NavigationControllerAndroid::LoadUrl(
+     bool can_load_local_resources,
+     bool is_renderer_initiated,
+     bool should_replace_current_entry,
++    jint user_agent_override_option,
+     const JavaRef<jobject>& j_initiator_origin,
+     bool has_user_gesture,
+     bool should_clear_history_list,
+@@ -341,6 +342,9 @@ base::android::ScopedJavaLocalRef<jobject> NavigationControllerAndroid::LoadUrl(
+         ConvertJavaStringToUTF8(env, internal_scroll_to_text_fragment);
+   }
+ 
++  params.override_user_agent = static_cast<NavigationController::UserAgentOverrideOption>(
++    user_agent_override_option);
++
+   base::expected<base::WeakPtr<NavigationHandle>, NavigationNotStartedReason>
+       result = navigation_controller_->LoadURLWithParamsForResult(params);
+ 
+diff --git a/content/browser/renderer_host/navigation_controller_android.h b/content/browser/renderer_host/navigation_controller_android.h
+--- a/content/browser/renderer_host/navigation_controller_android.h
++++ b/content/browser/renderer_host/navigation_controller_android.h
+@@ -69,6 +69,7 @@ class CONTENT_EXPORT NavigationControllerAndroid {
+       bool can_load_local_resources,
+       bool is_renderer_initiated,
+       bool should_replace_current_entry,
++      jint user_agent_override_option,
+       const base::android::JavaRef<jobject>& j_initiator_origin,
+       bool has_user_gesture,
+       bool should_clear_history_list,
+diff --git a/content/browser/renderer_host/render_process_host_impl.cc b/content/browser/renderer_host/render_process_host_impl.cc
+--- a/content/browser/renderer_host/render_process_host_impl.cc
++++ b/content/browser/renderer_host/render_process_host_impl.cc
+@@ -4115,6 +4115,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
+ #if BUILDFLAG(IS_CHROMEOS)
+       switches::kSchedulerBoostUrgent,
+ #endif
++    switches::kDesktopModeViewportMetaEnabled,
+   };
+   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames);
+ 
+diff --git a/content/browser/web_contents/web_contents_impl.cc b/content/browser/web_contents/web_contents_impl.cc
+--- a/content/browser/web_contents/web_contents_impl.cc
++++ b/content/browser/web_contents/web_contents_impl.cc
+@@ -19,6 +19,7 @@
+ 
+ #include "base/auto_reset.h"
+ #include "base/base_switches.h"
++#include "base/base_switches.h"
+ #include "base/check_op.h"
+ #include "base/command_line.h"
+ #include "base/containers/flat_set.h"
+@@ -2605,8 +2606,6 @@ void WebContentsImpl::SetUserAgentOverride(
+   OPTIONAL_TRACE_EVENT2("content", "WebContentsImpl::SetUserAgentOverride",
+                         "ua_override", ua_override.ua_string_override,
+                         "override_in_new_tabs", override_in_new_tabs);
+-  DCHECK(!ua_override.ua_metadata_override.has_value() ||
+-         !ua_override.ua_string_override.empty());
+ 
+   if (GetUserAgentOverride() == ua_override) {
+     return;
+@@ -4140,6 +4139,9 @@ const blink::web_pref::WebPreferences WebContentsImpl::ComputeWebPreferences(
+ #else
+     prefs.viewport_meta_enabled = false;
+ #endif
++    if (!command_line.HasSwitch(switches::kDesktopModeViewportMetaEnabled)) {
++      prefs.viewport_meta_enabled = false;
++    }
+   }
+ 
+   prefs.spatial_navigation_enabled =
+diff --git a/content/renderer/render_thread_impl.cc b/content/renderer/render_thread_impl.cc
+--- a/content/renderer/render_thread_impl.cc
++++ b/content/renderer/render_thread_impl.cc
+@@ -863,7 +863,6 @@ void RenderThreadImpl::InitializeRenderer(
+     uint64_t trace_id) {
+   TRACE_EVENT("navigation", "RenderThreadImpl::InitializeRenderer",
+               perfetto::TerminatingFlow::Global(trace_id));
+-  DCHECK(user_agent_.IsNull());
+ 
+   user_agent_ = WebString::FromUtf8(user_agent);
+   GetContentClient()->renderer()->DidSetUserAgent(user_agent);
+
 diff --git a/chrome/android/java/res/layout/custom_useragent_preferences.xml b/chrome/android/java/res/layout/custom_useragent_preferences.xml
 new file mode 100644
 --- /dev/null
@@ -853,39 +1043,6 @@ diff --git a/chrome/browser/android/preferences/privacy_preferences_manager_impl
 +}
 +
  DEFINE_JNI(PrivacyPreferencesManagerImpl)
-diff --git a/chrome/browser/content_settings/request_desktop_site_web_contents_observer_android.cc b/chrome/browser/content_settings/request_desktop_site_web_contents_observer_android.cc
---- a/chrome/browser/content_settings/request_desktop_site_web_contents_observer_android.cc
-+++ b/chrome/browser/content_settings/request_desktop_site_web_contents_observer_android.cc
-@@ -14,10 +14,12 @@
- #include "base/metrics/histogram_functions.h"
- #include "base/strings/string_split.h"
- #include "base/strings/string_util.h"
-+#include "chrome/browser/android/tab_android.h"
- #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
- #include "chrome/browser/flags/android/chrome_feature_list.h"
- #include "chrome/browser/preferences/android/chrome_shared_preferences.h"
- #include "chrome/browser/profiles/profile.h"
-+#include "chrome/browser/ui/android/tab_model/tab_model.h"
- #include "chrome/common/chrome_switches.h"
- #include "components/content_settings/core/common/content_settings_utils.h"
- #include "components/content_settings/core/common/pref_names.h"
-@@ -62,6 +64,16 @@ void RequestDesktopSiteWebContentsObserverAndroid::DidStartNavigation(
-     return;
-   }
- 
-+  // Stop UA override if there is a tab level setting.
-+  auto* tab_android = TabAndroid::FromWebContents(web_contents());
-+  TabModel::TabUserAgent tabSetting =
-+      tab_android
-+          ? static_cast<TabModel::TabUserAgent>(tab_android->GetUserAgent())
-+          : TabModel::TabUserAgent::DEFAULT;
-+  if (tabSetting != TabModel::TabUserAgent::DEFAULT) {
-+    return;
-+  }
-+
-   const GURL& url = navigation_handle->GetParentFrameOrOuterDocument()
-                         ? navigation_handle->GetParentFrameOrOuterDocument()
-                               ->GetOutermostMainFrame()
 diff --git a/chrome/browser/preferences/android/java/src/org/chromium/chrome/browser/preferences/ChromePreferenceKeys.java b/chrome/browser/preferences/android/java/src/org/chromium/chrome/browser/preferences/ChromePreferenceKeys.java
 --- a/chrome/browser/preferences/android/java/src/org/chromium/chrome/browser/preferences/ChromePreferenceKeys.java
 +++ b/chrome/browser/preferences/android/java/src/org/chromium/chrome/browser/preferences/ChromePreferenceKeys.java
@@ -979,60 +1136,6 @@ diff --git a/chrome/browser/ui/android/desktop_site/java/src/org/chromium/chrome
          boolean isOffTheRecord = profile.isOffTheRecord();
          String domainWildcardPattern =
                  WebsitePreferenceBridge.toDomainWildcardPattern(url.getSpec());
-diff --git a/chrome/browser/ui/android/strings/android_chrome_strings.grd b/chrome/browser/ui/android/strings/android_chrome_strings.grd
---- a/chrome/browser/ui/android/strings/android_chrome_strings.grd
-+++ b/chrome/browser/ui/android/strings/android_chrome_strings.grd
-@@ -254,6 +254,32 @@ CHAR_LIMIT guidelines:
-         Visit help page
-       </message>
- 
-+      <!-- User Agent settings -->
-+      <message name="IDS_PREFS_USERAGENT_SETTINGS" desc="Title of the User Agent preference. [CHAR-LIMIT=32]">
-+        User Agent
-+      </message>
-+      <message name="IDS_USERAGENT_SETTINGS_TITLE" desc="Title of the User Agent screen. [CHAR-LIMIT=32]">
-+        Customize User Agent
-+      </message>
-+      <message name="IDS_CUSTOM_UA_FLAG_ON" desc="The label of the option that allows users to define custom user agent.">
-+        Use custom user agent
-+      </message>
-+      <message name="IDS_CUSTOM_UA_FLAG_OFF" desc="The label of the option that revert the user agent to actual value.">
-+        Use standard user agent
-+      </message>
-+      <message name="IDS_CUSTOM_UA_PLACEHOLDER" desc="The label of the placeholder for user agent textbox.">
-+        Insert a valid user agent
-+      </message>
-+      <message name="IDS_CUSTOM_UA_TEXT" desc="The label of the placeholder for user agent textbox.">
-+        Mobile User Agent
-+      </message>
-+      <message name="IDS_CUSTOM_DESKTOP_UA_TEXT" desc="The label of the placeholder for user agent textbox.">
-+        Desktop Mode User Agent
-+      </message>
-+      <message name="IDS_DESKTOP_MODE_VIEWPORTMETA_CHECKBOX" desc="The label of the enable viewport meta checkbox for user desktop mode.">
-+        Enable processing of the viewport meta tag also for desktop mode
-+      </message>
-+
-       <!-- Notification channels -->
-       <message name="IDS_NOTIFICATION_CATEGORY_GROUP_GENERAL" desc='Subheading for "General" section of a list of notification categories. [CHAR_LIMIT=32]'>
-         General
-diff --git a/chrome/common/pref_names.h b/chrome/common/pref_names.h
---- a/chrome/common/pref_names.h
-+++ b/chrome/common/pref_names.h
-@@ -1177,6 +1177,14 @@ inline constexpr char kNaviOnboardGroup[] = "browser.navi_onboard_group";
- inline constexpr char kHadThreeConsecutiveNotificationPermissionDenies[] =
-     "profile.content_settings.had_three_consecutive_denies.notifications";
- 
-+#if BUILDFLAG(IS_ANDROID)
-+inline constexpr char kOverrideUserAgentEnabled[] = "override_user_agent_enabled";
-+inline constexpr char kOverrideUserAgent[] = "override_user_agent";
-+inline constexpr char kOverrideUserAgentDesktopModeEnabled[] = "override_user_agent_dm_enabled";
-+inline constexpr char kOverrideUserAgentDesktopMode[] = "override_user_agent_dm";
-+inline constexpr char kDesktopModeViewportMetaEnabled[] = "dm-viewport-meta-enabled";
-+#endif
-+
- // Boolean indicating whether support for Data URLs in SVGUseElement should be
- // removed.
- inline constexpr char kDataUrlInSvgUseEnabled[] =
 diff --git a/components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/impl/BromiteRequestDesktopSiteContentSetting.java b/components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/impl/BromiteRequestDesktopSiteContentSetting.java
 new file mode 100644
 --- /dev/null
@@ -1114,29 +1217,6 @@ new file mode 100644
 +        return value != ContentSetting.ALLOW;
 +    }
 +}
-diff --git a/components/browser_ui/strings/bromite_content_settings/request_desktop_site.grdp b/components/browser_ui/strings/bromite_content_settings/request_desktop_site.grdp
-new file mode 100644
---- /dev/null
-+++ b/components/browser_ui/strings/bromite_content_settings/request_desktop_site.grdp
-@@ -0,0 +1,18 @@
-+<?xml version="1.0" encoding="utf-8"?>
-+<grit-part>
-+  <message name="IDS_SITE_SETTINGS_TYPE_REQUEST_DESKTOP_SITE" desc="The label used for request desktop site site settings controls." formatter_data="android_java">
-+    Request desktop site
-+  </message>
-+
-+  <message name="IDS_SETTINGS_SITE_SETTINGS_REQUEST_DESKTOP_SITE_DESCRIPTION" desc="" formatter_data="android_java">
-+    Request desktop site
-+  </message>
-+
-+  <message name="IDS_WEBSITE_SETTINGS_CATEGORY_REQUEST_DESKTOP_SITE_ENABLED" desc="" formatter_data="android_java">
-+    Request desktop site
-+  </message>
-+
-+  <message name="IDS_WEBSITE_SETTINGS_CATEGORY_REQUEST_DESKTOP_SITE_DISABLED" desc="" formatter_data="android_java">
-+    Request mobile site
-+  </message>
-+</grit-part>
 diff --git a/components/browser_ui/widget/android/java/src/org/chromium/components/browser_ui/widget/RadioButtonWithEditText.java b/components/browser_ui/widget/android/java/src/org/chromium/components/browser_ui/widget/RadioButtonWithEditText.java
 --- a/components/browser_ui/widget/android/java/src/org/chromium/components/browser_ui/widget/RadioButtonWithEditText.java
 +++ b/components/browser_ui/widget/android/java/src/org/chromium/components/browser_ui/widget/RadioButtonWithEditText.java
@@ -1158,79 +1238,6 @@ diff --git a/components/browser_ui/widget/android/java/src/org/chromium/componen
      }
  
      /**
-diff --git a/content/browser/renderer_host/navigation_controller_android.cc b/content/browser/renderer_host/navigation_controller_android.cc
---- a/content/browser/renderer_host/navigation_controller_android.cc
-+++ b/content/browser/renderer_host/navigation_controller_android.cc
-@@ -230,6 +230,7 @@ base::android::ScopedJavaLocalRef<jobject> NavigationControllerAndroid::LoadUrl(
-     bool can_load_local_resources,
-     bool is_renderer_initiated,
-     bool should_replace_current_entry,
-+    jint user_agent_override_option,
-     const JavaRef<jobject>& j_initiator_origin,
-     bool has_user_gesture,
-     bool should_clear_history_list,
-@@ -328,6 +329,9 @@ base::android::ScopedJavaLocalRef<jobject> NavigationControllerAndroid::LoadUrl(
-         ConvertJavaStringToUTF8(env, internal_scroll_to_text_fragment);
-   }
- 
-+  params.override_user_agent = static_cast<NavigationController::UserAgentOverrideOption>(
-+    user_agent_override_option);
-+
-   base::WeakPtr<NavigationHandle> handle =
-       navigation_controller_->LoadURLWithParams(params);
- 
-diff --git a/content/browser/renderer_host/navigation_controller_android.h b/content/browser/renderer_host/navigation_controller_android.h
---- a/content/browser/renderer_host/navigation_controller_android.h
-+++ b/content/browser/renderer_host/navigation_controller_android.h
-@@ -69,6 +69,7 @@ class CONTENT_EXPORT NavigationControllerAndroid {
-       bool can_load_local_resources,
-       bool is_renderer_initiated,
-       bool should_replace_current_entry,
-+      jint user_agent_override_option,
-       const base::android::JavaRef<jobject>& j_initiator_origin,
-       bool has_user_gesture,
-       bool should_clear_history_list,
-diff --git a/content/browser/renderer_host/render_process_host_impl.cc b/content/browser/renderer_host/render_process_host_impl.cc
---- a/content/browser/renderer_host/render_process_host_impl.cc
-+++ b/content/browser/renderer_host/render_process_host_impl.cc
-@@ -4042,6 +4042,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
- #if BUILDFLAG(IS_CHROMEOS)
-       switches::kSchedulerBoostUrgent,
- #endif
-+    switches::kDesktopModeViewportMetaEnabled,
-   };
-   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames);
- 
-diff --git a/content/browser/web_contents/web_contents_impl.cc b/content/browser/web_contents/web_contents_impl.cc
---- a/content/browser/web_contents/web_contents_impl.cc
-+++ b/content/browser/web_contents/web_contents_impl.cc
-@@ -19,6 +19,7 @@
- 
- #include "base/auto_reset.h"
- #include "base/base_switches.h"
-+#include "base/base_switches.h"
- #include "base/check_op.h"
- #include "base/command_line.h"
- #include "base/containers/flat_set.h"
-@@ -2513,8 +2514,6 @@ void WebContentsImpl::SetUserAgentOverride(
-   OPTIONAL_TRACE_EVENT2("content", "WebContentsImpl::SetUserAgentOverride",
-                         "ua_override", ua_override.ua_string_override,
-                         "override_in_new_tabs", override_in_new_tabs);
--  DCHECK(!ua_override.ua_metadata_override.has_value() ||
--         !ua_override.ua_string_override.empty());
- 
-   if (GetUserAgentOverride() == ua_override) {
-     return;
-@@ -4014,6 +4013,9 @@ const blink::web_pref::WebPreferences WebContentsImpl::ComputeWebPreferences(
- #else
-     prefs.viewport_meta_enabled = false;
- #endif
-+    if (!command_line.HasSwitch(switches::kDesktopModeViewportMetaEnabled)) {
-+      prefs.viewport_meta_enabled = false;
-+    }
-   }
- 
-   prefs.spatial_navigation_enabled =
 diff --git a/content/public/android/java/src/org/chromium/content/browser/framehost/NavigationControllerImpl.java b/content/public/android/java/src/org/chromium/content/browser/framehost/NavigationControllerImpl.java
 --- a/content/public/android/java/src/org/chromium/content/browser/framehost/NavigationControllerImpl.java
 +++ b/content/public/android/java/src/org/chromium/content/browser/framehost/NavigationControllerImpl.java
@@ -1251,15 +1258,4 @@ diff --git a/content/public/android/java/src/org/chromium/content/browser/frameh
                  @Nullable Origin initiatorOrigin,
                  boolean hasUserGesture,
                  boolean shouldClearHistoryList,
-diff --git a/content/renderer/render_thread_impl.cc b/content/renderer/render_thread_impl.cc
---- a/content/renderer/render_thread_impl.cc
-+++ b/content/renderer/render_thread_impl.cc
-@@ -857,7 +857,6 @@ void RenderThreadImpl::InitializeRenderer(
-     uint64_t trace_id) {
-   TRACE_EVENT("navigation", "RenderThreadImpl::InitializeRenderer",
-               perfetto::TerminatingFlow::Global(trace_id));
--  DCHECK(user_agent_.IsNull());
- 
-   user_agent_ = WebString::FromUtf8(user_agent);
-   GetContentClient()->renderer()->DidSetUserAgent(user_agent);
 --

@@ -4,30 +4,23 @@ Subject: Restore LastTabStandingTracker
 
 License: GPL-2.0-or-later - https://spdx.org/licenses/GPL-2.0-or-later.html
 ---
- chrome/browser/BUILD.gn                       |  7 +++
- .../host_content_settings_map_factory.cc      |  2 +
- .../permissions/last_tab_standing_tracker.cc  | 59 +++++++++++++++++++
- .../permissions/last_tab_standing_tracker.h   | 40 +++++++++++++
- .../last_tab_standing_tracker_factory.cc      | 36 +++++++++++
- .../last_tab_standing_tracker_factory.h       | 40 +++++++++++++
- .../last_tab_standing_tracker_observer.h      | 24 ++++++++
- .../last_tab_standing_tracker_tab_helper.cc   | 46 +++++++++++++++
- .../last_tab_standing_tracker_tab_helper.h    | 37 ++++++++++++
- ...hrome_browser_main_extra_parts_profiles.cc |  2 +
- chrome/browser/ui/tab_helpers.cc              |  2 +
- 11 files changed, 295 insertions(+)
- create mode 100644 chrome/browser/permissions/last_tab_standing_tracker.cc
- create mode 100644 chrome/browser/permissions/last_tab_standing_tracker.h
- create mode 100644 chrome/browser/permissions/last_tab_standing_tracker_factory.cc
- create mode 100644 chrome/browser/permissions/last_tab_standing_tracker_factory.h
- create mode 100644 chrome/browser/permissions/last_tab_standing_tracker_observer.h
- create mode 100644 chrome/browser/permissions/last_tab_standing_tracker_tab_helper.cc
- create mode 100644 chrome/browser/permissions/last_tab_standing_tracker_tab_helper.h
+ chrome/browser/BUILD.gn                            |    7 ++
+ .../host_content_settings_map_factory.cc           |    2 +
+ .../permissions/last_tab_standing_tracker.cc       |   59 ++++++++++++++++++++
+ .../permissions/last_tab_standing_tracker.h        |   40 ++++++++++++++
+ .../last_tab_standing_tracker_factory.cc           |   36 ++++++++++++
+ .../last_tab_standing_tracker_factory.h            |   40 ++++++++++++++
+ .../last_tab_standing_tracker_observer.h           |   24 ++++++++
+ .../last_tab_standing_tracker_tab_helper.cc        |   46 ++++++++++++++++
+ .../last_tab_standing_tracker_tab_helper.h         |   37 +++++++++++++
+ .../chrome_browser_main_extra_parts_profiles.cc    |    2 +
+ chrome/browser/ui/tabs/tab_features.cc             |    3 +
+ 11 files changed, 296 insertions(+)
 
 diff --git a/chrome/browser/BUILD.gn b/chrome/browser/BUILD.gn
 --- a/chrome/browser/BUILD.gn
 +++ b/chrome/browser/BUILD.gn
-@@ -875,6 +875,13 @@ source_set("core") {
+@@ -1033,6 +1033,13 @@ source_set("core") {
      "unexpire_flags.cc",
      "unexpire_flags.h",
      "universal_web_contents_observers.cc",
@@ -380,7 +373,7 @@ new file mode 100644
 diff --git a/chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.cc b/chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.cc
 --- a/chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.cc
 +++ b/chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.cc
-@@ -172,6 +172,7 @@
+@@ -176,6 +176,7 @@
  #include "chrome/browser/password_manager/password_field_classification_model_handler_factory.h"
  #include "chrome/browser/payments/browser_binding/browser_bound_key_deleter_service_factory.h"
  #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_facade_factory.h"
@@ -388,7 +381,7 @@ diff --git a/chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.cc
  #include "chrome/browser/permissions/notifications_engagement_service_factory.h"
  #include "chrome/browser/permissions/one_time_permissions_tracker_factory.h"
  #include "chrome/browser/permissions/origin_keyed_permission_action_service_factory.h"
-@@ -1255,6 +1256,7 @@ void ChromeBrowserMainExtraPartsProfiles::
+@@ -1227,6 +1228,7 @@ void ChromeBrowserMainExtraPartsProfiles::
  #if BUILDFLAG(ENABLE_ON_DEVICE_TRANSLATION)
    on_device_translation::ServiceControllerManagerFactory::GetInstance();
  #endif
@@ -396,23 +389,32 @@ diff --git a/chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.cc
    OnDeviceTailModelServiceFactory::GetInstance();
  #if BUILDFLAG(ENABLE_WEBUI_NTP)
    OneGoogleBarServiceFactory::GetInstance();
-diff --git a/chrome/browser/ui/tab_helpers.cc b/chrome/browser/ui/tab_helpers.cc
---- a/chrome/browser/ui/tab_helpers.cc
-+++ b/chrome/browser/ui/tab_helpers.cc
-@@ -60,6 +60,7 @@
- #include "chrome/browser/page_info/page_info_features.h"
+diff --git a/chrome/browser/ui/tabs/tab_features.cc b/chrome/browser/ui/tabs/tab_features.cc
+--- a/chrome/browser/ui/tabs/tab_features.cc
++++ b/chrome/browser/ui/tabs/tab_features.cc
+@@ -81,6 +81,7 @@
  #include "chrome/browser/page_load_metrics/page_load_metrics_initialize.h"
  #include "chrome/browser/password_manager/chrome_password_manager_client.h"
+ #include "chrome/browser/payments/web_payments_observer.h"
 +#include "chrome/browser/permissions/last_tab_standing_tracker_tab_helper.h"
  #include "chrome/browser/permissions/one_time_permissions_tracker_helper.h"
  #include "chrome/browser/picture_in_picture/auto_picture_in_picture_tab_helper.h"
  #include "chrome/browser/predictors/loading_predictor_factory.h"
-@@ -471,6 +472,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents,
-   }
-   HttpsOnlyModeTabHelper::CreateForWebContents(web_contents);
-   webapps::InstallableManager::CreateForWebContents(web_contents);
-+  LastTabStandingTrackerTabHelper::CreateForWebContents(web_contents);
-   login_detection::LoginDetectionTabHelper::MaybeCreateForWebContents(
-       web_contents);
-   if (MediaEngagementService::IsEnabled()) {
+@@ -1437,6 +1438,7 @@ void TabFeatures::Init(TabInterface& tab, Profile* profile) {
+   // Track one-time permissions for the tab.
+   one_time_permissions_tracker_helper_ =
+       std::make_unique<OneTimePermissionsTrackerHelper>(tab.GetContents());
++  LastTabStandingTrackerTabHelper::CreateForWebContents(tab.GetContents());
+ 
+   if (predictors::LoadingPredictorFactory::GetForProfile(profile)) {
+     loading_predictor_tab_helper_ =
+@@ -2138,6 +2140,7 @@ void TabFeatures::WillDiscardContents(tabs::TabInterface* tab,
+   one_time_permissions_tracker_helper_.reset();
+   one_time_permissions_tracker_helper_ =
+       std::make_unique<OneTimePermissionsTrackerHelper>(new_contents);
++  LastTabStandingTrackerTabHelper::CreateForWebContents(new_contents);
+ 
+   if (loading_predictor_tab_helper_) {
+     loading_predictor_tab_helper_.reset();
+
 --

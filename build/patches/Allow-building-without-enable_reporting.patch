@@ -4,32 +4,31 @@ Subject: Allow building without enable_reporting
 
 License: GPL-3.0-only - https://spdx.org/licenses/GPL-3.0-only.html
 ---
- chrome/browser/net/chrome_report_sender.cc       |  1 +
- content/browser/connection_allowlist_utils.cc    |  2 ++
- .../declarative_performance_observer.cc          |  6 ++++++
- .../browser/devtools/protocol/network_handler.cc |  2 ++
- .../cross_origin_embedder_policy_reporter.cc     |  7 +++++--
- .../browser/network/reporting_service_proxy.cc   |  3 +++
- .../renderer_host/render_frame_host_impl.cc      |  6 ------
- .../coop/cross_origin_opener_policy_reporter.cc  | 16 +++++++---------
- .../dip/document_isolation_policy_reporter.cc    |  3 +++
- .../web_package/signed_exchange_reporter.cc      |  2 ++
- ...content_switch_dependent_feature_overrides.cc |  1 +
- .../Allow-building-without-enable_reporting.inc  |  2 ++
- net/reporting/reporting_header_parser.cc         |  1 +
- net/reporting/reporting_service.cc               |  6 ++++++
- services/network/network_context.h               |  6 +++---
- services/network/public/cpp/parsed_headers.cc    |  1 +
- services/network/public/mojom/BUILD.gn           |  1 -
- .../network/public/mojom/network_context.mojom   |  3 +++
- .../core/frame/csp/content_security_policy.cc    |  3 +++
- .../blink/renderer/core/frame/local_frame.cc     |  3 +++
- .../blink/renderer/core/frame/local_frame.h      |  3 +++
- .../renderer/core/frame/reporting_context.cc     | 10 ++++++++++
- .../renderer/core/frame/reporting_context.h      |  7 +++++--
- .../renderer/core/frame/reporting_observer.cc    |  4 +---
- 24 files changed, 73 insertions(+), 26 deletions(-)
- create mode 100644 cromite_flags/services/network/public/cpp/features_cc/Allow-building-without-enable_reporting.inc
+ chrome/browser/net/chrome_report_sender.cc         |    1 +
+ content/browser/connection_allowlist_utils.cc      |    2 ++
+ .../declarative_performance_observer.cc            |    6 ++++++
+ .../browser/devtools/protocol/network_handler.cc   |    2 ++
+ .../cross_origin_embedder_policy_reporter.cc       |    7 +++++--
+ content/browser/network/reporting_service_proxy.cc |    3 +++
+ .../renderer_host/render_frame_host_impl.cc        |    6 ------
+ .../coop/cross_origin_opener_policy_reporter.cc    |   16 +++++++---------
+ .../dip/document_isolation_policy_reporter.cc      |    3 +++
+ .../web_package/signed_exchange_reporter.cc        |    2 ++
+ .../content_switch_dependent_feature_overrides.cc  |    1 +
+ .../Allow-building-without-enable_reporting.inc    |    2 ++
+ net/reporting/reporting_header_parser.cc           |    1 +
+ net/reporting/reporting_service.cc                 |    6 ++++++
+ services/network/network_context.h                 |    6 +++---
+ services/network/public/cpp/parsed_headers.cc      |    1 +
+ services/network/public/mojom/BUILD.gn             |    4 ----
+ .../network/public/mojom/network_context.mojom     |    3 +++
+ .../core/frame/csp/content_security_policy.cc      |    3 +++
+ .../blink/renderer/core/frame/local_frame.cc       |    3 +++
+ .../blink/renderer/core/frame/local_frame.h        |    3 +++
+ .../blink/renderer/core/frame/reporting_context.cc |   10 ++++++++++
+ .../blink/renderer/core/frame/reporting_context.h  |    7 +++++--
+ .../renderer/core/frame/reporting_observer.cc      |    4 +---
+ 24 files changed, 73 insertions(+), 29 deletions(-)
 
 diff --git a/chrome/browser/net/chrome_report_sender.cc b/chrome/browser/net/chrome_report_sender.cc
 --- a/chrome/browser/net/chrome_report_sender.cc
@@ -75,7 +74,7 @@ diff --git a/content/browser/declarative_performance_observer/declarative_perfor
  }  // namespace
  
  DeclarativePerformanceObserver::DeclarativePerformanceObserver(
-@@ -260,6 +262,7 @@ StoragePartition* DeclarativePerformanceObserver::GetStoragePartition() const {
+@@ -269,6 +271,7 @@ void DeclarativePerformanceObserver::QueueAndSendReport(const GURL& url,
  }
  
  void DeclarativePerformanceObserver::FlushMetrics() {
@@ -83,24 +82,24 @@ diff --git a/content/browser/declarative_performance_observer/declarative_perfor
    if (buffered_entries_.empty()) {
      return;
    }
-@@ -277,6 +280,7 @@ void DeclarativePerformanceObserver::FlushMetrics() {
-         committed_url_, reporting_source_, network_anonymization_key_,
-         std::move(body));
-   }
+@@ -279,6 +282,7 @@ void DeclarativePerformanceObserver::FlushMetrics() {
+   current_buffer_bytes_ = 0;
+ 
+   QueueAndSendReport(committed_url_, std::move(body));
 +#endif
  }
  
  void DeclarativePerformanceObserver::AppendSessionEndEntry() {
-@@ -508,6 +512,7 @@ void DeclarativePerformanceObserver::OnEarlyFailureReportsTaken(
-   if (!storage_partition) {
-     return;
-   }
+@@ -506,6 +510,7 @@ void DeclarativePerformanceObserver::RecordEarlyNavigationFailure(
+ 
+ void DeclarativePerformanceObserver::OnEarlyFailureReportsTaken(
+     base::ListValue reports) {
 +#if BUILDFLAG(ENABLE_REPORTING)
    for (auto& val : reports) {
      if (val.is_dict()) {
        base::DictValue entry = std::move(val).TakeDict();
-@@ -526,6 +531,7 @@ void DeclarativePerformanceObserver::OnEarlyFailureReportsTaken(
-           std::move(report_body));
+@@ -525,6 +530,7 @@ void DeclarativePerformanceObserver::OnEarlyFailureReportsTaken(
+       QueueAndSendReport(failed_url, std::move(report_body));
      }
    }
 +#endif
@@ -110,7 +109,7 @@ diff --git a/content/browser/declarative_performance_observer/declarative_perfor
 diff --git a/content/browser/devtools/protocol/network_handler.cc b/content/browser/devtools/protocol/network_handler.cc
 --- a/content/browser/devtools/protocol/network_handler.cc
 +++ b/content/browser/devtools/protocol/network_handler.cc
-@@ -1481,6 +1481,7 @@ String BuildReportStatus(const net::ReportingReport::Status status) {
+@@ -1488,6 +1488,7 @@ String BuildReportStatus(const net::ReportingReport::Status status) {
    }
  }
  
@@ -118,7 +117,7 @@ diff --git a/content/browser/devtools/protocol/network_handler.cc b/content/brow
  std::vector<GURL> ComputeReportingURLs(RenderFrameHostImpl* frame_host) {
    std::vector<GURL> urls;
    frame_host->ForEachRenderFrameHostImplWithAction(
-@@ -1494,6 +1495,7 @@ std::vector<GURL> ComputeReportingURLs(RenderFrameHostImpl* frame_host) {
+@@ -1501,6 +1502,7 @@ std::vector<GURL> ComputeReportingURLs(RenderFrameHostImpl* frame_host) {
        });
    return urls;
  }
@@ -193,7 +192,7 @@ diff --git a/content/browser/network/reporting_service_proxy.cc b/content/browse
 diff --git a/content/browser/renderer_host/render_frame_host_impl.cc b/content/browser/renderer_host/render_frame_host_impl.cc
 --- a/content/browser/renderer_host/render_frame_host_impl.cc
 +++ b/content/browser/renderer_host/render_frame_host_impl.cc
-@@ -17361,12 +17361,6 @@ void RenderFrameHostImpl::MaybeGenerateCrashReport(
+@@ -17927,12 +17927,6 @@ void RenderFrameHostImpl::MaybeGenerateCrashReport(
        }
      }
    }
@@ -252,7 +251,7 @@ diff --git a/content/browser/security/coop/cross_origin_opener_policy_reporter.c
  
  FrameTreeNode* TopLevelOpener(FrameTreeNode* frame) {
    FrameTreeNode* opener =
-@@ -233,6 +227,7 @@ void CrossOriginOpenerPolicyReporter::QueueAccessReport(
+@@ -229,6 +223,7 @@ void CrossOriginOpenerPolicyReporter::QueueAccessReport(
      network::mojom::SourceLocationPtr source_location,
      const std::string& reported_window_url,
      const std::string& initial_popup_url) const {
@@ -260,7 +259,7 @@ diff --git a/content/browser/security/coop/cross_origin_opener_policy_reporter.c
    // Cross-Origin-Opener-Policy-Report-Only is not required to provide
    // endpoints.
    if (!coop_.report_only_reporting_endpoint)
-@@ -281,12 +276,14 @@ void CrossOriginOpenerPolicyReporter::QueueAccessReport(
+@@ -277,12 +272,14 @@ void CrossOriginOpenerPolicyReporter::QueueAccessReport(
    storage_partition_->GetNetworkContext()->QueueReport(
        "coop", endpoint, context_url_, reporting_source_,
        network_anonymization_key_, std::move(body));
@@ -275,7 +274,7 @@ diff --git a/content/browser/security/coop/cross_origin_opener_policy_reporter.c
    body.Set(kDisposition,
             is_report_only ? kDispositionReporting : kDispositionEnforce);
    body.Set(kEffectivePolicy,
-@@ -294,6 +291,7 @@ void CrossOriginOpenerPolicyReporter::QueueNavigationReport(
+@@ -290,6 +287,7 @@ void CrossOriginOpenerPolicyReporter::QueueNavigationReport(
    storage_partition_->GetNetworkContext()->QueueReport(
        "coop", endpoint, context_url_, reporting_source_,
        network_anonymization_key_, std::move(body));
@@ -294,7 +293,7 @@ diff --git a/content/browser/security/dip/document_isolation_policy_reporter.cc 
  #include "content/public/browser/storage_partition.h"
  #include "services/network/public/cpp/request_destination.h"
  #include "services/network/public/cpp/url_util.h"
-@@ -88,11 +89,13 @@ void DocumentIsolationPolicyReporter::QueueAndNotify(
+@@ -93,11 +94,13 @@ void DocumentIsolationPolicyReporter::QueueAndNotify(
      }
      body_to_pass.Set("disposition", disposition);
  
@@ -347,7 +346,7 @@ new file mode 100644
 diff --git a/net/reporting/reporting_header_parser.cc b/net/reporting/reporting_header_parser.cc
 --- a/net/reporting/reporting_header_parser.cc
 +++ b/net/reporting/reporting_header_parser.cc
-@@ -347,6 +347,7 @@ void ReportingHeaderParser::ProcessParsedReportingEndpointsHeader(
+@@ -328,6 +328,7 @@ void ReportingHeaderParser::ProcessParsedReportingEndpointsHeader(
      const NetworkAnonymizationKey& network_anonymization_key,
      const url::Origin& origin,
      base::flat_map<std::string, std::string> header) {
@@ -374,7 +373,7 @@ diff --git a/net/reporting/reporting_service.cc b/net/reporting/reporting_servic
 diff --git a/services/network/network_context.h b/services/network/network_context.h
 --- a/services/network/network_context.h
 +++ b/services/network/network_context.h
-@@ -544,14 +544,14 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
+@@ -572,14 +572,14 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
        const GURL& url,
        const std::optional<base::UnguessableToken>& reporting_source,
        const net::NetworkAnonymizationKey& network_anonymization_key,
@@ -395,7 +394,7 @@ diff --git a/services/network/network_context.h b/services/network/network_conte
 diff --git a/services/network/public/cpp/parsed_headers.cc b/services/network/public/cpp/parsed_headers.cc
 --- a/services/network/public/cpp/parsed_headers.cc
 +++ b/services/network/public/cpp/parsed_headers.cc
-@@ -138,6 +138,7 @@ mojom::ParsedHeadersPtr PopulateParsedHeaders(
+@@ -137,6 +137,7 @@ mojom::ParsedHeadersPtr PopulateParsedHeaders(
    }
  
  #if BUILDFLAG(ENABLE_REPORTING)
@@ -406,18 +405,21 @@ diff --git a/services/network/public/cpp/parsed_headers.cc b/services/network/pu
 diff --git a/services/network/public/mojom/BUILD.gn b/services/network/public/mojom/BUILD.gn
 --- a/services/network/public/mojom/BUILD.gn
 +++ b/services/network/public/mojom/BUILD.gn
-@@ -2007,7 +2007,6 @@ mojom("mojom") {
-     export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
+@@ -2048,10 +2048,6 @@ mojom("mojom") {
      export_header_blink = "third_party/blink/public/platform/web_common.h"
-     if (enable_reporting) {
--      enabled_features += [ "enable_reporting" ]
-     }
    }
  
+-  if (enable_reporting) {
+-    enabled_features += [ "enable_reporting" ]
+-  }
+-
+   if (is_linux) {
+     # TODO(crbug.com/40263697): Remove this once is_linux in the mojom IDL does
+     # not include lacros.
 diff --git a/services/network/public/mojom/network_context.mojom b/services/network/public/mojom/network_context.mojom
 --- a/services/network/public/mojom/network_context.mojom
 +++ b/services/network/public/mojom/network_context.mojom
-@@ -1353,6 +1353,7 @@ interface NetworkContext {
+@@ -1413,6 +1413,7 @@ interface NetworkContext {
    // provided `network_anonymization_key`.
    //
    // Spec: https://w3c.github.io/reporting/#concept-reports
@@ -425,7 +427,7 @@ diff --git a/services/network/public/mojom/network_context.mojom b/services/netw
    QueueReport(string type,
                string group,
                url.mojom.Url url,
-@@ -1360,6 +1361,7 @@ interface NetworkContext {
+@@ -1420,6 +1421,7 @@ interface NetworkContext {
                NetworkAnonymizationKey network_anonymization_key,
                mojo_base.mojom.DictionaryValue body);
  
@@ -433,7 +435,7 @@ diff --git a/services/network/public/mojom/network_context.mojom b/services/netw
    QueueEnterpriseReport(string type,
                          string group,
                          url.mojom.Url url,
-@@ -1370,6 +1372,7 @@ interface NetworkContext {
+@@ -1430,6 +1432,7 @@ interface NetworkContext {
    // Note that this queued report will never be delivered if no reporting
    // endpoint matching is registered for with the provided
    // `network_anonymization_key`.
@@ -452,15 +454,15 @@ diff --git a/third_party/blink/renderer/core/frame/csp/content_security_policy.c
  #include "base/debug/dump_without_crashing.h"
  #include "base/feature_list.h"
  #include "base/metrics/histogram_functions.h"
-@@ -1434,6 +1435,7 @@ void ContentSecurityPolicy::ReportViolation(
-       ShouldBypassContentSecurityPolicy(KURL(violation_data->sourceFile()))) {
+@@ -1466,6 +1467,7 @@ void ContentSecurityPolicy::LogToConsoleAndReportViolation(
+       !ShouldBypassContentSecurityPolicy(relevant_delegate->Url())) {
      return;
    }
 +#if BUILDFLAG(ENABLE_REPORTING)
    PostViolationReport(violation_data, context_frame, report_endpoints,
                        use_reporting_api);
  
-@@ -1441,6 +1443,7 @@ void ContentSecurityPolicy::ReportViolation(
+@@ -1473,6 +1475,7 @@ void ContentSecurityPolicy::LogToConsoleAndReportViolation(
    // `context_frame` (i.e. we're not processing 'frame-ancestors').
    if (delegate_ && !context_frame)
      delegate_->DispatchViolationEvent(*violation_data, element);
@@ -471,15 +473,15 @@ diff --git a/third_party/blink/renderer/core/frame/csp/content_security_policy.c
 diff --git a/third_party/blink/renderer/core/frame/local_frame.cc b/third_party/blink/renderer/core/frame/local_frame.cc
 --- a/third_party/blink/renderer/core/frame/local_frame.cc
 +++ b/third_party/blink/renderer/core/frame/local_frame.cc
-@@ -51,6 +51,7 @@
- #include "build/build_config.h"
+@@ -52,6 +52,7 @@
+ #include "mojo/public/cpp/base/big_buffer.h"
  #include "mojo/public/cpp/bindings/self_owned_receiver.h"
  #include "mojo/public/cpp/system/message_pipe.h"
 +#include "net/net_buildflags.h"
  #include "services/network/public/cpp/features.h"
  #include "services/network/public/mojom/content_security_policy.mojom-blink.h"
  #include "services/network/public/mojom/source_location.mojom-blink.h"
-@@ -3044,9 +3045,11 @@ DocumentResourceCoordinator* LocalFrame::GetDocumentResourceCoordinator() {
+@@ -3036,9 +3037,11 @@ DocumentResourceCoordinator* LocalFrame::GetDocumentResourceCoordinator() {
    return CHECK_DEREF(GetDocument()).GetResourceCoordinator();
  }
  
@@ -494,7 +496,7 @@ diff --git a/third_party/blink/renderer/core/frame/local_frame.cc b/third_party/
 diff --git a/third_party/blink/renderer/core/frame/local_frame.h b/third_party/blink/renderer/core/frame/local_frame.h
 --- a/third_party/blink/renderer/core/frame/local_frame.h
 +++ b/third_party/blink/renderer/core/frame/local_frame.h
-@@ -41,6 +41,7 @@
+@@ -40,6 +40,7 @@
  #include "build/build_config.h"
  #include "cc/metrics/begin_main_frame_metrics.h"
  #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -624,4 +626,5 @@ diff --git a/third_party/blink/renderer/core/frame/reporting_observer.cc b/third
  }
  
  bool ReportingObserver::Buffered() {
+
 --

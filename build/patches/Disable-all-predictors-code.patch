@@ -5,142 +5,128 @@ Subject: Disable all predictors code
 Original License: GPL-2.0-or-later - https://spdx.org/licenses/GPL-2.0-or-later.html
 License: GPL-3.0-only - https://spdx.org/licenses/GPL-3.0-only.html
 ---
- chrome/browser/BUILD.gn                       |   1 -
- chrome/browser/about_flags.cc                 |   2 +
- .../chrome_autocomplete_provider_client.cc    |   4 +-
- chrome/browser/autofill/BUILD.gn              |   4 +-
- ...ld_classification_model_service_factory.cc |  19 +--
- .../ai_embeddings_component_installer.cc      |  37 +----
- .../background_download_service_factory.cc    |   2 +-
- .../history_embeddings_utils.cc               |   5 +
- .../preloading_model_keyed_service.cc         |   2 +
- .../preloading_model_keyed_service_factory.cc |   9 +-
- chrome/browser/optimization_guide/BUILD.gn    |   4 +-
- .../chrome_hints_manager.cc                   |   1 +
- .../optimization_guide_global_state.cc        |   2 +-
- .../model_validator_keyed_service.cc          |   8 ++
- .../optimization_guide_keyed_service.cc       | 134 +++---------------
- .../optimization_guide_keyed_service.h        |   8 +-
- .../password_change_delegate_impl.cc          |   2 +
- ...ld_classification_model_handler_factory.cc |  16 +--
- chrome/browser/permissions/BUILD.gn           |  24 ++--
- .../permissions/chrome_permissions_client.cc  |   2 -
- .../passage_embedder_delegate.cc              |   2 +
- .../permissions_ai_ui_selector.cc             |   5 +
- .../permissions_ai_ui_selector.h              |   5 +-
- .../prediction_model_handler_provider.cc      |  15 +-
- .../prediction_model_handler_provider.h       |   2 +
- .../quiet_notification_permission_ui_state.cc |   4 +-
- .../autocomplete_action_predictor.cc          |   2 +
- .../predictors/loading_predictor_config.cc    |   4 +-
- .../browser/predictors/predictors_features.cc |   3 +-
- .../search_prefetch/field_trial_settings.cc   |   4 +
- .../search_prefetch_url_loader_interceptor.cc |   1 +
- ...hrome_browser_main_extra_parts_profiles.cc |   3 +-
- chrome/browser/safe_browsing/BUILD.gn         |   1 -
- ...ction_intelligent_scan_delegate_factory.cc |   3 +-
- ...ation_content_detection_service_factory.cc |  13 +-
- .../preloading/AndroidPrerenderManager.java   |   1 +
- .../ui/autofill/chrome_autofill_client.cc     |  11 --
- chrome/browser/ui/tab_helpers.cc              |   1 -
- .../autofill_ml_internals_page_handler.cc     |   2 +
- .../autofill_ml_internals_page_handler.h      |   3 +
- .../autofill_ml_internals_ui.cc               |   4 +-
- .../new_tab_page/new_tab_page_handler.cc      |  10 +-
- .../webui/new_tab_page/new_tab_page_handler.h |   4 +-
- .../ui/webui/omnibox/omnibox_page_handler.cc  |   5 +-
- .../ui/webui/on_device_internals/BUILD.gn     |   3 +
- .../read_anything/read_aloud_app_model.cc     |  16 ++-
- .../read_anything/read_aloud_app_model.h      |   9 +-
- .../read_anything_app_controller.cc           |  12 ++
- .../read_anything_app_controller.h            |   2 +
- chrome/test/BUILD.gn                          |   4 +-
- chrome/utility/BUILD.gn                       |   2 +-
- chrome/utility/services.cc                    |   8 --
- components/BUILD.gn                           |   2 +-
- components/autofill/core/browser/BUILD.gn     |  30 ++--
- .../browser/foundations/autofill_manager.cc   |  14 +-
- .../browser/foundations/autofill_manager.h    |   3 +
- .../autofill_optimization_guide_decider.cc    |   5 +-
- .../field_classification_model_handler.cc     |  12 +-
- .../field_classification_model_handler.h      |   9 +-
- .../core/history_embeddings_features.cc       |   1 +
- .../aim_eligibility_service_features.cc       |   1 +
- .../browser/autocomplete_controller.cc        |   6 +
- .../omnibox/browser/base_search_provider.cc   |   4 +-
- .../omnibox/browser/omnibox_field_trial.cc    |   2 +-
- .../prediction_model_download_manager.cc      |   6 +-
- .../delivery/prediction_model_fetcher_impl.cc |   1 +
- .../core/hints/hints_fetcher.cc               |   1 +
- .../core/hints/hints_manager.cc               |   2 +
- .../private_ai_model_execution_fetcher.cc     |   4 +
- .../core/optimization_guide_features.cc       |  13 +-
- components/optimization_guide/features.gni    |   2 +-
- .../page_category_classifier_bridge_impl.cc   |   4 +
- .../page_category_classifier_bridge_impl.h    |   3 +
- .../core/page_content_annotations_features.cc |   6 +
- .../page_content_annotations_model_manager.cc |   1 +
- .../core/page_content_annotations_service.cc  |   6 +
- .../core/page_content_annotations_service.h   |   9 +-
- .../permissions/prediction_service/BUILD.gn   |  34 ++---
- .../notification_content_detection/BUILD.gn   |   4 -
- .../browser/client_side_phishing_model.cc     |   5 +-
- .../core/language_detection/BUILD.gn          |   2 -
- components/viz/service/BUILD.gn               |   4 +-
- components/viz/service/gl/gpu_service_impl.cc |  18 +--
- content/browser/BUILD.gn                      |   6 +-
- content/browser/gpu/gpu_process_host.cc       |   6 +-
- .../service_worker_main_resource_loader.cc    |   1 +
- content/utility/services.cc                   |  14 +-
- content/utility/webnn/webnn_sandbox_init.cc   |   7 +
- .../Disable-all-predictors-code.inc           |   2 +
- .../Disable-all-predictors-code.inc           |   1 +
- .../Disable-all-predictors-code.inc           |   2 +
- .../Disable-all-predictors-code.inc           |   1 +
- .../Disable-all-predictors-code.inc           |   5 +
- .../Disable-all-predictors-code.inc           |   1 +
- .../Disable-all-predictors-code.inc           |   1 +
- .../Disable-all-predictors-code.inc           |   2 +
- media/webrtc/BUILD.gn                         |   1 +
- media/webrtc/helpers.cc                       |   1 +
- services/on_device_model/BUILD.gn             |   8 +-
- services/on_device_model/android/BUILD.gn     |  10 +-
- services/on_device_model/fake/BUILD.gn        |  10 +-
- .../fake/fake_chrome_ml_api.cc                |   4 +
- .../fake/on_device_model_fake.cc              |   4 +-
- services/on_device_model/ml/BUILD.gn          |   2 +
- services/on_device_model/ml/chrome_ml.cc      |   2 +-
- services/on_device_model/ml/chrome_ml.h       |   2 +
- services/on_device_model/ml/chrome_ml_api.h   |   6 +
- services/on_device_model/on_device_model.gni  |   4 +-
- .../on_device_model_service.cc                |   9 +-
- .../on_device_model/public/cpp/features.cc    |   2 +
- .../public/cpp/test_support/BUILD.gn          |   2 +-
- .../on_device_model/public/mojom/BUILD.gn     |   2 +-
- services/on_device_model/safety/BUILD.gn      |   2 +-
- .../safety/safety_model_holder.cc             |   1 +
- .../passage_embeddings_service.cc             |   4 +
- services/webnn/BUILD.gn                       |  14 +-
- services/webnn/features.gni                   |   2 +-
- services/webnn/webnn_context_impl.cc          |  16 +--
- services/webnn/webnn_context_provider_impl.cc |  25 +---
- .../core/html/parser/html_document_parser.cc  |   1 +
- .../document_speculation_rules.cc             |   1 +
- .../platform/runtime_enabled_features.json5   |   2 +-
- 122 files changed, 401 insertions(+), 449 deletions(-)
- create mode 100644 cromite_flags/chrome/browser/browser_features_cc/Disable-all-predictors-code.inc
- create mode 100644 cromite_flags/chrome/browser/flags/android/chrome_feature_list_cc/Disable-all-predictors-code.inc
- create mode 100644 cromite_flags/chrome/common/chrome_features_cc/Disable-all-predictors-code.inc
- create mode 100644 cromite_flags/components/password_manager/core/browser/features/password_features_cc/Disable-all-predictors-code.inc
- create mode 100644 cromite_flags/components/permissions/features_cc/Disable-all-predictors-code.inc
- create mode 100644 cromite_flags/net/base/features_cc/Disable-all-predictors-code.inc
- create mode 100644 cromite_flags/services/network/public/cpp/features_cc/Disable-all-predictors-code.inc
- create mode 100644 cromite_flags/third_party/blink/common/features_cc/Disable-all-predictors-code.inc
+ chrome/browser/BUILD.gn                            |    1 
+ chrome/browser/about_flags.cc                      |    2 
+ .../chrome_autocomplete_provider_client.cc         |    4 -
+ chrome/browser/autofill/BUILD.gn                   |    2 
+ ...l_field_classification_model_service_factory.cc |   19 --
+ .../ai_embeddings_component_installer.cc           |   57 -------
+ .../background_download_service_factory.cc         |    2 
+ chrome/browser/optimization_guide/BUILD.gn         |    4 -
+ .../optimization_guide/chrome_hints_manager.cc     |    1 
+ .../optimization_guide_global_state.cc             |    6 -
+ .../model_validator_keyed_service.cc               |    8 +
+ .../optimization_guide_keyed_service.cc            |  158 ++------------------
+ .../optimization_guide_keyed_service.h             |    8 +
+ .../password_change_delegate_impl.cc               |    2 
+ ...d_field_classification_model_handler_factory.cc |   16 --
+ chrome/browser/permissions/BUILD.gn                |   24 +--
+ .../permissions/chrome_permissions_client.cc       |    2 
+ .../passage_embedder_delegate.cc                   |    2 
+ .../permissions_ai_ui_selector.cc                  |    5 +
+ .../permissions_ai_ui_selector.h                   |    5 +
+ .../prediction_model_handler_provider.cc           |   15 ++
+ .../prediction_model_handler_provider.h            |    2 
+ .../quiet_notification_permission_ui_state.cc      |    4 -
+ .../predictors/autocomplete_action_predictor.cc    |    2 
+ .../browser/predictors/loading_predictor_config.cc |    4 -
+ chrome/browser/predictors/predictors_features.cc   |    3 
+ .../search_prefetch/field_trial_settings.cc        |    4 +
+ .../search_prefetch_url_loader_interceptor.cc      |    1 
+ .../chrome_browser_main_extra_parts_profiles.cc    |    2 
+ chrome/browser/safe_browsing/BUILD.gn              |    1 
+ ..._detection_intelligent_scan_delegate_factory.cc |    3 
+ ...tification_content_detection_service_factory.cc |   13 --
+ .../browser/ui/autofill/chrome_autofill_client.cc  |   11 -
+ .../autofill_ml_internals_page_handler.cc          |    2 
+ .../autofill_ml_internals_page_handler.h           |    3 
+ .../autofill_ml_internals_ui.cc                    |    4 -
+ .../ui/webui/new_tab_page/new_tab_page_handler.cc  |   10 +
+ .../ui/webui/new_tab_page/new_tab_page_handler.h   |    4 -
+ .../omnibox_internals_page_handler.cc              |    5 -
+ .../browser/ui/webui/on_device_internals/BUILD.gn  |    3 
+ .../read_anything/read_aloud_app_model.cc          |    6 +
+ .../read_anything/read_aloud_app_model.h           |    5 +
+ .../read_anything/read_anything_app_controller.cc  |   28 +---
+ .../read_anything/read_anything_app_controller.h   |    2 
+ chrome/utility/BUILD.gn                            |    2 
+ chrome/utility/services.cc                         |    8 -
+ components/BUILD.gn                                |    2 
+ components/autofill/core/browser/BUILD.gn          |   30 ++--
+ .../core/browser/foundations/autofill_manager.cc   |   14 ++
+ .../core/browser/foundations/autofill_manager.h    |    3 
+ .../autofill_optimization_guide_decider.cc         |    5 -
+ .../ml_model/field_classification_model_handler.cc |   12 +-
+ .../ml_model/field_classification_model_handler.h  |    9 +
+ .../browser/aim_eligibility_service_features.cc    |    1 
+ .../omnibox/browser/autocomplete_controller.cc     |    6 +
+ components/omnibox/browser/base_search_provider.cc |    4 -
+ components/omnibox/browser/omnibox_field_trial.cc  |    2 
+ .../delivery/prediction_model_download_manager.cc  |    6 +
+ .../core/delivery/prediction_model_fetcher_impl.cc |    1 
+ .../optimization_guide/core/hints/hints_fetcher.cc |    1 
+ .../optimization_guide/core/hints/hints_manager.cc |    2 
+ .../private_ai_model_execution_fetcher.cc          |    4 +
+ .../core/optimization_guide_features.cc            |   13 +-
+ components/optimization_guide/features.gni         |    2 
+ .../page_category_classifier_bridge_impl.cc        |   36 -----
+ .../content/page_category_classifier_bridge_impl.h |   10 -
+ .../core/page_content_annotations_features.cc      |    6 +
+ .../core/page_content_annotations_model_manager.cc |    1 
+ .../core/page_content_annotations_service.cc       |    6 +
+ .../core/page_content_annotations_service.h        |    9 +
+ components/permissions/prediction_service/BUILD.gn |   34 ++--
+ .../notification_content_detection/BUILD.gn        |    4 -
+ .../client_side_phishing_model.cc                  |    5 +
+ .../translate/core/language_detection/BUILD.gn     |    2 
+ components/viz/service/BUILD.gn                    |    4 -
+ components/viz/service/gl/gpu_service_impl.cc      |   23 ---
+ content/browser/BUILD.gn                           |    6 -
+ content/browser/gpu/gpu_process_host.cc            |    6 -
+ .../service_worker_main_resource_loader.cc         |    1 
+ content/utility/services.cc                        |   32 ----
+ content/utility/webnn/webnn_sandbox_init.cc        |    7 +
+ .../Disable-all-predictors-code.inc                |    2 
+ .../Disable-all-predictors-code.inc                |    1 
+ .../Disable-all-predictors-code.inc                |    2 
+ .../Disable-all-predictors-code.inc                |    1 
+ .../features_cc/Disable-all-predictors-code.inc    |    5 +
+ .../features_cc/Disable-all-predictors-code.inc    |    1 
+ .../features_cc/Disable-all-predictors-code.inc    |    1 
+ .../features_cc/Disable-all-predictors-code.inc    |    2 
+ media/webrtc/BUILD.gn                              |    1 
+ media/webrtc/helpers.cc                            |    1 
+ services/on_device_model/BUILD.gn                  |    8 +
+ services/on_device_model/android/BUILD.gn          |   10 +
+ services/on_device_model/fake/BUILD.gn             |   10 +
+ .../on_device_model/fake/fake_chrome_ml_api.cc     |    4 +
+ .../on_device_model/fake/on_device_model_fake.cc   |    4 -
+ services/on_device_model/ml/BUILD.gn               |    2 
+ services/on_device_model/ml/chrome_ml.cc           |    2 
+ services/on_device_model/ml/chrome_ml.h            |    2 
+ services/on_device_model/ml/chrome_ml_api.h        |    6 +
+ services/on_device_model/on_device_model.gni       |    4 -
+ .../on_device_model/on_device_model_service.cc     |    9 -
+ services/on_device_model/public/cpp/features.cc    |    2 
+ .../public/cpp/test_support/BUILD.gn               |    2 
+ services/on_device_model/public/mojom/BUILD.gn     |    2 
+ services/on_device_model/safety/BUILD.gn           |    2 
+ .../on_device_model/safety/safety_model_holder.cc  |    1 
+ .../passage_embeddings_service.cc                  |    4 +
+ services/webnn/BUILD.gn                            |   14 +-
+ services/webnn/features.gni                        |    2 
+ services/webnn/webnn_context_impl.cc               |   16 +-
+ services/webnn/webnn_context_provider_impl.cc      |   24 ---
+ .../core/html/parser/html_document_parser.cc       |    1 
+ .../document_speculation_rules.cc                  |    1 
+ .../platform/runtime_enabled_features.json5        |    2 
+ .../preloading/AndroidPrerenderManager.java        |    1 
+ 116 files changed, 368 insertions(+), 568 deletions(-)
 
 diff --git a/chrome/browser/BUILD.gn b/chrome/browser/BUILD.gn
 --- a/chrome/browser/BUILD.gn
 +++ b/chrome/browser/BUILD.gn
-@@ -3928,7 +3928,6 @@ static_library("test_support") {
+@@ -4885,7 +4885,6 @@ source_set("test_support") {
      "//components/reporting/util:status",
      "//components/reporting/util:status_macros",
      "//components/reporting/util:task_runner_context",
@@ -151,7 +137,7 @@ diff --git a/chrome/browser/BUILD.gn b/chrome/browser/BUILD.gn
 diff --git a/chrome/browser/about_flags.cc b/chrome/browser/about_flags.cc
 --- a/chrome/browser/about_flags.cc
 +++ b/chrome/browser/about_flags.cc
-@@ -9302,6 +9302,7 @@ const FeatureEntry kFeatureEntries[] = {
+@@ -9330,6 +9330,7 @@ const FeatureEntry kFeatureEntries[] = {
       FEATURE_VALUE_TYPE(
           ntp_features::kCustomizeChromeWallpaperSearchInspirationCard)},
  
@@ -159,7 +145,7 @@ diff --git a/chrome/browser/about_flags.cc b/chrome/browser/about_flags.cc
      {"wallpaper-search-settings-visibility",
       flag_descriptions::kWallpaperSearchSettingsVisibilityName,
       flag_descriptions::kWallpaperSearchSettingsVisibilityDescription,
-@@ -9309,6 +9310,7 @@ const FeatureEntry kFeatureEntries[] = {
+@@ -9337,6 +9338,7 @@ const FeatureEntry kFeatureEntries[] = {
       FEATURE_VALUE_TYPE(optimization_guide::features::internal::
                              kWallpaperSearchSettingsVisibility)},
  #endif
@@ -170,7 +156,7 @@ diff --git a/chrome/browser/about_flags.cc b/chrome/browser/about_flags.cc
 diff --git a/chrome/browser/autocomplete/chrome_autocomplete_provider_client.cc b/chrome/browser/autocomplete/chrome_autocomplete_provider_client.cc
 --- a/chrome/browser/autocomplete/chrome_autocomplete_provider_client.cc
 +++ b/chrome/browser/autocomplete/chrome_autocomplete_provider_client.cc
-@@ -479,12 +479,12 @@ signin::IdentityManager* ChromeAutocompleteProviderClient::GetIdentityManager()
+@@ -481,12 +481,12 @@ signin::IdentityManager* ChromeAutocompleteProviderClient::GetIdentityManager()
  
  AutocompleteScoringModelService*
  ChromeAutocompleteProviderClient::GetAutocompleteScoringModelService() const {
@@ -188,17 +174,15 @@ diff --git a/chrome/browser/autocomplete/chrome_autocomplete_provider_client.cc 
 diff --git a/chrome/browser/autofill/BUILD.gn b/chrome/browser/autofill/BUILD.gn
 --- a/chrome/browser/autofill/BUILD.gn
 +++ b/chrome/browser/autofill/BUILD.gn
-@@ -40,8 +40,8 @@ static_library("autofill") {
-     "entity_suppression_manager_factory.h",
-     "gmail_otp_backend_factory.cc",
+@@ -40,8 +40,6 @@ static_library("autofill") {
      "gmail_otp_backend_factory.h",
+     "gmail_otp_service_factory.cc",
+     "gmail_otp_service_factory.h",
 -    "ml_log_router_factory.cc",
 -    "ml_log_router_factory.h",
-+    # "ml_log_router_factory.cc",
-+    # "ml_log_router_factory.h",
-     "one_time_token_service_factory.cc",
-     "one_time_token_service_factory.h",
      "otp_filling_safe_browsing_checker_client.cc",
+     "otp_filling_safe_browsing_checker_client.h",
+     "personal_context_entity_metadata_manager_factory.cc",
 diff --git a/chrome/browser/autofill/autofill_field_classification_model_service_factory.cc b/chrome/browser/autofill/autofill_field_classification_model_service_factory.cc
 --- a/chrome/browser/autofill/autofill_field_classification_model_service_factory.cc
 +++ b/chrome/browser/autofill/autofill_field_classification_model_service_factory.cc
@@ -238,10 +222,10 @@ diff --git a/chrome/browser/autofill/autofill_field_classification_model_service
 diff --git a/chrome/browser/component_updater/ai_embeddings_component_installer.cc b/chrome/browser/component_updater/ai_embeddings_component_installer.cc
 --- a/chrome/browser/component_updater/ai_embeddings_component_installer.cc
 +++ b/chrome/browser/component_updater/ai_embeddings_component_installer.cc
-@@ -105,28 +105,6 @@ class AIEmbeddingsComponentInstallerPolicy
-   void ComponentReady(const base::Version& version,
-                       const base::FilePath& install_dir,
-                       base::DictValue manifest) override {
+@@ -140,28 +140,6 @@ class AIEmbeddingsComponentInstallerPolicy
+       return;
+     }
+ 
 -    optimization_guide::proto::PassageEmbeddingsModelMetadata metadata;
 -    metadata.set_input_window_size(2048);
 -    metadata.set_output_size(768);
@@ -267,35 +251,51 @@ diff --git a/chrome/browser/component_updater/ai_embeddings_component_installer.
    }
  
    base::FilePath GetRelativeInstallDir() const override {
-@@ -171,10 +149,7 @@ void RegisterAIEmbeddingsComponent(
-     return;
-   }
- 
--  if (optimization_guide::
+@@ -197,41 +175,12 @@ void RegisterAIEmbeddingsComponent(
+     ComponentUpdateService* cus,
+     PrefService* local_state,
+     base::OnceCallback<void(bool /*registered*/)> callback) {
+-  CHECK(local_state);
+-  if (!base::FeatureList::IsEnabled(blink::features::kAIEmbeddingsAPI) &&
+-      !base::FeatureList::IsEnabled(
+-          blink::features::kAIEmbeddingsAPIForWorkers) &&
+-      !base::FeatureList::IsEnabled(blink::features::kAIDecisionModelAPI)) {
+-    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+-        FROM_HERE, base::BindOnce(std::move(callback), false));
+-    return;
+-  }
+-
+-  if (optimization_guide::model_execution::prefs::
 -          GetGenAILocalFoundationalModelEnterprisePolicySettings(local_state) ==
 -      optimization_guide::model_execution::prefs::
 -          GenAILocalFoundationalModelEnterprisePolicySettings::kDisallowed) {
-+  if ((true)) {
-     base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
-         FROM_HERE, base::BindOnce(std::move(callback), false));
-     return;
-@@ -187,15 +162,7 @@ void RegisterAIEmbeddingsComponent(
+-    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+-        FROM_HERE, base::BindOnce(std::move(callback), false));
+-    return;
+-  }
+-
+-  auto installer = base::MakeRefCounted<ComponentInstaller>(
+-      std::make_unique<AIEmbeddingsComponentInstallerPolicy>());
+-  installer->Register(cus, base::BindOnce(std::move(callback), true));
++  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
++      FROM_HERE, base::BindOnce(std::move(callback), false));
+ }
+ 
+ bool IsAIEmbeddingsModelAllowed(const PrefService* local_state) {
+-  CHECK(local_state);
+-  return local_state->GetBoolean(
+-             optimization_guide::model_execution::prefs::localstate::
+-                 kOnDeviceAiUserSettingsEnabled) &&
+-         optimization_guide::model_execution::prefs::
+-                 GetGenAILocalFoundationalModelEnterprisePolicySettings(
+-                     local_state) !=
+-             optimization_guide::model_execution::prefs::
+-                 GenAILocalFoundationalModelEnterprisePolicySettings::
+-                     kDisallowed;
++  return false;
+ }
  
  void ManageAIEmbeddingsComponentRegistration(ComponentUpdateService* cus,
-                                              PrefService* local_state) {
--  if (!local_state->GetBoolean(
--          optimization_guide::model_execution::prefs::localstate::
--              kOnDeviceAiUserSettingsEnabled) ||
--      optimization_guide::
--              GetGenAILocalFoundationalModelEnterprisePolicySettings(
--                  local_state) ==
--          optimization_guide::model_execution::prefs::
--              GenAILocalFoundationalModelEnterprisePolicySettings::
--                  kDisallowed) {
-+  if ((true)) {
-     local_state->SetBoolean(optimization_guide::model_execution::prefs::
-                                 localstate::kEmbeddingApiModelDownloadEligible,
-                             false);
 diff --git a/chrome/browser/download/background_download_service_factory.cc b/chrome/browser/download/background_download_service_factory.cc
 --- a/chrome/browser/download/background_download_service_factory.cc
 +++ b/chrome/browser/download/background_download_service_factory.cc
@@ -308,81 +308,19 @@ diff --git a/chrome/browser/download/background_download_service_factory.cc b/ch
      clients->insert(std::make_pair(
          download::DownloadClient::OPTIMIZATION_GUIDE_PREDICTION_MODELS,
          std::make_unique<download::DeferredClientWrapper>(
-diff --git a/chrome/browser/history_embeddings/history_embeddings_utils.cc b/chrome/browser/history_embeddings/history_embeddings_utils.cc
---- a/chrome/browser/history_embeddings/history_embeddings_utils.cc
-+++ b/chrome/browser/history_embeddings/history_embeddings_utils.cc
-@@ -58,6 +58,7 @@ constexpr auto kEnabledByDefaultForDesktopOnly =
- 
- // These are the kill switches for the launched history embeddings features.
- BASE_FEATURE(kLaunchedHistoryEmbeddings, kEnabledByDefaultForDesktopOnly);
-+SET_CROMITE_FEATURE_DISABLED(kLaunchedHistoryEmbeddings);
- 
- bool IsHistoryEmbeddingsEnabledForProfile(Profile* profile) {
-   if (!IsHistoryEmbeddingsFeatureEnabled()) {
-@@ -77,6 +78,7 @@ bool IsHistoryEmbeddingsAnswersEnabledForProfile(Profile* profile) {
-     return false;
-   }
- 
-+#if false /*BUILDFLAG(BUILD_WITH_TFLITE_LIB)*/
-   if (optimization_guide::
-           GetGenAILocalFoundationalModelEnterprisePolicySettings(
-               g_browser_process->local_state()) ==
-@@ -91,6 +93,9 @@ bool IsHistoryEmbeddingsAnswersEnabledForProfile(Profile* profile) {
-          optimization_guide_keyed_service
-              ->ShouldFeatureAllowModelExecutionForSignedInUser(
-                  optimization_guide::UserVisibleFeatureKey::kHistorySearch);
-+#else
-+  return false;
-+#endif
- }
- 
- bool IsHistoryEmbeddingsSettingVisible(Profile* profile) {
-diff --git a/chrome/browser/navigation_predictor/preloading_model_keyed_service.cc b/chrome/browser/navigation_predictor/preloading_model_keyed_service.cc
---- a/chrome/browser/navigation_predictor/preloading_model_keyed_service.cc
-+++ b/chrome/browser/navigation_predictor/preloading_model_keyed_service.cc
-@@ -32,10 +32,12 @@ PreloadingModelKeyedService::Inputs::operator=(const Inputs& other) = default;
- 
- PreloadingModelKeyedService::PreloadingModelKeyedService(
-     optimization_guide::OptimizationGuideModelProvider* model_provider) {
-+#if false /*BUILDFLAG(BUILD_WITH_TFLITE_LIB)*/
-   if (model_provider) {
-     preloading_model_handler_ =
-         std::make_unique<PreloadingModelHandler>(model_provider);
-   }
-+#endif
- }
- 
- PreloadingModelKeyedService::~PreloadingModelKeyedService() = default;
-diff --git a/chrome/browser/navigation_predictor/preloading_model_keyed_service_factory.cc b/chrome/browser/navigation_predictor/preloading_model_keyed_service_factory.cc
---- a/chrome/browser/navigation_predictor/preloading_model_keyed_service_factory.cc
-+++ b/chrome/browser/navigation_predictor/preloading_model_keyed_service_factory.cc
-@@ -45,12 +45,5 @@ std::unique_ptr<KeyedService>
-           blink::features::kPreloadingHeuristicsMLModel)) {
-     return nullptr;
-   }
--  auto* profile = Profile::FromBrowserContext(context);
--  auto* global_state_holder =
--      OptimizationGuideGlobalStateHolderKeyedServiceFactory::GetForProfile(
--          profile);
--  return std::make_unique<PreloadingModelKeyedService>(
--      global_state_holder
--          ? &global_state_holder->GetGlobalState().model_provider()
--          : nullptr);
-+  return nullptr;
- }
 diff --git a/chrome/browser/optimization_guide/BUILD.gn b/chrome/browser/optimization_guide/BUILD.gn
 --- a/chrome/browser/optimization_guide/BUILD.gn
 +++ b/chrome/browser/optimization_guide/BUILD.gn
-@@ -54,7 +54,7 @@ source_set("impl") {
+@@ -55,7 +55,7 @@ source_set("impl") {
    sources = [
      "chrome_browser_main_extra_parts_optimization_guide.cc",
      "chrome_hints_manager.cc",
 -    "chrome_model_quality_logs_uploader_service.cc",
 +    # "chrome_model_quality_logs_uploader_service.cc",
+     "model_execution/on_device_model_ui_metadata.cc",
      "model_execution/optimization_guide_global_state.cc",
      "model_validator_keyed_service.cc",
-     "model_validator_keyed_service_factory.cc",
-@@ -108,7 +108,7 @@ source_set("impl") {
+@@ -111,7 +111,7 @@ source_set("impl") {
  
  source_set("optimization_guide_on_device_model_installer") {
    sources = [
@@ -394,7 +332,7 @@ diff --git a/chrome/browser/optimization_guide/BUILD.gn b/chrome/browser/optimiz
 diff --git a/chrome/browser/optimization_guide/chrome_hints_manager.cc b/chrome/browser/optimization_guide/chrome_hints_manager.cc
 --- a/chrome/browser/optimization_guide/chrome_hints_manager.cc
 +++ b/chrome/browser/optimization_guide/chrome_hints_manager.cc
-@@ -25,6 +25,7 @@ namespace {
+@@ -24,6 +24,7 @@ namespace {
  // Returns true if we can make a request for hints for |prediction|.
  bool IsAllowedToFetchForNavigationPrediction(
      const NavigationPredictorKeyedService::Prediction& prediction) {
@@ -405,19 +343,24 @@ diff --git a/chrome/browser/optimization_guide/chrome_hints_manager.cc b/chrome/
 diff --git a/chrome/browser/optimization_guide/model_execution/optimization_guide_global_state.cc b/chrome/browser/optimization_guide/model_execution/optimization_guide_global_state.cc
 --- a/chrome/browser/optimization_guide/model_execution/optimization_guide_global_state.cc
 +++ b/chrome/browser/optimization_guide/model_execution/optimization_guide_global_state.cc
-@@ -123,7 +123,7 @@ OptimizationGuideGlobalState::OptimizationGuideGlobalState(
+@@ -183,13 +183,7 @@ OptimizationGuideGlobalState::OptimizationGuideGlobalState(
  #else  // !BUILDFLAG(USE_ON_DEVICE_MODEL_SERVICE)
  OptimizationGuideGlobalState::OptimizationGuideGlobalState() {
  
 -#if BUILDFLAG(IS_ANDROID)
-+#if false && BUILDFLAG(IS_ANDROID)
-   on_device_capability_ = std::make_unique<ModelBrokerAndroid>(
-       *g_browser_process->local_state(), model_provider());
- #else   // !BUILDFLAG(IS_ANDROID)
+-  on_device_capability_ =
+-      std::make_unique<ModelBrokerAndroid>(*g_browser_process->local_state());
+-#else   // !BUILDFLAG(IS_ANDROID)
+-  // Create a stub capability that can't do anything.
+   on_device_capability_ = std::make_unique<OnDeviceCapability>();
+-#endif  // BUILDFLAG(IS_ANDROID)
+ }
+ #endif  // BUILDFLAG(USE_ON_DEVICE_MODEL_SERVICE)
+ 
 diff --git a/chrome/browser/optimization_guide/model_validator_keyed_service.cc b/chrome/browser/optimization_guide/model_validator_keyed_service.cc
 --- a/chrome/browser/optimization_guide/model_validator_keyed_service.cc
 +++ b/chrome/browser/optimization_guide/model_validator_keyed_service.cc
-@@ -28,6 +28,7 @@
+@@ -29,6 +29,7 @@
  
  namespace {
  
@@ -425,7 +368,7 @@ diff --git a/chrome/browser/optimization_guide/model_validator_keyed_service.cc 
  std::unique_ptr<optimization_guide::proto::ModelValidationInput>
  ParseRequestFromFile(base::FilePath path) {
    std::string serialized_request;
-@@ -41,6 +42,7 @@ ParseRequestFromFile(base::FilePath path) {
+@@ -42,6 +43,7 @@ ParseRequestFromFile(base::FilePath path) {
    }
    return request;
  }
@@ -433,15 +376,15 @@ diff --git a/chrome/browser/optimization_guide/model_validator_keyed_service.cc 
  
  void WriteResponseToFile(
      base::FilePath path,
-@@ -91,6 +93,7 @@ namespace optimization_guide {
+@@ -92,6 +94,7 @@ namespace optimization_guide {
  ModelValidatorKeyedService::ModelValidatorKeyedService(Profile* profile)
      : profile_(profile) {
    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 +#if false /*BUILDFLAG(BUILD_WITH_TFLITE_LIB)*/
-   DCHECK(ShouldStartModelValidator());
+   CHECK(ShouldStartModelValidator(), base::NotFatalUntil::M161);
    auto* opt_guide_service =
        OptimizationGuideKeyedServiceFactory::GetForProfile(profile);
-@@ -130,6 +133,7 @@ ModelValidatorKeyedService::ModelValidatorKeyedService(Profile* profile)
+@@ -131,6 +134,7 @@ ModelValidatorKeyedService::ModelValidatorKeyedService(Profile* profile)
              &ModelValidatorKeyedService::StartOnDeviceModelExecutionValidation,
              weak_ptr_factory_.GetWeakPtr()));
    }
@@ -449,7 +392,7 @@ diff --git a/chrome/browser/optimization_guide/model_validator_keyed_service.cc 
  }
  
  ModelValidatorKeyedService::~ModelValidatorKeyedService() = default;
-@@ -156,6 +160,7 @@ void ModelValidatorKeyedService::OnPrimaryAccountChanged(
+@@ -157,6 +161,7 @@ void ModelValidatorKeyedService::OnPrimaryAccountChanged(
  
  void ModelValidatorKeyedService::StartModelExecutionValidation() {
    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -457,7 +400,7 @@ diff --git a/chrome/browser/optimization_guide/model_validator_keyed_service.cc 
    auto* opt_guide_service =
        OptimizationGuideKeyedServiceFactory::GetForProfile(profile_);
    if (!opt_guide_service) {
-@@ -174,6 +179,7 @@ void ModelValidatorKeyedService::StartModelExecutionValidation() {
+@@ -175,6 +180,7 @@ void ModelValidatorKeyedService::StartModelExecutionValidation() {
        /*options=*/{},
        base::BindOnce(&ModelValidatorKeyedService::OnModelExecuteResponse,
                       weak_ptr_factory_.GetWeakPtr()));
@@ -465,7 +408,7 @@ diff --git a/chrome/browser/optimization_guide/model_validator_keyed_service.cc 
  }
  
  void ModelValidatorKeyedService::StartOnDeviceModelExecutionValidation(
-@@ -191,6 +197,7 @@ void ModelValidatorKeyedService::StartOnDeviceModelExecutionValidation(
+@@ -192,6 +198,7 @@ void ModelValidatorKeyedService::StartOnDeviceModelExecutionValidation(
  
  void ModelValidatorKeyedService::PerformOnDeviceModelExecutionValidation(
      std::unique_ptr<optimization_guide::proto::ModelValidationInput> input) {
@@ -473,7 +416,7 @@ diff --git a/chrome/browser/optimization_guide/model_validator_keyed_service.cc 
    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
    auto* opt_guide_service =
        OptimizationGuideKeyedServiceFactory::GetForProfile(profile_);
-@@ -238,6 +245,7 @@ void ModelValidatorKeyedService::ExecuteModel(
+@@ -239,6 +246,7 @@ void ModelValidatorKeyedService::ExecuteModel(
        *metadata, base::BindRepeating(
                       &ModelValidatorKeyedService::OnDeviceModelExecuteResponse,
                       weak_ptr_factory_.GetWeakPtr(), std::move(request)));
@@ -484,16 +427,16 @@ diff --git a/chrome/browser/optimization_guide/model_validator_keyed_service.cc 
 diff --git a/chrome/browser/optimization_guide/optimization_guide_keyed_service.cc b/chrome/browser/optimization_guide/optimization_guide_keyed_service.cc
 --- a/chrome/browser/optimization_guide/optimization_guide_keyed_service.cc
 +++ b/chrome/browser/optimization_guide/optimization_guide_keyed_service.cc
-@@ -168,7 +168,7 @@ class FetcherDelegate : public ModelExecutionManager::Delegate {
+@@ -170,7 +170,7 @@ class ModelExecutionDelegate : public ModelExecutionManager::Delegate {
    raw_ptr<content::BrowserContext> browser_context_;
  };
  
--ModelExecutionFeaturesController::SettingsVisibilityResult
-+[[maybe_unused]] ModelExecutionFeaturesController::SettingsVisibilityResult
- ShouldHideHistorySearch(PrefService* local_state) {
-   using SettingsVisibilityResult =
-       ModelExecutionFeaturesController::SettingsVisibilityResult;
-@@ -244,11 +244,7 @@ void OptimizationGuideKeyedService::BindModelBroker(
+-}  // namespace
++[[maybe_unused]] }  // namespace
+ 
+ // static
+ std::unique_ptr<optimization_guide::PushNotificationManager>
+@@ -223,11 +223,7 @@ void OptimizationGuideKeyedService::BindModelBroker(
  
  std::unique_ptr<optimization_guide::ModelBrokerClient>
  OptimizationGuideKeyedService::CreateModelBrokerClient() {
@@ -506,10 +449,18 @@ diff --git a/chrome/browser/optimization_guide/optimization_guide_keyed_service.
  }
  
  #if BUILDFLAG(IS_ANDROID)
-@@ -361,32 +357,11 @@ void OptimizationGuideKeyedService::InitializeModelExecution(Profile* profile) {
-                                 ->GetURLLoaderFactoryForBrowserProcess();
+@@ -332,57 +328,6 @@ void OptimizationGuideKeyedService::Initialize() {
+ }
  
-   if (!profile->IsOffTheRecord() && !profile->IsGuestSession()) {
+ void OptimizationGuideKeyedService::InitializeModelExecution(Profile* profile) {
+-  if (!base::FeatureList::IsEnabled(
+-          optimization_guide::features::kOptimizationGuideModelExecution)) {
+-    return;
+-  }
+-  auto url_loader_factory = profile->GetDefaultStoragePartition()
+-                                ->GetURLLoaderFactoryForBrowserProcess();
+-
+-  if (!profile->IsOffTheRecord() && !profile->IsGuestSession()) {
 -    auto* variations_service = g_browser_process->variations_service();
 -    auto dogfood_status =
 -        variations_service && variations_service->IsLikelyDogfoodClient()
@@ -521,38 +472,42 @@ diff --git a/chrome/browser/optimization_guide/optimization_guide_keyed_service.
 -        std::make_unique<optimization_guide::ModelExecutionFeaturesController>(
 -            profile->GetPrefs(), IdentityManagerFactory::GetForProfile(profile),
 -            policy::ManagementServiceFactory::GetForProfile(profile),
--            dogfood_status, is_official_build,
--            base::BindRepeating(&ShouldHideHistorySearch,
--                                g_browser_process->local_state()));
+-            dogfood_status, is_official_build);
 -
-     // Don't create logs uploader service when feature is disabled. All the
-     // logs upload get route through this service which exists one per
-     // profile.
-     if (base::FeatureList::IsEnabled(
-             optimization_guide::features::kModelQualityLogging)) {
+-    // Don't create logs uploader service when feature is disabled. All the
+-    // logs upload get route through this service which exists one per
+-    // profile.
+-    if (base::FeatureList::IsEnabled(
+-            optimization_guide::features::kModelQualityLogging)) {
 -      model_quality_logs_uploader_service_ = std::make_unique<
 -          optimization_guide::ChromeModelQualityLogsUploaderService>(
 -          url_loader_factory, g_browser_process->local_state(),
 -          model_execution_features_controller_
 -              ? model_execution_features_controller_->GetWeakPtr()
 -              : nullptr);
-     }
-     RecordModelExecutionFeatureSyntheticFieldTrial(
-         optimization_guide::UserVisibleFeatureKey::kHistorySearch,
-@@ -399,12 +374,6 @@ void OptimizationGuideKeyedService::InitializeModelExecution(Profile* profile) {
-     delegate = std::make_unique<FetcherDelegate>(browser_context_);
-   }
- 
+-    }
+-  }
+-
 -  model_execution_manager_ = std::make_unique<ModelExecutionManager>(
--      url_loader_factory, IdentityManagerFactory::GetForProfile(profile),
--      std::move(delegate), optimization_guide_logger_.get(),
+-      url_loader_factory,
+-      base::BindRepeating(
+-          [](base::WeakPtr<Profile> profile)
+-              -> network::mojom::NetworkContext* {
+-            return profile ? profile->GetDefaultStoragePartition()
+-                                 ->GetNetworkContext()
+-                           : nullptr;
+-          },
+-          profile->GetWeakPtr()),
+-      IdentityManagerFactory::GetForProfile(profile),
+-      std::make_unique<ModelExecutionDelegate>(browser_context_),
+-      optimization_guide_logger_.get(),
 -      model_quality_logs_uploader_service_
 -          ? model_quality_logs_uploader_service_->GetWeakPtr()
 -          : nullptr);
  }
  
  optimization_guide::ChromeHintsManager*
-@@ -456,7 +425,6 @@ void OptimizationGuideKeyedService::RemoveObserverForOptimizationTargetModel(
+@@ -434,7 +379,6 @@ void OptimizationGuideKeyedService::RemoveObserverForOptimizationTargetModel(
  void OptimizationGuideKeyedService::RegisterOptimizationTypes(
      const std::vector<optimization_guide::proto::OptimizationType>&
          optimization_types) {
@@ -560,10 +515,10 @@ diff --git a/chrome/browser/optimization_guide/optimization_guide_keyed_service.
  }
  
  optimization_guide::OptimizationGuideDecision
-@@ -521,23 +489,17 @@ void OptimizationGuideKeyedService::ExecuteModel(
+@@ -500,23 +444,17 @@ void OptimizationGuideKeyedService::ExecuteModel(
      optimization_guide::OptimizationGuideModelExecutionResultCallback
          callback) {
-   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+   CHECK_CURRENTLY_ON(content::BrowserThread::UI, base::NotFatalUntil::M161);
 -  if (!model_execution_manager_) {
 -    std::move(callback).Run(
 -        optimization_guide::OptimizationGuideModelExecutionResult(
@@ -595,7 +550,7 @@ diff --git a/chrome/browser/optimization_guide/optimization_guide_keyed_service.
  }
  
  std::unique_ptr<optimization_guide::RemoteModelExecutionSession>
-@@ -611,8 +573,6 @@ void OptimizationGuideKeyedService::AddOnDemandHintForTesting(
+@@ -610,8 +548,6 @@ void OptimizationGuideKeyedService::AddOnDemandHintForTesting(
  void OptimizationGuideKeyedService::AddExecutionResultForTesting(
      optimization_guide::ModelBasedCapabilityKey feature,
      optimization_guide::OptimizationGuideModelExecutionResult result) {
@@ -604,7 +559,7 @@ diff --git a/chrome/browser/optimization_guide/optimization_guide_keyed_service.
  }
  
  void OptimizationGuideKeyedService::ClearData() {
-@@ -621,9 +581,6 @@ void OptimizationGuideKeyedService::ClearData() {
+@@ -620,9 +556,6 @@ void OptimizationGuideKeyedService::ClearData() {
  
  void OptimizationGuideKeyedService::Shutdown() {
    hints_manager_->Shutdown();
@@ -614,7 +569,7 @@ diff --git a/chrome/browser/optimization_guide/optimization_guide_keyed_service.
  }
  
  void OptimizationGuideKeyedService::OverrideTargetModelForTesting(
-@@ -637,7 +594,6 @@ void OptimizationGuideKeyedService::
+@@ -636,7 +569,6 @@ void OptimizationGuideKeyedService::
      SetModelQualityLogsUploaderServiceForTesting(
          std::unique_ptr<optimization_guide::ModelQualityLogsUploaderService>
              uploader) {
@@ -622,7 +577,7 @@ diff --git a/chrome/browser/optimization_guide/optimization_guide_keyed_service.
  }
  
  optimization_guide::ModelExecutionFeaturesController*
-@@ -647,8 +603,6 @@ OptimizationGuideKeyedService::GetModelExecutionFeaturesController() {
+@@ -646,8 +578,6 @@ OptimizationGuideKeyedService::GetModelExecutionFeaturesController() {
  
  void OptimizationGuideKeyedService::AllowUnsignedUserForTesting(
      optimization_guide::UserVisibleFeatureKey feature) {
@@ -631,7 +586,7 @@ diff --git a/chrome/browser/optimization_guide/optimization_guide_keyed_service.
  }
  
  bool OptimizationGuideKeyedService::ShouldFeatureBeCurrentlyEnabledForUser(
-@@ -657,8 +611,7 @@ bool OptimizationGuideKeyedService::ShouldFeatureBeCurrentlyEnabledForUser(
+@@ -656,8 +586,7 @@ bool OptimizationGuideKeyedService::ShouldFeatureBeCurrentlyEnabledForUser(
    if (!model_execution_features_controller_) {
      return false;
    }
@@ -641,7 +596,7 @@ diff --git a/chrome/browser/optimization_guide/optimization_guide_keyed_service.
  }
  
  bool OptimizationGuideKeyedService::
-@@ -667,84 +620,33 @@ bool OptimizationGuideKeyedService::
+@@ -666,84 +595,33 @@ bool OptimizationGuideKeyedService::
    if (!model_execution_features_controller_) {
      return false;
    }
@@ -652,13 +607,13 @@ diff --git a/chrome/browser/optimization_guide/optimization_guide_keyed_service.
  
  bool OptimizationGuideKeyedService::ShouldFeatureBeCurrentlyAllowedForFeedback(
      optimization_guide::proto::LogAiDataRequest::FeatureCase feature) const {
--  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+-  CHECK_CURRENTLY_ON(content::BrowserThread::UI, base::NotFatalUntil::M161);
 -
 -  // If logging is enabled, feedback is always also enabled.
 -  const optimization_guide::MqlsFeatureMetadata* metadata =
 -      optimization_guide::MqlsFeatureRegistry::GetInstance().GetFeature(
 -          feature);
--  DCHECK(metadata);
+-  CHECK(metadata, base::NotFatalUntil::M161);
 -  if (model_execution_features_controller_ &&
 -      model_execution_features_controller_
 -          ->ShouldFeatureBeCurrentlyAllowedForLogging(metadata)) {
@@ -682,7 +637,7 @@ diff --git a/chrome/browser/optimization_guide/optimization_guide_keyed_service.
  
  bool OptimizationGuideKeyedService::IsSettingVisible(
      optimization_guide::UserVisibleFeatureKey feature) const {
-   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+   CHECK_CURRENTLY_ON(content::BrowserThread::UI, base::NotFatalUntil::M161);
 -  if (!model_execution_features_controller_) {
 -    return false;
 -  }
@@ -713,7 +668,7 @@ diff --git a/chrome/browser/optimization_guide/optimization_guide_keyed_service.
  
  void OptimizationGuideKeyedService::AddModelExecutionSettingsEnabledObserver(
      optimization_guide::SettingsEnabledObserver* observer) {
-   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+   CHECK_CURRENTLY_ON(content::BrowserThread::UI, base::NotFatalUntil::M161);
 -  if (!model_execution_features_controller_) {
 -    return;
 -  }
@@ -722,18 +677,18 @@ diff --git a/chrome/browser/optimization_guide/optimization_guide_keyed_service.
  
  void OptimizationGuideKeyedService::RemoveModelExecutionSettingsEnabledObserver(
      optimization_guide::SettingsEnabledObserver* observer) {
-   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+   CHECK_CURRENTLY_ON(content::BrowserThread::UI, base::NotFatalUntil::M161);
 -  if (!model_execution_features_controller_) {
 -    return;
 -  }
 -  model_execution_features_controller_->RemoveObserver(observer);
  }
  
- void OptimizationGuideKeyedService::
+ optimization_guide::OnDeviceModelEligibilityReason
 diff --git a/chrome/browser/optimization_guide/optimization_guide_keyed_service.h b/chrome/browser/optimization_guide/optimization_guide_keyed_service.h
 --- a/chrome/browser/optimization_guide/optimization_guide_keyed_service.h
 +++ b/chrome/browser/optimization_guide/optimization_guide_keyed_service.h
-@@ -281,7 +281,7 @@ class OptimizationGuideKeyedService
+@@ -284,7 +284,7 @@ class OptimizationGuideKeyedService
  
    optimization_guide::ModelQualityLogsUploaderService*
    GetModelQualityLogsUploaderService() {
@@ -742,7 +697,7 @@ diff --git a/chrome/browser/optimization_guide/optimization_guide_keyed_service.
    }
  
    virtual optimization_guide::ModelExecutionFeaturesController*
-@@ -338,7 +338,7 @@ class OptimizationGuideKeyedService
+@@ -341,7 +341,7 @@ class OptimizationGuideKeyedService
    }
  
    optimization_guide::ModelExecutionManager* GetModelExecutionManager() {
@@ -751,7 +706,7 @@ diff --git a/chrome/browser/optimization_guide/optimization_guide_keyed_service.
    }
  
    // Notifies |hints_manager_| that the navigation associated with
-@@ -407,17 +407,21 @@ class OptimizationGuideKeyedService
+@@ -404,17 +404,21 @@ class OptimizationGuideKeyedService
    // Manages the storing, loading, and fetching of hints.
    std::unique_ptr<optimization_guide::ChromeHintsManager> hints_manager_;
  
@@ -790,7 +745,7 @@ diff --git a/chrome/browser/password_manager/password_change_delegate_impl.cc b/
 diff --git a/chrome/browser/password_manager/password_field_classification_model_handler_factory.cc b/chrome/browser/password_manager/password_field_classification_model_handler_factory.cc
 --- a/chrome/browser/password_manager/password_field_classification_model_handler_factory.cc
 +++ b/chrome/browser/password_manager/password_field_classification_model_handler_factory.cc
-@@ -131,19 +131,5 @@ PasswordFieldClassificationModelHandlerFactory::GetBrowserContextToUse(
+@@ -134,19 +134,5 @@ PasswordFieldClassificationModelHandlerFactory::GetBrowserContextToUse(
  std::unique_ptr<KeyedService> PasswordFieldClassificationModelHandlerFactory::
      BuildServiceInstanceForBrowserContext(
          content::BrowserContext* context) const {
@@ -814,7 +769,7 @@ diff --git a/chrome/browser/password_manager/password_field_classification_model
 diff --git a/chrome/browser/permissions/BUILD.gn b/chrome/browser/permissions/BUILD.gn
 --- a/chrome/browser/permissions/BUILD.gn
 +++ b/chrome/browser/permissions/BUILD.gn
-@@ -43,12 +43,10 @@ source_set("permissions") {
+@@ -45,12 +45,10 @@ source_set("permissions") {
      "prediction_service/language_detection_observer.h",
      "prediction_service/passage_embedder_delegate.cc",
      "prediction_service/passage_embedder_delegate.h",
@@ -829,7 +784,7 @@ diff --git a/chrome/browser/permissions/BUILD.gn b/chrome/browser/permissions/BU
      "prediction_service/prediction_service_factory.cc",
      "prediction_service/prediction_service_factory.h",
      "prediction_service/prediction_service_request.cc",
-@@ -88,7 +86,7 @@ source_set("permissions") {
+@@ -89,7 +87,7 @@ source_set("permissions") {
      "//chrome/browser/metrics",
      "//chrome/browser/nfc",
      "//chrome/browser/optimization_guide",
@@ -837,8 +792,8 @@ diff --git a/chrome/browser/permissions/BUILD.gn b/chrome/browser/permissions/BU
 +    # "//chrome/browser/passage_embeddings",
      "//chrome/browser/profiles",
      "//chrome/browser/profiles:profile",
-     "//chrome/browser/resource_coordinator",
-@@ -120,7 +118,7 @@ source_set("permissions") {
+     "//chrome/browser/pwc",
+@@ -123,7 +121,7 @@ source_set("permissions") {
      "//components/language_detection/core",
      "//components/optimization_guide/core",
      "//components/optimization_guide/proto:optimization_guide_proto",
@@ -847,7 +802,7 @@ diff --git a/chrome/browser/permissions/BUILD.gn b/chrome/browser/permissions/BU
      "//components/permissions",
      "//components/permissions/prediction_service",
      "//components/pref_registry",
-@@ -130,7 +128,7 @@ source_set("permissions") {
+@@ -133,7 +131,7 @@ source_set("permissions") {
      "//components/safe_browsing/core/browser/db:v5_get_hash_protocol_manager",
      "//components/safe_browsing/core/common",
      "//components/safe_browsing/core/common:safe_browsing_prefs",
@@ -856,7 +811,7 @@ diff --git a/chrome/browser/permissions/BUILD.gn b/chrome/browser/permissions/BU
      "//components/site_engagement/content",
      "//components/subresource_filter/content/browser",
      "//components/supervised_user/core/common:features",
-@@ -193,12 +191,12 @@ source_set("permissions") {
+@@ -200,12 +198,12 @@ source_set("permissions") {
      }
    }
  
@@ -878,7 +833,7 @@ diff --git a/chrome/browser/permissions/BUILD.gn b/chrome/browser/permissions/BU
 diff --git a/chrome/browser/permissions/chrome_permissions_client.cc b/chrome/browser/permissions/chrome_permissions_client.cc
 --- a/chrome/browser/permissions/chrome_permissions_client.cc
 +++ b/chrome/browser/permissions/chrome_permissions_client.cc
-@@ -551,8 +551,6 @@ ChromePermissionsClient::CreatePermissionUiSelectors(
+@@ -546,8 +546,6 @@ ChromePermissionsClient::CreatePermissionUiSelectors(
  #endif
    selectors.emplace_back(std::make_unique<PrefBasedQuietPermissionUiSelector>(
        Profile::FromBrowserContext(browser_context)));
@@ -909,7 +864,7 @@ diff --git a/chrome/browser/permissions/prediction_service/passage_embedder_dele
 diff --git a/chrome/browser/permissions/prediction_service/permissions_ai_ui_selector.cc b/chrome/browser/permissions/prediction_service/permissions_ai_ui_selector.cc
 --- a/chrome/browser/permissions/prediction_service/permissions_ai_ui_selector.cc
 +++ b/chrome/browser/permissions/prediction_service/permissions_ai_ui_selector.cc
-@@ -393,6 +393,7 @@ void PermissionsAiUiSelector::SelectUiToUse(
+@@ -391,6 +391,7 @@ void PermissionsAiUiSelector::SelectUiToUse(
    }
  }
  
@@ -917,7 +872,7 @@ diff --git a/chrome/browser/permissions/prediction_service/permissions_ai_ui_sel
  void PermissionsAiUiSelector::OnGetInnerTextForOnDeviceModel(
      ModelExecutionData model_data,
      ModelExecutionCallback model_execution_callback,
-@@ -447,6 +448,7 @@ void PermissionsAiUiSelector::OnGetInnerTextForOnDeviceModel(
+@@ -445,6 +446,7 @@ void PermissionsAiUiSelector::OnGetInnerTextForOnDeviceModel(
    InquireServerModel(model_data.features,
                       std::move(model_data.request_metadata));
  }
@@ -1110,7 +1065,7 @@ diff --git a/chrome/browser/predictors/autocomplete_action_predictor.cc b/chrome
 diff --git a/chrome/browser/predictors/loading_predictor_config.cc b/chrome/browser/predictors/loading_predictor_config.cc
 --- a/chrome/browser/predictors/loading_predictor_config.cc
 +++ b/chrome/browser/predictors/loading_predictor_config.cc
-@@ -13,8 +13,8 @@
+@@ -11,8 +11,8 @@
  namespace predictors {
  
  bool IsLoadingPredictorEnabled(Profile* profile) {
@@ -1137,7 +1092,7 @@ diff --git a/chrome/browser/predictors/predictors_features.cc b/chrome/browser/p
 diff --git a/chrome/browser/preloading/prefetch/search_prefetch/field_trial_settings.cc b/chrome/browser/preloading/prefetch/search_prefetch/field_trial_settings.cc
 --- a/chrome/browser/preloading/prefetch/search_prefetch/field_trial_settings.cc
 +++ b/chrome/browser/preloading/prefetch/search_prefetch/field_trial_settings.cc
-@@ -282,3 +282,7 @@ bool ShouldSuppressPrefetchForUnsupportedMode(const AutocompleteMatch& match) {
+@@ -272,3 +272,7 @@ bool ShouldSuppressPrefetchForUnsupportedMode(const AutocompleteMatch& match) {
    return ShouldSuppressPreloadForUnsupportedModeInternal(
        match, kUnsupportedSearchPrefetchModes.Get());
  }
@@ -1159,16 +1114,15 @@ diff --git a/chrome/browser/preloading/prefetch/search_prefetch/search_prefetch_
 diff --git a/chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.cc b/chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.cc
 --- a/chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.cc
 +++ b/chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.cc
-@@ -812,7 +812,7 @@ void ChromeBrowserMainExtraPartsProfiles::
+@@ -809,7 +809,6 @@ void ChromeBrowserMainExtraPartsProfiles::
+     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
    autofill::CrossTabCopyPasteTrackerFactory::GetInstance();
  #endif
-   autofill::EntitySuppressionManagerFactory::GetInstance();
 -  autofill::MlLogRouterFactory::GetInstance();
-+  // autofill::MlLogRouterFactory::GetInstance();
-   autofill::OneTimeTokenServiceFactory::GetInstance();
+   autofill::PersonalContextEntityMetadataManagerFactory::GetInstance();
    autofill::PersonalDataManagerFactory::GetInstance();
-   autofill::ValuablesDataManagerFactory::GetInstance();
-@@ -1364,7 +1364,6 @@ void ChromeBrowserMainExtraPartsProfiles::
+   autofill::SmsOtpServiceFactory::GetInstance();
+@@ -1334,7 +1333,6 @@ void ChromeBrowserMainExtraPartsProfiles::
  #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
    policy::UserPolicyOidcSigninServiceFactory::GetInstance();
  #endif
@@ -1179,7 +1133,7 @@ diff --git a/chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.cc
 diff --git a/chrome/browser/safe_browsing/BUILD.gn b/chrome/browser/safe_browsing/BUILD.gn
 --- a/chrome/browser/safe_browsing/BUILD.gn
 +++ b/chrome/browser/safe_browsing/BUILD.gn
-@@ -77,7 +77,6 @@ static_library("safe_browsing") {
+@@ -75,7 +75,6 @@ static_library("safe_browsing") {
      "//components/resources:components_resources_grit",
      "//components/safe_browsing:buildflags",
      "//components/safe_browsing/content/browser",
@@ -1195,7 +1149,7 @@ diff --git a/chrome/browser/safe_browsing/client_side_detection_intelligent_scan
    }
  #if BUILDFLAG(IS_ANDROID)
 -  return std::make_unique<ClientSideDetectionIntelligentScanDelegateAndroid>(
--      *profile->GetPrefs(), opt_guide->CreateModelBrokerClient(), opt_guide);
+-      *profile->GetPrefs(), opt_guide);
 +  return nullptr;
  #else
    return std::make_unique<ClientSideDetectionIntelligentScanDelegateDesktop>(
@@ -1237,27 +1191,15 @@ diff --git a/chrome/browser/safe_browsing/notification_content_detection/notific
  }
  
  }  // namespace safe_browsing
-diff --git a/chrome/browser/ui/android/preloading/java/src/org/chromium/chrome/browser/preloading/AndroidPrerenderManager.java b/chrome/browser/ui/android/preloading/java/src/org/chromium/chrome/browser/preloading/AndroidPrerenderManager.java
---- a/chrome/browser/ui/android/preloading/java/src/org/chromium/chrome/browser/preloading/AndroidPrerenderManager.java
-+++ b/chrome/browser/ui/android/preloading/java/src/org/chromium/chrome/browser/preloading/AndroidPrerenderManager.java
-@@ -90,6 +90,7 @@ public class AndroidPrerenderManager {
-      * @param prerenderUrl The url to be prerendered.
-      */
-     public void startPrerendering(GURL prerenderUrl) {
-+        if ((true)) return;
-         if (mNativeAndroidPrerenderManager == 0 || mTab == null) return;
-         AndroidPrerenderManagerJni.get()
-                 .startPrerendering(mNativeAndroidPrerenderManager, prerenderUrl, mTab);
 diff --git a/chrome/browser/ui/autofill/chrome_autofill_client.cc b/chrome/browser/ui/autofill/chrome_autofill_client.cc
 --- a/chrome/browser/ui/autofill/chrome_autofill_client.cc
 +++ b/chrome/browser/ui/autofill/chrome_autofill_client.cc
-@@ -1507,18 +1507,7 @@ PasswordFormClassification ChromeAutofillClient::ClassifyAsPasswordForm(
+@@ -1701,17 +1701,8 @@ PasswordFormClassification ChromeAutofillClient::ClassifyAsPasswordForm(
  
  optimization_guide::ModelQualityLogsUploaderService*
  ChromeAutofillClient::GetMqlsUploadService() {
 -#if !BUILDFLAG(IS_ANDROID)
--  Profile* profile =
--      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+-  Profile* profile = GetProfile();
 -  OptimizationGuideKeyedService* optimization_guide_keyed_service =
 -      OptimizationGuideKeyedServiceFactory::GetForProfile(profile);
 -  if (!optimization_guide_keyed_service) {
@@ -1265,22 +1207,12 @@ diff --git a/chrome/browser/ui/autofill/chrome_autofill_client.cc b/chrome/brows
 -  }
 -  return optimization_guide_keyed_service->GetModelQualityLogsUploaderService();
 -#else
++
    return nullptr;
 -#endif
  }
  
  void ChromeAutofillClient::ShowEntityImportBubble(
-diff --git a/chrome/browser/ui/tab_helpers.cc b/chrome/browser/ui/tab_helpers.cc
---- a/chrome/browser/ui/tab_helpers.cc
-+++ b/chrome/browser/ui/tab_helpers.cc
-@@ -485,7 +485,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents,
-   }
-   MixedContentSettingsTabHelper::CreateForWebContents(web_contents);
-   NavigationMetricsRecorder::CreateForWebContents(web_contents);
--  NavigationPredictorPreconnectClient::CreateForWebContents(web_contents);
-   if (optimization_guide::features::IsOptimizationHintsEnabled()) {
-     OptimizationGuideWebContentsObserver::CreateForWebContents(web_contents);
-   }
 diff --git a/chrome/browser/ui/webui/autofill_ml_internals/autofill_ml_internals_page_handler.cc b/chrome/browser/ui/webui/autofill_ml_internals/autofill_ml_internals_page_handler.cc
 --- a/chrome/browser/ui/webui/autofill_ml_internals/autofill_ml_internals_page_handler.cc
 +++ b/chrome/browser/ui/webui/autofill_ml_internals/autofill_ml_internals_page_handler.cc
@@ -1342,26 +1274,26 @@ diff --git a/chrome/browser/ui/webui/autofill_ml_internals/autofill_ml_internals
 diff --git a/chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.cc b/chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.cc
 --- a/chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.cc
 +++ b/chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.cc
-@@ -449,8 +449,8 @@ NewTabPageHandler::NewTabPageHandler(
-     const base::Time& ntp_navigation_start_time,
-     base::TimeTicks ntp_navigation_start_time_ticks,
+@@ -441,9 +441,7 @@ NewTabPageHandler::NewTabPageHandler(
+         segmentation_platform_service,
+     content::WebContents* web_contents,
      const std::vector<ntp::ModuleIdDetail>* module_id_details)
 -    : SettingsEnabledObserver(
 -          optimization_guide::UserVisibleFeatureKey::kWallpaperSearch),
-+    : // SettingsEnabledObserver(
-+      //    optimization_guide::UserVisibleFeatureKey::kWallpaperSearch),
-       logger_(profile,
-               chrome::ChromeUINewTabPageURLAsGURL(),
-               ntp_navigation_start_time_ticks),
-@@ -502,6 +502,7 @@ NewTabPageHandler::NewTabPageHandler(
-     microsoft_auth_service_->AddObserver(this);
+-      logger_(profile, chrome::ChromeUINewTabPageURLAsGURL()),
++    : logger_(profile, chrome::ChromeUINewTabPageURLAsGURL()),
+       ntp_custom_background_service_(ntp_custom_background_service),
+       logo_service_(logo_service),
+ // TODO(b/502297163): Implement for Android.
+@@ -489,6 +487,7 @@ NewTabPageHandler::NewTabPageHandler(
    }
  #if !BUILDFLAG(IS_ANDROID)
+   CHECK(feature_promo_helper_);
 +#if false /*BUILDFLAG(BUILD_WITH_TFLITE_LIB)*/
    if (customize_chrome::IsWallpaperSearchEnabledForProfile(profile_)) {
      optimization_guide_keyed_service_ =
          OptimizationGuideKeyedServiceFactory::GetForProfile(profile_);
-@@ -510,6 +511,7 @@ NewTabPageHandler::NewTabPageHandler(
+@@ -497,6 +496,7 @@ NewTabPageHandler::NewTabPageHandler(
            ->AddModelExecutionSettingsEnabledObserver(this);
      }
    }
@@ -1369,7 +1301,7 @@ diff --git a/chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.cc b/chro
  #endif  // !BUILDFLAG(IS_ANDROID)
  
    OnBrowserWindowInterfaceChanged();
-@@ -561,11 +563,13 @@ NewTabPageHandler::NewTabPageHandler(
+@@ -553,11 +553,13 @@ NewTabPageHandler::NewTabPageHandler(
  }
  
  NewTabPageHandler::~NewTabPageHandler() {
@@ -1383,7 +1315,7 @@ diff --git a/chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.cc b/chro
  // TODO(b/502297163): Implement for Android.
  #if !BUILDFLAG(IS_ANDROID)
    if (microsoft_auth_service_) {
-@@ -1149,10 +1153,12 @@ void NewTabPageHandler::OnCustomBackgroundImageUpdated() {
+@@ -1161,10 +1163,12 @@ void NewTabPageHandler::OnCustomBackgroundImageUpdated() {
    OnThemeChanged();
  }
  
@@ -1399,7 +1331,7 @@ diff --git a/chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.cc b/chro
 diff --git a/chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.h b/chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.h
 --- a/chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.h
 +++ b/chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.h
-@@ -79,7 +79,7 @@ class NewTabPageHandler
+@@ -80,7 +80,7 @@ class NewTabPageHandler
        public ui::NativeThemeObserver,
        public ThemeServiceObserver,
        public NtpCustomBackgroundServiceObserver,
@@ -1408,7 +1340,7 @@ diff --git a/chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.h b/chrom
        public MicrosoftAuthServiceObserver,
        public new_tab_footer::NewTabFooterControllerObserver {
   public:
-@@ -177,7 +177,9 @@ class NewTabPageHandler
+@@ -181,7 +181,9 @@ class NewTabPageHandler
    void OnCustomBackgroundImageUpdated() override;
  
    // SettingsEnabledObserver:
@@ -1418,13 +1350,13 @@ diff --git a/chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.h b/chrom
  
    // MicrosoftAuthServiceObserver:
    void OnAuthStateUpdated() override;
-diff --git a/chrome/browser/ui/webui/omnibox/omnibox_page_handler.cc b/chrome/browser/ui/webui/omnibox/omnibox_page_handler.cc
---- a/chrome/browser/ui/webui/omnibox/omnibox_page_handler.cc
-+++ b/chrome/browser/ui/webui/omnibox/omnibox_page_handler.cc
-@@ -285,8 +285,5 @@ OmniboxPageHandler::GetAutocompleteControllerType(
+diff --git a/chrome/browser/ui/webui/omnibox_internals/omnibox_internals_page_handler.cc b/chrome/browser/ui/webui/omnibox_internals/omnibox_internals_page_handler.cc
+--- a/chrome/browser/ui/webui/omnibox_internals/omnibox_internals_page_handler.cc
++++ b/chrome/browser/ui/webui/omnibox_internals/omnibox_internals_page_handler.cc
+@@ -283,8 +283,5 @@ OmniboxInternalsPageHandler::GetAutocompleteControllerType(
  }
  
- AutocompleteScoringModelService* OmniboxPageHandler::GetMlService() {
+ AutocompleteScoringModelService* OmniboxInternalsPageHandler::GetMlService() {
 -  return OmniboxFieldTrial::IsMlUrlScoringEnabled()
 -             ? AutocompleteScoringModelServiceFactory::GetInstance()
 -                   ->GetForProfile(profile_)
@@ -1447,17 +1379,13 @@ diff --git a/chrome/browser/ui/webui/on_device_internals/BUILD.gn b/chrome/brows
 diff --git a/chrome/renderer/accessibility/read_anything/read_aloud_app_model.cc b/chrome/renderer/accessibility/read_anything/read_aloud_app_model.cc
 --- a/chrome/renderer/accessibility/read_anything/read_aloud_app_model.cc
 +++ b/chrome/renderer/accessibility/read_anything/read_aloud_app_model.cc
-@@ -17,7 +17,9 @@
+@@ -12,10 +12,13 @@
  #include "base/task/thread_pool.h"
  #include "base/time/time.h"
  #include "base/values.h"
 +#if false /*BUILDFLAG(BUILD_WITH_TFLITE_LIB)*/
  #include "chrome/renderer/accessibility/phrase_segmentation/dependency_parser_model.h"
 +#endif
- #include "chrome/renderer/accessibility/phrase_segmentation/dependency_tree.h"
- #include "chrome/renderer/accessibility/phrase_segmentation/phrase_segmenter.h"
- #include "chrome/renderer/accessibility/phrase_segmentation/token_boundaries.h"
-@@ -27,6 +29,7 @@
  
  namespace {
  
@@ -1465,16 +1393,16 @@ diff --git a/chrome/renderer/accessibility/read_anything/read_aloud_app_model.cc
  // Returns the dependency parser model for this renderer process.
  // All access to this model is asynchronous and safely executed on a background
  // sequenced task runner.
-@@ -36,6 +39,7 @@ base::SequenceBound<DependencyParserModel>& GetDependencyParserModel_() {
-           {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
+@@ -29,6 +32,7 @@ base::SequenceBound<DependencyParserModel>& GetDependencyParserModel_() {
+   }
    return *instance;
  }
 +#endif
  
  }  // namespace
  
-@@ -153,11 +157,14 @@ void ReadAloudAppModel::PreprocessTextForSpeech(
-   }
+@@ -63,10 +67,12 @@ bool ReadAloudAppModel::IsHighlightOn() {
+          static_cast<int>(read_anything::mojom::HighlightGranularity::kOff);
  }
  
 +#if false /*BUILDFLAG(BUILD_WITH_TFLITE_LIB)*/
@@ -1484,104 +1412,47 @@ diff --git a/chrome/renderer/accessibility/read_anything/read_aloud_app_model.cc
  }
 +#endif
  
-+#if false /*BUILDFLAG(BUILD_WITH_TFLITE_LIB)*/
- void ReadAloudAppModel::CalculatePhrases(
-     a11y::ReadAloudCurrentGranularity& granularity) {
-   if (!features::IsReadAnythingReadAloudPhraseHighlightingEnabled()) {
-@@ -214,19 +221,23 @@ void ReadAloudAppModel::CalculatePhrases(
-       .Then(base::BindOnce(&ReadAloudAppModel::UpdatePhraseBoundaries,
-                            weak_ptr_factory_.GetWeakPtr(), phrase_tokens));
- }
-+#endif
- 
--static const Strategy kPhraseStrategy = Strategy::kWords;
--static const int kPhraseStrategyParameter = 5;
-+[[maybe_unused]] static const Strategy kPhraseStrategy = Strategy::kWords;
-+[[maybe_unused]] static const int kPhraseStrategyParameter = 5;
- 
- void ReadAloudAppModel::StartPhraseCalculation() {
-   if (processed_granularities_on_current_page_.size() > 0) {
-     current_phrase_calculation_index_ = 0;
-+#if false /*BUILDFLAG(BUILD_WITH_TFLITE_LIB)*/
-     CalculatePhrases(processed_granularities_on_current_page_[0]);
-+#endif
-   }
- }
- 
- void ReadAloudAppModel::UpdatePhraseBoundaries(std::vector<std::string> tokens,
-                                                std::vector<size_t> heads) {
-+#if false /*BUILDFLAG(BUILD_WITH_TFLITE_LIB)*/
-   // Reset the phrase calculation flag, so that the next phrase calculation can
-   // be scheduled, if needed.
-   is_calculating_phrases = false;
-@@ -288,6 +299,7 @@ void ReadAloudAppModel::UpdatePhraseBoundaries(std::vector<std::string> tokens,
-     current_phrase_calculation_index_ = -1;
-     LOG(WARNING) << "All phrases calculated!";
-   }
-+#endif
- }
- 
- // TODO(crbug.com/40927698): Update to use AXRange to better handle multiple
+ void ReadAloudAppModel::ResetAndLogSingleSampleMetrics() {
+   metric_to_single_sample_.clear();
 diff --git a/chrome/renderer/accessibility/read_anything/read_aloud_app_model.h b/chrome/renderer/accessibility/read_anything/read_aloud_app_model.h
 --- a/chrome/renderer/accessibility/read_anything/read_aloud_app_model.h
 +++ b/chrome/renderer/accessibility/read_anything/read_aloud_app_model.h
-@@ -9,7 +9,10 @@
- #include "base/threading/sequence_bound.h"
+@@ -14,7 +14,10 @@
+ #include "base/time/time.h"
  #include "base/values.h"
  #include "chrome/common/read_anything/read_anything.mojom.h"
 +#include "components/optimization_guide/machine_learning_tflite_buildflags.h"
 +#if false /*BUILDFLAG(BUILD_WITH_TFLITE_LIB)*/
  #include "chrome/renderer/accessibility/phrase_segmentation/dependency_parser_model.h"
 +#endif
- #include "chrome/renderer/accessibility/read_anything/read_aloud_traversal_utils.h"
- #include "ui/accessibility/ax_node_position.h"
  
-@@ -136,8 +139,10 @@ class ReadAloudAppModel {
-                                bool is_docs,
-                                const std::set<ui::AXNodeID>* current_nodes);
+ class ReadAnythingReadAloudAppModelTest;
+ 
+@@ -105,8 +108,10 @@ class ReadAloudAppModel {
+       base::DictValue* voices,
+       read_anything::mojom::HighlightGranularity granularity);
  
 +#if false /*BUILDFLAG(BUILD_WITH_TFLITE_LIB)*/
    // Get the dependency parsing model for this renderer process.
    base::SequenceBound<DependencyParserModel>& GetDependencyParserModel();
 +#endif
  
-   // Increments the processed_granularity_index_, updating ReadAloud's state of
-   // the current granularity to refer to the next granularity. The current
-@@ -312,9 +317,11 @@ class ReadAloudAppModel {
-   //      still needs to be read.
-   bool NoValidTextRemainingInCurrentNode(bool is_pdf, bool is_docs) const;
+   void ResetAndLogSingleSampleMetrics();
  
-+#if false /*BUILDFLAG(BUILD_WITH_TFLITE_LIB)*/
-   // Asynchronously segment the given granularity into phrases. Once the phrases
-   // are calculated, `UpdatePhraseBoundaries` will be called.
-   void CalculatePhrases(a11y::ReadAloudCurrentGranularity& granularity);
-+#endif
- 
-   // Once the phrase segmentation has completed for a given sentence, update the
-   // granularity with the phrase boundaries, and calculate phrases for the next
-@@ -390,7 +397,7 @@ class ReadAloudAppModel {
- 
-   // Whether a phrase calculation for a sentence is currently underway. (We
-   // do not initiate a second calculation before the first has completed.)
--  bool is_calculating_phrases = false;
-+  [[maybe_unused]] bool is_calculating_phrases = false;
- 
-   // Which sentence (index into `processed_granularities_on_current_page`) is
-   // currently being processed for phrases. -1 if none.
 diff --git a/chrome/renderer/accessibility/read_anything/read_anything_app_controller.cc b/chrome/renderer/accessibility/read_anything/read_anything_app_controller.cc
 --- a/chrome/renderer/accessibility/read_anything/read_anything_app_controller.cc
 +++ b/chrome/renderer/accessibility/read_anything/read_anything_app_controller.cc
-@@ -32,7 +32,9 @@
+@@ -33,7 +33,9 @@
  #include "chrome/common/read_anything/read_anything.mojom-shared.h"
  #include "chrome/common/read_anything/read_anything_util.h"
  #include "chrome/renderer/accessibility/ax_tree_distiller.h"
 +#if false /*BUILDFLAG(BUILD_WITH_TFLITE_LIB)*/
  #include "chrome/renderer/accessibility/phrase_segmentation/dependency_parser_model.h"
 +#endif
- #include "chrome/renderer/accessibility/read_anything/read_aloud_traversal_utils.h"
  #include "chrome/renderer/accessibility/read_anything/read_anything_app_model.h"
- #include "chrome/renderer/accessibility/read_anything/read_anything_node_utils.h"
-@@ -2193,6 +2195,7 @@ void ReadAnythingAppController::OnConnected() {
+ #include "chrome/renderer/accessibility/read_anything/read_anything_distiller.h"
+ #include "chrome/renderer/accessibility/read_anything/read_anything_distiller_factory.h"
+@@ -2283,6 +2285,7 @@ void ReadAnythingAppController::OnConnected() {
    render_frame()->GetBrowserInterfaceBroker().GetInterface(
        std::move(page_handler_factory_receiver));
  
@@ -1589,7 +1460,7 @@ diff --git a/chrome/renderer/accessibility/read_anything/read_anything_app_contr
    // Asynchronously check the availability of the sequence-bound dependency
    // parser model used by phrase-based highlighting.
    if (features::IsReadAnythingReadAloudPhraseHighlightingEnabled()) {
-@@ -2202,6 +2205,7 @@ void ReadAnythingAppController::OnConnected() {
+@@ -2292,6 +2295,7 @@ void ReadAnythingAppController::OnConnected() {
                                   OnDependencyParserModelAvailabilityChecked,
                               weak_ptr_factory_.GetWeakPtr()));
    }
@@ -1597,7 +1468,7 @@ diff --git a/chrome/renderer/accessibility/read_anything/read_anything_app_contr
    SetDistillationState(
        read_anything::mojom::ReadAnythingDistillationState::kNotAttempted);
  }
-@@ -2213,9 +2217,11 @@ void ReadAnythingAppController::OnDependencyParserModelAvailabilityChecked(
+@@ -2303,9 +2307,11 @@ void ReadAnythingAppController::OnDependencyParserModelAvailabilityChecked(
      return;
    }
  
@@ -1609,18 +1480,7 @@ diff --git a/chrome/renderer/accessibility/read_anything/read_anything_app_contr
  }
  
  void ReadAnythingAppController::OnCopy() const {
-@@ -2508,8 +2514,10 @@ std::u16string ReadAnythingAppController::GetCurrentTextContent() {
- }
- 
- void ReadAnythingAppController::PreprocessTextForSpeech() {
-+#if false /*BUILDFLAG(BUILD_WITH_TFLITE_LIB)*/
-   read_aloud_model_.PreprocessTextForSpeech(model_.is_pdf(), model_.IsDocs(),
-                                             model_.GetCurrentlyVisibleNodes());
-+#endif
- }
- 
- void ReadAnythingAppController::MovePositionToNextGranularity() {
-@@ -2895,15 +2903,19 @@ bool ReadAnythingAppController::IsDocsLoadMoreButtonVisible() const {
+@@ -3001,27 +3007,18 @@ void ReadAnythingAppController::OnUrlInformationSet() {
  
  void ReadAnythingAppController::UpdateDependencyParserModel(
      base::File model_file) {
@@ -1631,54 +1491,55 @@ diff --git a/chrome/renderer/accessibility/read_anything/read_anything_app_contr
 +#endif
  }
  
-+#if false /*BUILDFLAG(BUILD_WITH_TFLITE_LIB)*/
- base::SequenceBound<DependencyParserModel>&
- ReadAnythingAppController::GetDependencyParserModelForTesting() {
-   return read_aloud_model_.GetDependencyParserModel();
+ void ReadAnythingAppController::RequestPhraseBoundaries(
+     int request_id,
+     const std::vector<std::u16string>& sentences) {
+-  if (!features::IsReadAnythingReadAloudPhraseHighlightingEnabled() ||
+-      sentences.empty()) {
+-    return;
+-  }
+-
+-  // If the model isn't available yet, this returns an empty list of
+-  // boundaries for each sentence.
+-  read_aloud_model_.GetDependencyParserModel()
+-      .AsyncCall(&DependencyParserModel::GetPhraseBoundariesForSentences)
+-      .WithArgs(sentences)
+-      .Then(
+-          base::BindOnce(&ReadAnythingAppController::OnPhraseBoundariesComputed,
+-                         weak_ptr_factory_.GetWeakPtr(), request_id));
++  OnPhraseBoundariesComputed(
++      request_id, std::vector<std::vector<int>>(sentences.size()));
  }
-+#endif
+ 
+ void ReadAnythingAppController::OnPhraseBoundariesComputed(
+@@ -3046,10 +3043,7 @@ void ReadAnythingAppController::OnPhraseBoundariesComputed(
+                     base::NumberToString(request_id) + ", " + *json + ");");
+ }
+ 
+-base::SequenceBound<DependencyParserModel>&
+-ReadAnythingAppController::GetDependencyParserModelForTesting() {
+-  return read_aloud_model_.GetDependencyParserModel();
+-}
++
  
  void ReadAnythingAppController::OnTreeAdded(ui::AXTree* tree) {
    auto observation =
 diff --git a/chrome/renderer/accessibility/read_anything/read_anything_app_controller.h b/chrome/renderer/accessibility/read_anything/read_anything_app_controller.h
 --- a/chrome/renderer/accessibility/read_anything/read_anything_app_controller.h
 +++ b/chrome/renderer/accessibility/read_anything/read_anything_app_controller.h
-@@ -402,8 +402,10 @@ class ReadAnythingAppController
+@@ -397,8 +397,6 @@ class ReadAnythingAppController
+   void OnPhraseBoundariesComputed(int request_id,
+                                   std::vector<std::vector<int>> boundaries);
  
-   void OnDependencyParserModelAvailabilityChecked(bool is_available);
- 
-+#if false /*BUILDFLAG(BUILD_WITH_TFLITE_LIB)*/
-   base::SequenceBound<DependencyParserModel>&
-   GetDependencyParserModelForTesting();
-+#endif
+-  base::SequenceBound<DependencyParserModel>&
+-  GetDependencyParserModelForTesting();
  
    // Called when distillation has completed.
    void OnAXTreeDistilled(const ui::AXTreeID& tree_id,
-diff --git a/chrome/test/BUILD.gn b/chrome/test/BUILD.gn
---- a/chrome/test/BUILD.gn
-+++ b/chrome/test/BUILD.gn
-@@ -2587,7 +2587,7 @@ if (!is_android) {
-       "//components/optimization_guide/content/renderer",
-       "//components/optimization_guide/core",
-       "//components/optimization_guide/core:bloomfilter",
--      "//components/optimization_guide/core:manifest_broker_test_support",
-+      #"//components/optimization_guide/core:manifest_broker_test_support",
-       "//components/optimization_guide/core:prediction",
-       "//components/optimization_guide/core:test_support",
-       "//components/optimization_guide/proto:optimization_guide_proto",
-@@ -4536,8 +4536,6 @@ if (!is_android) {
-         "//chrome/browser/ui/exclusive_access:test_support",
-         "//chrome/browser/ui/hats",
-         "//components/safe_browsing/content/browser:safe_browsing_blocking_page",
--        "//components/safe_browsing/content/browser/notification_content_detection",
--        "//components/safe_browsing/content/browser/notification_content_detection:notifications_global_cache_list",
-         "//components/safe_browsing/content/common:file_type_policies_test_support",
-         "//components/safe_browsing/core/browser",
-         "//components/safe_browsing/core/browser:safe_browsing_metrics_collector",
 diff --git a/chrome/utility/BUILD.gn b/chrome/utility/BUILD.gn
 --- a/chrome/utility/BUILD.gn
 +++ b/chrome/utility/BUILD.gn
-@@ -66,7 +66,7 @@ static_library("utility") {
+@@ -67,7 +67,7 @@ static_library("utility") {
      "//printing/buildflags",
      "//services/data_decoder:lib",
      "//services/network:network_service",
@@ -1690,7 +1551,7 @@ diff --git a/chrome/utility/BUILD.gn b/chrome/utility/BUILD.gn
 diff --git a/chrome/utility/services.cc b/chrome/utility/services.cc
 --- a/chrome/utility/services.cc
 +++ b/chrome/utility/services.cc
-@@ -270,13 +270,6 @@ auto RunRedirectionService(
+@@ -293,13 +293,6 @@ auto RunRedirectionService(
  }
  #endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING_REDIRECTION)
  
@@ -1704,18 +1565,18 @@ diff --git a/chrome/utility/services.cc b/chrome/utility/services.cc
  #if BUILDFLAG(ENABLE_BROWSER_SPEECH_SERVICE)
  auto RunSpeechRecognitionService(
      mojo::PendingReceiver<media::mojom::SpeechRecognitionService> receiver) {
-@@ -485,7 +478,6 @@ void RegisterMainThreadServices(mojo::ServiceFactory& services) {
+@@ -517,7 +510,6 @@ void RegisterMainThreadServices(mojo::ServiceFactory& services) {
    services.Add(RunUnzipper);
    services.Add(RunCSVPasswordParser);
    services.Add(ContentBookmarkParser);
 -  services.Add(RunPassageEmbeddingsService);
    services.Add(RunOakSessionService);
+   services.Add(RunOakTlsSessionService);
  
- #if BUILDFLAG(IS_ANDROID)
 diff --git a/components/BUILD.gn b/components/BUILD.gn
 --- a/components/BUILD.gn
 +++ b/components/BUILD.gn
-@@ -639,7 +639,7 @@ test("components_unittests") {
+@@ -653,7 +653,7 @@ test("components_unittests") {
        "//components/one_time_tokens/core/browser:unit_tests",
        "//components/page_info:unit_tests",
        "//components/password_manager/core/browser/actor_login:unit_tests",
@@ -1727,12 +1588,16 @@ diff --git a/components/BUILD.gn b/components/BUILD.gn
 diff --git a/components/autofill/core/browser/BUILD.gn b/components/autofill/core/browser/BUILD.gn
 --- a/components/autofill/core/browser/BUILD.gn
 +++ b/components/autofill/core/browser/BUILD.gn
-@@ -971,16 +971,16 @@ static_library("browser") {
+@@ -1024,18 +1024,18 @@ static_library("browser") {
      "ml_model/autofill_ai/autofill_ai_model_executor.h",
      "ml_model/autofill_ai/autofill_ai_model_executor_impl.cc",
      "ml_model/autofill_ai/autofill_ai_model_executor_impl.h",
 -    "ml_model/field_classification_model_encoder.cc",
 -    "ml_model/field_classification_model_encoder.h",
++    # "ml_model/field_classification_model_encoder.cc",
++    # "ml_model/field_classification_model_encoder.h",
+     "ml_model/field_classification_model_encoder_dictionary.cc",
+     "ml_model/field_classification_model_encoder_dictionary.h",
 -    "ml_model/field_classification_model_executor.cc",
 -    "ml_model/field_classification_model_executor.h",
 -    "ml_model/field_classification_model_handler.cc",
@@ -1741,8 +1606,6 @@ diff --git a/components/autofill/core/browser/BUILD.gn b/components/autofill/cor
 -    "ml_model/logging/ml_log_router.h",
 -    "ml_model/model_predictions.cc",
 -    "ml_model/model_predictions.h",
-+    # "ml_model/field_classification_model_encoder.cc",
-+    # "ml_model/field_classification_model_encoder.h",
 +    # "ml_model/field_classification_model_executor.cc",
 +    # "ml_model/field_classification_model_executor.h",
 +    # "ml_model/field_classification_model_handler.cc",
@@ -1754,7 +1617,7 @@ diff --git a/components/autofill/core/browser/BUILD.gn b/components/autofill/cor
      "network/autofill_ai/autofill_ai_personal_context_access_manager.h",
      "network/autofill_ai/autofill_ai_personal_context_access_manager_impl.cc",
      "network/autofill_ai/autofill_ai_personal_context_access_manager_impl.h",
-@@ -1432,7 +1432,7 @@ static_library("browser") {
+@@ -1502,7 +1502,7 @@ static_library("browser") {
      ":legal_message_line",
      ":payments_sync_utils",
      "//components/autofill/core/browser/data_model/payments:mojo_bindings",
@@ -1763,7 +1626,7 @@ diff --git a/components/autofill/core/browser/BUILD.gn b/components/autofill/cor
      "//components/autofill/core/browser/payments:card_unmask_challenge_option",
      "//components/autofill/core/browser/proto",
      "//components/autofill/core/browser/proto:autofill_ai_proto",
-@@ -1449,10 +1449,10 @@ static_library("browser") {
+@@ -1519,10 +1519,10 @@ static_library("browser") {
      "//third_party/abseil-cpp:absl",
      "//third_party/libaddressinput",
      "//third_party/libaddressinput:strings_grit",
@@ -1803,7 +1666,7 @@ diff --git a/components/autofill/core/browser/foundations/autofill_manager.cc b/
    GeoIpCountryCode country_code;
    LanguageCode current_page_language;
    std::unique_ptr<BufferingLogManager> log_manager;
-@@ -844,6 +846,7 @@ void AutofillManager::ParseFormsAsyncCommon(
+@@ -795,6 +797,7 @@ void AutofillManager::ParseFormsAsyncCommon(
  void AutofillManager::RunMlModels(
      AsyncContext context,
      base::OnceCallback<void(AsyncContext)> done_callback) {
@@ -1811,7 +1674,7 @@ diff --git a/components/autofill/core/browser/foundations/autofill_manager.cc b/
    // Runs the specified model and calls `response` with the results.
    // Otherwise runs `response` with the empty vector.
    // Called on the UI thread.
-@@ -924,6 +927,9 @@ void AutofillManager::RunMlModels(
+@@ -875,6 +878,9 @@ void AutofillManager::RunMlModels(
                                       // Then finish.
                                       std::move(done_callback)))),
        std::move(context));
@@ -1821,7 +1684,7 @@ diff --git a/components/autofill/core/browser/foundations/autofill_manager.cc b/
  }
  
  void AutofillManager::PopulateCacheForQueryResponse(
-@@ -1116,12 +1122,14 @@ void AutofillManager::UpdateFormCache(
+@@ -1031,12 +1037,14 @@ void AutofillManager::UpdateFormCache(
  
    auto apply_predictions = [](FormStructure& form_structure,
                                const AsyncContext& context, size_t i) {
@@ -1836,15 +1699,15 @@ diff --git a/components/autofill/core/browser/foundations/autofill_manager.cc b/
      if (!context.regex_predictions.empty()) {
        context.regex_predictions[i].ApplyTo(form_structure.fields());
      }
-@@ -1213,6 +1221,7 @@ void AutofillManager::LogCurrentFieldTypes(
+@@ -1128,6 +1136,7 @@ void AutofillManager::LogCurrentFieldTypes(
    }
  }
  
 +#if false /*BUILDFLAG(BUILD_WITH_TFLITE_LIB)*/
  void AutofillManager::SubscribeToMlModelChanges(
      FieldClassificationModelHandler& handler) {
-   switch (handler.optimization_target()) {
-@@ -1236,5 +1245,6 @@ void AutofillManager::SubscribeToMlModelChanges(
+   auto reparse_forms = base::BindRepeating(
+@@ -1155,5 +1164,6 @@ void AutofillManager::SubscribeToMlModelChanges(
        NOTREACHED();
    }
  }
@@ -1862,9 +1725,9 @@ diff --git a/components/autofill/core/browser/foundations/autofill_manager.h b/c
  #include "components/translate/core/browser/translate_driver.h"
  #include "ui/gfx/geometry/rect.h"
  
-@@ -494,7 +495,9 @@ class AutofillManager
-   // After subscribing, FieldClassificationModelHandler::OnModelUpdated() will
-   // trigger ReparseKnownForms(). There may be a handler for Autofill and/or
+@@ -490,7 +491,9 @@ class AutofillManager
+   // After subscribing, `FieldClassificationModelHandler::OnModelUpdated()` will
+   // trigger form extraction. There may be a handler for Autofill and/or
    // Password Manager.
 +#if false /*BUILDFLAG(BUILD_WITH_TFLITE_LIB)*/
    void SubscribeToMlModelChanges(FieldClassificationModelHandler& handler);
@@ -1875,7 +1738,7 @@ diff --git a/components/autofill/core/browser/foundations/autofill_manager.h b/c
 diff --git a/components/autofill/core/browser/integrators/optimization_guide/autofill_optimization_guide_decider.cc b/components/autofill/core/browser/integrators/optimization_guide/autofill_optimization_guide_decider.cc
 --- a/components/autofill/core/browser/integrators/optimization_guide/autofill_optimization_guide_decider.cc
 +++ b/components/autofill/core/browser/integrators/optimization_guide/autofill_optimization_guide_decider.cc
-@@ -322,6 +322,7 @@ void AutofillOptimizationGuideDecider::OnPaymentsDataLoaded(
+@@ -307,6 +307,7 @@ void AutofillOptimizationGuideDecider::OnPaymentsDataLoaded(
  
    // If we do not have any optimization types to register, do not do anything.
    if (!optimization_types.empty()) {
@@ -1883,7 +1746,7 @@ diff --git a/components/autofill/core/browser/integrators/optimization_guide/aut
      decider_->RegisterOptimizationTypes(
          std::vector<optimization_guide::proto::OptimizationType>(
              std::move(optimization_types).extract()));
-@@ -437,7 +438,7 @@ bool AutofillOptimizationGuideDecider::ShouldBlockSingleFieldSuggestions(
+@@ -422,7 +423,7 @@ bool AutofillOptimizationGuideDecider::ShouldBlockSingleFieldSuggestions(
      const AutofillField* field) const {
    // If the field's storable type is `IBAN_VALUE`, check whether IBAN
    // suggestions should be blocked based on `url`.
@@ -1892,7 +1755,7 @@ diff --git a/components/autofill/core/browser/integrators/optimization_guide/aut
      optimization_guide::OptimizationGuideDecision decision =
          decider_->CanApplyOptimization(
              url, optimization_guide::proto::IBAN_AUTOFILL_BLOCKED,
-@@ -463,7 +464,7 @@ bool AutofillOptimizationGuideDecider::ShouldBlockFormFieldSuggestion(
+@@ -448,7 +449,7 @@ bool AutofillOptimizationGuideDecider::ShouldBlockFormFieldSuggestion(
      const CreditCard& card) const {
    if (auto optimization_type =
            GetVcnMerchantOptOutOptimizationTypeForCard(card);
@@ -2011,17 +1874,6 @@ diff --git a/components/autofill/core/browser/ml_model/field_classification_mode
  
    base::WeakPtrFactory<FieldClassificationModelHandler> weak_ptr_factory_{this};
  };
-diff --git a/components/history_embeddings/core/history_embeddings_features.cc b/components/history_embeddings/core/history_embeddings_features.cc
---- a/components/history_embeddings/core/history_embeddings_features.cc
-+++ b/components/history_embeddings/core/history_embeddings_features.cc
-@@ -24,6 +24,7 @@ FeatureParameters& GetFeatureParametersMutable() {
- // is client-side launched on desktop platforms in US only, so it remains
- // disabled by default for other regions.
- BASE_FEATURE(kHistoryEmbeddings, base::FEATURE_DISABLED_BY_DEFAULT);
-+SET_CROMITE_FEATURE_DISABLED(kHistoryEmbeddings);
- 
- // This feature specifies whether to answer queries using an answerer; it can be
- // considered a toggle for v2 answering functionality. Parameters are all kept
 diff --git a/components/omnibox/browser/aim_eligibility_service_features.cc b/components/omnibox/browser/aim_eligibility_service_features.cc
 --- a/components/omnibox/browser/aim_eligibility_service_features.cc
 +++ b/components/omnibox/browser/aim_eligibility_service_features.cc
@@ -2036,7 +1888,7 @@ diff --git a/components/omnibox/browser/aim_eligibility_service_features.cc b/co
 diff --git a/components/omnibox/browser/autocomplete_controller.cc b/components/omnibox/browser/autocomplete_controller.cc
 --- a/components/omnibox/browser/autocomplete_controller.cc
 +++ b/components/omnibox/browser/autocomplete_controller.cc
-@@ -54,7 +54,9 @@
+@@ -53,7 +53,9 @@
  #include "components/omnibox/browser/autocomplete_match.h"
  #include "components/omnibox/browser/autocomplete_match_type.h"
  #include "components/omnibox/browser/autocomplete_provider.h"
@@ -2046,7 +1898,7 @@ diff --git a/components/omnibox/browser/autocomplete_controller.cc b/components/
  #include "components/omnibox/browser/autocomplete_scoring_signals_annotator.h"
  #include "components/omnibox/browser/bookmark_provider.h"
  #include "components/omnibox/browser/bookmark_scoring_signals_annotator.h"
-@@ -133,11 +135,13 @@ constexpr bool is_android = !!BUILDFLAG(IS_ANDROID);
+@@ -132,11 +134,13 @@ constexpr bool is_android = !!BUILDFLAG(IS_ANDROID);
  
  void RecordMlScoreCoverage(size_t matches_with_non_null_scores,
                             size_t total_scored_matches) {
@@ -2060,7 +1912,7 @@ diff --git a/components/omnibox/browser/autocomplete_controller.cc b/components/
  }
  
  // Records the coverage (i.e. null vs non-null values) for each of the
-@@ -145,6 +149,7 @@ void RecordMlScoreCoverage(size_t matches_with_non_null_scores,
+@@ -144,6 +148,7 @@ void RecordMlScoreCoverage(size_t matches_with_non_null_scores,
  void RecordScoringSignalCoverageForProvider(
      const ScoringSignals& scoring_signals,
      const AutocompleteProvider* provider) {
@@ -2068,7 +1920,7 @@ diff --git a/components/omnibox/browser/autocomplete_controller.cc b/components/
    // Keep consistent:
    // - omnibox_event.proto `ScoringSignals`
    // - omnibox_scoring_signals.proto `OmniboxScoringSignals`
-@@ -227,6 +232,7 @@ void RecordScoringSignalCoverageForProvider(
+@@ -226,6 +231,7 @@ void RecordScoringSignalCoverageForProvider(
              provider_type + "." + pair.first,
          pair.second);
    }
@@ -2099,7 +1951,7 @@ diff --git a/components/omnibox/browser/base_search_provider.cc b/components/omn
 diff --git a/components/omnibox/browser/omnibox_field_trial.cc b/components/omnibox/browser/omnibox_field_trial.cc
 --- a/components/omnibox/browser/omnibox_field_trial.cc
 +++ b/components/omnibox/browser/omnibox_field_trial.cc
-@@ -867,7 +867,7 @@ bool AreScoringSignalsAnnotatorsEnabled() {
+@@ -865,7 +865,7 @@ bool AreScoringSignalsAnnotatorsEnabled() {
    return GetMLConfig().enable_scoring_signals_annotators;
  }
  bool IsMlUrlScoringEnabled() {
@@ -2111,7 +1963,7 @@ diff --git a/components/omnibox/browser/omnibox_field_trial.cc b/components/omni
 diff --git a/components/optimization_guide/core/delivery/prediction_model_download_manager.cc b/components/optimization_guide/core/delivery/prediction_model_download_manager.cc
 --- a/components/optimization_guide/core/delivery/prediction_model_download_manager.cc
 +++ b/components/optimization_guide/core/delivery/prediction_model_download_manager.cc
-@@ -63,7 +63,7 @@ bool ShouldSkipModelDownloadVerificationForTesting() {
+@@ -62,7 +62,7 @@ bool ShouldSkipModelDownloadVerificationForTesting() {
  // we require models to come from.
  constexpr std::array<uint8_t, crypto::hash::kSha256Size> kPublisherKeyHash = {
      0x66, 0xa1, 0xd9, 0x3e, 0x4e, 0x5a, 0x66, 0x8a, 0x0f, 0xd3, 0xfa,
@@ -2120,7 +1972,7 @@ diff --git a/components/optimization_guide/core/delivery/prediction_model_downlo
      0x5c, 0x7f, 0xd0, 0x0c, 0xa1, 0x6e, 0xef, 0xdd, 0x63, 0x7a};
  const net::NetworkTrafficAnnotationTag
      kOptimizationGuidePredictionModelsTrafficAnnotation =
-@@ -133,7 +133,7 @@ PredictionModelDownloadManager::PredictionModelDownloadManager(
+@@ -132,7 +132,7 @@ PredictionModelDownloadManager::PredictionModelDownloadManager(
      unzip::UnzipperFactory unzipper_factory,
      scoped_refptr<base::SequencedTaskRunner> background_task_runner)
      : download_service_tracker_(download_service_tracker),
@@ -2129,7 +1981,7 @@ diff --git a/components/optimization_guide/core/delivery/prediction_model_downlo
        api_key_(features::GetOptimizationGuideServiceAPIKey()),
        get_base_model_dir_for_download_callback_(
            get_base_model_dir_for_download_callback),
-@@ -147,6 +147,7 @@ void PredictionModelDownloadManager::StartDownload(
+@@ -146,6 +146,7 @@ void PredictionModelDownloadManager::StartDownload(
      const GURL& download_url,
      proto::OptimizationTarget optimization_target,
      const std::optional<download::SchedulingParams>& scheduling_params) {
@@ -2137,7 +1989,7 @@ diff --git a/components/optimization_guide/core/delivery/prediction_model_downlo
    download::DownloadParams download_params;
    download_params.client =
        download::DownloadClient::OPTIMIZATION_GUIDE_PREDICTION_MODELS;
-@@ -311,6 +312,7 @@ bool PredictionModelDownloadManager::VerifyDownload(
+@@ -310,6 +311,7 @@ bool PredictionModelDownloadManager::VerifyDownload(
      const base::FilePath& download_file_path,
      const base::FilePath& base_model_dir,
      bool delete_file_on_error) {
@@ -2148,7 +2000,7 @@ diff --git a/components/optimization_guide/core/delivery/prediction_model_downlo
 diff --git a/components/optimization_guide/core/delivery/prediction_model_fetcher_impl.cc b/components/optimization_guide/core/delivery/prediction_model_fetcher_impl.cc
 --- a/components/optimization_guide/core/delivery/prediction_model_fetcher_impl.cc
 +++ b/components/optimization_guide/core/delivery/prediction_model_fetcher_impl.cc
-@@ -54,6 +54,7 @@ bool PredictionModelFetcherImpl::FetchOptimizationGuideServiceModels(
+@@ -55,6 +55,7 @@ bool PredictionModelFetcherImpl::FetchOptimizationGuideServiceModels(
      proto::RequestContext request_context,
      const std::string& locale,
      ModelsFetchedCallback models_fetched_callback) {
@@ -2159,7 +2011,7 @@ diff --git a/components/optimization_guide/core/delivery/prediction_model_fetche
 diff --git a/components/optimization_guide/core/hints/hints_fetcher.cc b/components/optimization_guide/core/hints/hints_fetcher.cc
 --- a/components/optimization_guide/core/hints/hints_fetcher.cc
 +++ b/components/optimization_guide/core/hints/hints_fetcher.cc
-@@ -209,6 +209,7 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
+@@ -210,6 +210,7 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
      bool skip_cache,
      HintsFetchedCallback hints_fetched_callback,
      std::optional<proto::RequestContextMetadata> request_context_metadata) {
@@ -2170,7 +2022,7 @@ diff --git a/components/optimization_guide/core/hints/hints_fetcher.cc b/compone
 diff --git a/components/optimization_guide/core/hints/hints_manager.cc b/components/optimization_guide/core/hints/hints_manager.cc
 --- a/components/optimization_guide/core/hints/hints_manager.cc
 +++ b/components/optimization_guide/core/hints/hints_manager.cc
-@@ -506,6 +506,7 @@ void HintsManager::Shutdown() {
+@@ -511,6 +511,7 @@ void HintsManager::Shutdown() {
  OptimizationGuideDecision
  HintsManager::GetOptimizationGuideDecisionFromOptimizationTypeDecision(
      OptimizationTypeDecision optimization_type_decision) {
@@ -2178,7 +2030,7 @@ diff --git a/components/optimization_guide/core/hints/hints_manager.cc b/compone
    switch (optimization_type_decision) {
      case OptimizationTypeDecision::kAllowedByOptimizationFilter:
      case OptimizationTypeDecision::kAllowedByHint:
-@@ -2124,4 +2125,5 @@ void HintsManager::RemoveFetchedEntriesByHintKeys(
+@@ -2105,4 +2106,5 @@ void HintsManager::RemoveFetchedEntriesByHintKeys(
    hint_cache_->RemoveHintsForHosts(std::move(on_success), hint_keys);
  }
  
@@ -2187,7 +2039,7 @@ diff --git a/components/optimization_guide/core/hints/hints_manager.cc b/compone
 diff --git a/components/optimization_guide/core/model_execution/private_ai_model_execution_fetcher.cc b/components/optimization_guide/core/model_execution/private_ai_model_execution_fetcher.cc
 --- a/components/optimization_guide/core/model_execution/private_ai_model_execution_fetcher.cc
 +++ b/components/optimization_guide/core/model_execution/private_ai_model_execution_fetcher.cc
-@@ -81,6 +81,10 @@ void PrivateAiModelExecutionFetcher::ExecuteModel(
+@@ -84,6 +84,10 @@ void PrivateAiModelExecutionFetcher::ExecuteModel(
      const google::protobuf::MessageLite& request_metadata,
      std::optional<base::TimeDelta> timeout,
      ModelExecuteResponseCallback callback) {
@@ -2201,7 +2053,7 @@ diff --git a/components/optimization_guide/core/model_execution/private_ai_model
 diff --git a/components/optimization_guide/core/optimization_guide_features.cc b/components/optimization_guide/core/optimization_guide_features.cc
 --- a/components/optimization_guide/core/optimization_guide_features.cc
 +++ b/components/optimization_guide/core/optimization_guide_features.cc
-@@ -47,11 +47,7 @@ constexpr char kOptimizationGuideServiceAPIKeySwitch[] =
+@@ -37,11 +37,7 @@ constexpr char kOptimizationGuideServiceAPIKeySwitch[] =
      "optimization-guide-service-api-key";
  
  constexpr auto enabled_by_default_mobile_only =
@@ -2213,7 +2065,7 @@ diff --git a/components/optimization_guide/core/optimization_guide_features.cc b
  
  }  // namespace
  
-@@ -281,8 +277,7 @@ size_t MaxHostKeyedHintCacheSize() {
+@@ -254,8 +250,7 @@ size_t MaxHostKeyedHintCacheSize() {
  }
  
  bool ShouldPersistHintsToDisk() {
@@ -2223,7 +2075,7 @@ diff --git a/components/optimization_guide/core/optimization_guide_features.cc b
  }
  
  RequestContextSet GetAllowedContextsForPersonalizedMetadata() {
-@@ -497,4 +492,10 @@ std::optional<base::TimeDelta> GetAIPageContentGetImageBytesTimeout() {
+@@ -463,4 +458,10 @@ std::optional<base::TimeDelta> GetAIPageContentGetImageBytesTimeout() {
    return kGetAIPageContentGetImageBytesTimeoutParam.Get();
  }
  
@@ -2247,52 +2099,68 @@ diff --git a/components/optimization_guide/features.gni b/components/optimizatio
 diff --git a/components/page_content_annotations/content/page_category_classifier_bridge_impl.cc b/components/page_content_annotations/content/page_category_classifier_bridge_impl.cc
 --- a/components/page_content_annotations/content/page_category_classifier_bridge_impl.cc
 +++ b/components/page_content_annotations/content/page_category_classifier_bridge_impl.cc
-@@ -28,7 +28,9 @@ PageCategoryClassifierBridgeImpl::PageCategoryClassifierBridgeImpl(
-       category_classifier_(category_classifier),
-       optimization_guide_logger_(optimization_guide_logger) {
-   scoped_observation_.Observe(&*page_embeddings_service_);
-+#if false /*BUILDFLAG(BUILD_WITH_TFLITE_LIB)*/
-   category_classifier_observation_.Observe(&*category_classifier_);
-+#endif
- }
+@@ -17,42 +17,10 @@ namespace page_content_annotations {
+ 
+ PageCategoryClassifierBridgeImpl::PageCategoryClassifierBridgeImpl(
+     Producer<std::vector<PassageEmbedding>>& page_embeddings_producer,
+-    OnDeviceCategoryClassifier& category_classifier)
+-    : page_embeddings_producer_(page_embeddings_producer),
+-      category_classifier_(category_classifier) {}
++    OnDeviceCategoryClassifier& category_classifier) {}
  
  PageCategoryClassifierBridgeImpl::~PageCategoryClassifierBridgeImpl() = default;
-@@ -40,6 +42,7 @@ PageCategoryClassifierBridgeImpl::GetUsageMode() const {
  
- void PageCategoryClassifierBridgeImpl::OnPageEmbeddingsAvailable(
-     content::Page& page) {
-+#if false /*BUILDFLAG(BUILD_WITH_TFLITE_LIB)*/
-   std::vector<PassageEmbedding> embeddings =
-       page_embeddings_service_->GetEmbeddings(page);
+-void PageCategoryClassifierBridgeImpl::SetDemandActive(bool active) {
+-  if (active) {
+-    if (!embeddings_subscription_) {
+-      embeddings_subscription_ =
+-          page_embeddings_producer_->Subscribe(base::BindRepeating(
+-              &PageCategoryClassifierBridgeImpl::OnPageEmbeddingsAvailable,
+-              base::Unretained(this)));
+-    }
+-  } else {
+-    embeddings_subscription_.reset();
+-  }
+-}
+-
+-void PageCategoryClassifierBridgeImpl::OnPageEmbeddingsAvailable(
+-    content::Page& page,
+-    const std::vector<PassageEmbedding>& embeddings) {
+-  std::optional<passage_embeddings::Embedding> title_url_embedding;
+-  std::vector<passage_embeddings::Embedding> passage_embeddings;
+-  for (const PassageEmbedding& embedding : embeddings) {
+-    if (embedding.passage.second == EmbeddingPassageType::kTitleAndUrl) {
+-      title_url_embedding = embedding.embedding;
+-    } else if (embedding.passage.second == EmbeddingPassageType::kPageContent) {
+-      passage_embeddings.push_back(embedding.embedding);
+-    }
+-  }
+-
+-  category_classifier_->OnPageEmbeddingAvailable(
+-      page.GetMainDocument().GetLastCommittedURL(),
+-      page.GetMainDocument().GetPageUkmSourceId(),
+-      std::move(title_url_embedding), std::move(passage_embeddings));
+-}
++void PageCategoryClassifierBridgeImpl::SetDemandActive(bool active) {}
  
-@@ -57,6 +60,7 @@ void PageCategoryClassifierBridgeImpl::OnPageEmbeddingsAvailable(
-       page.GetMainDocument().GetLastCommittedURL(),
-       page.GetMainDocument().GetPageUkmSourceId(),
-       std::move(title_url_embedding), std::move(passage_embeddings));
-+#endif
- }
- 
- void PageCategoryClassifierBridgeImpl::OnCategoriesClassified(
+ }  // namespace page_content_annotations
 diff --git a/components/page_content_annotations/content/page_category_classifier_bridge_impl.h b/components/page_content_annotations/content/page_category_classifier_bridge_impl.h
 --- a/components/page_content_annotations/content/page_category_classifier_bridge_impl.h
 +++ b/components/page_content_annotations/content/page_category_classifier_bridge_impl.h
-@@ -9,6 +9,7 @@
+@@ -38,16 +38,6 @@ class PageCategoryClassifierBridgeImpl : public PageCategoryClassifierBridge {
+   // PageCategoryClassifierBridge:
+   void SetDemandActive(bool active) override;
  
- #include "base/memory/raw_ref.h"
- #include "base/scoped_observation.h"
-+#include "components/optimization_guide/machine_learning_tflite_buildflags.h"
- #include "components/page_content_annotations/content/page_embeddings_service.h"
- #include "components/page_content_annotations/core/on_device_category_classifier.h"
- #include "components/page_content_annotations/core/page_category_classifier_bridge.h"
-@@ -54,9 +55,11 @@ class PageCategoryClassifierBridgeImpl
-                           PageEmbeddingsService::Observer>
-       scoped_observation_{this};
- 
-+#if false /*BUILDFLAG(BUILD_WITH_TFLITE_LIB)*/
-   base::ScopedObservation<OnDeviceCategoryClassifier,
-                           OnDeviceCategoryClassifier::Observer>
-       category_classifier_observation_{this};
-+#endif
+- private:
+-  void OnPageEmbeddingsAvailable(
+-      content::Page& page,
+-      const std::vector<PassageEmbedding>& embeddings);
+-
+-  const raw_ref<Producer<std::vector<PassageEmbedding>>>
+-      page_embeddings_producer_;
+-  const raw_ref<OnDeviceCategoryClassifier> category_classifier_;
+-
+-  std::optional<base::CallbackListSubscription> embeddings_subscription_;
  };
  
  }  // namespace page_content_annotations
@@ -2315,7 +2183,7 @@ diff --git a/components/page_content_annotations/core/page_content_annotations_f
    if (supported_countries == "*") {
      return true;
    }
-@@ -186,6 +188,7 @@ base::TimeDelta PCAServiceWaitForTitleDelayDuration() {
+@@ -192,6 +194,7 @@ base::TimeDelta PCAServiceWaitForTitleDelayDuration() {
  }
  
  bool ShouldEnablePageContentAnnotations() {
@@ -2323,7 +2191,7 @@ diff --git a/components/page_content_annotations/core/page_content_annotations_f
    // Remote page metadata is permanently enabled without a feature flag, so
    // the service should always be enabled.
    return true;
-@@ -325,6 +328,8 @@ base::TimeDelta GetPageSettledCaptureDelay() {
+@@ -331,6 +334,8 @@ base::TimeDelta GetPageSettledCaptureDelay() {
  bool IsSupportedCountryForFeature(const std::string& country_code,
                                    const base::Feature& feature,
                                    const std::string& default_value) {
@@ -2332,7 +2200,7 @@ diff --git a/components/page_content_annotations/core/page_content_annotations_f
    if (!base::FeatureList::IsEnabled(feature)) {
      return false;
    }
-@@ -339,4 +344,5 @@ bool IsSupportedCountryForFeature(const std::string& country_code,
+@@ -345,4 +350,5 @@ bool IsSupportedCountryForFeature(const std::string& country_code,
    return IsSupportedCountry(country_code, value);
  }
  
@@ -2352,7 +2220,7 @@ diff --git a/components/page_content_annotations/core/page_content_annotations_m
 diff --git a/components/page_content_annotations/core/page_content_annotations_service.cc b/components/page_content_annotations/core/page_content_annotations_service.cc
 --- a/components/page_content_annotations/core/page_content_annotations_service.cc
 +++ b/components/page_content_annotations/core/page_content_annotations_service.cc
-@@ -197,6 +197,7 @@ PageContentAnnotationsService::PageContentAnnotationsService(
+@@ -192,6 +192,7 @@ PageContentAnnotationsService::PageContentAnnotationsService(
      annotation_types_to_execute_.push_back(AnnotationType::kContentVisibility);
    }
  
@@ -2360,7 +2228,7 @@ diff --git a/components/page_content_annotations/core/page_content_annotations_s
    if (features::ShouldExecuteOnDeviceCategoryClassifierOnPageContent(
            application_locale, country_code)) {
      on_device_category_classifier_ =
-@@ -204,6 +205,7 @@ PageContentAnnotationsService::PageContentAnnotationsService(
+@@ -199,6 +200,7 @@ PageContentAnnotationsService::PageContentAnnotationsService(
              optimization_guide_model_provider, embedder_metadata_provider);
      on_device_category_classifier_->AddObserver(this);
    }
@@ -2368,7 +2236,7 @@ diff --git a/components/page_content_annotations/core/page_content_annotations_s
  
    if (optimization_guide_decider_) {
      optimization_guide_decider_->RegisterOptimizationTypes(
-@@ -215,9 +217,11 @@ PageContentAnnotationsService::PageContentAnnotationsService(
+@@ -210,9 +212,11 @@ PageContentAnnotationsService::PageContentAnnotationsService(
  }
  
  PageContentAnnotationsService::~PageContentAnnotationsService() {
@@ -2380,7 +2248,7 @@ diff --git a/components/page_content_annotations/core/page_content_annotations_s
  }
  
  void PageContentAnnotationsService::Shutdown() {
-@@ -287,6 +291,7 @@ void PageContentAnnotationsService::Annotate(const HistoryVisit& visit) {
+@@ -282,6 +286,7 @@ void PageContentAnnotationsService::Annotate(HistoryVisit visit) {
    }
  }
  
@@ -2388,7 +2256,7 @@ diff --git a/components/page_content_annotations/core/page_content_annotations_s
  void PageContentAnnotationsService::OnCategoriesClassified(
      const GURL& url,
      ukm::SourceId source_id,
-@@ -300,6 +305,7 @@ void PageContentAnnotationsService::OnCategoriesClassified(
+@@ -336,6 +341,7 @@ void PageContentAnnotationsService::OnCategoriesClassified(
        AnnotationType::kCategoryClassifier, it->second,
        PageContentAnnotationsResult::CreateCategoryResults(categories));
  }
@@ -2399,7 +2267,7 @@ diff --git a/components/page_content_annotations/core/page_content_annotations_s
 diff --git a/components/page_content_annotations/core/page_content_annotations_service.h b/components/page_content_annotations/core/page_content_annotations_service.h
 --- a/components/page_content_annotations/core/page_content_annotations_service.h
 +++ b/components/page_content_annotations/core/page_content_annotations_service.h
-@@ -123,8 +123,11 @@ enum class PageContentAnnotationsType {
+@@ -126,8 +126,11 @@ enum class PageContentAnnotationsType {
  class PageContentAnnotationsService
      : public KeyedService,
        public history::HistoryServiceObserver,
@@ -2413,7 +2281,7 @@ diff --git a/components/page_content_annotations/core/page_content_annotations_s
   public:
    // Observer interface to listen for PageContentAnnotations for page loads.
    // Annotations will be sent for each page load for the registered annotation
-@@ -232,9 +235,11 @@ class PageContentAnnotationsService
+@@ -236,9 +239,11 @@ class PageContentAnnotationsService
    }
  
    // OnDeviceCategoryClassifier::Observer:
@@ -2424,7 +2292,7 @@ diff --git a/components/page_content_annotations/core/page_content_annotations_s
 +#endif
  
   private:
-   // Callback invoked when a single |visit| has been annotated.
+   // Updates whether the category classifier bridge should be observing based on
 diff --git a/components/permissions/prediction_service/BUILD.gn b/components/permissions/prediction_service/BUILD.gn
 --- a/components/permissions/prediction_service/BUILD.gn
 +++ b/components/permissions/prediction_service/BUILD.gn
@@ -2497,10 +2365,10 @@ diff --git a/components/safe_browsing/content/browser/notification_content_detec
    ]
  
    deps = [
-diff --git a/components/safe_browsing/core/browser/client_side_phishing_model.cc b/components/safe_browsing/core/browser/client_side_phishing_model.cc
---- a/components/safe_browsing/core/browser/client_side_phishing_model.cc
-+++ b/components/safe_browsing/core/browser/client_side_phishing_model.cc
-@@ -522,7 +522,7 @@ void ClientSidePhishingModel::OnImageEmbeddingModelFileAndEmbeddingListLoaded(
+diff --git a/components/safe_browsing/core/browser/client_side_detection/client_side_phishing_model.cc b/components/safe_browsing/core/browser/client_side_detection/client_side_phishing_model.cc
+--- a/components/safe_browsing/core/browser/client_side_detection/client_side_phishing_model.cc
++++ b/components/safe_browsing/core/browser/client_side_detection/client_side_phishing_model.cc
+@@ -593,7 +593,7 @@ void ClientSidePhishingModel::OnImageEmbeddingModelFileAndEmbeddingListLoaded(
          model_metadata.value());
    }
  
@@ -2509,7 +2377,7 @@ diff --git a/components/safe_browsing/core/browser/client_side_phishing_model.cc
    if (image_embedding_model_metadata.has_value()) {
      embedding_model_opt_guide_metadata_image_embedding_version_ =
          image_embedding_model_metadata->image_embedding_model_version();
-@@ -546,6 +546,7 @@ void ClientSidePhishingModel::OnImageEmbeddingModelFileAndEmbeddingListLoaded(
+@@ -617,6 +617,7 @@ void ClientSidePhishingModel::OnImageEmbeddingModelFileAndEmbeddingListLoaded(
                                 embedding_list_version_num);
      }
    }
@@ -2517,7 +2385,7 @@ diff --git a/components/safe_browsing/core/browser/client_side_phishing_model.cc
    // Drop any existing target image embeddings in preparation for a new set.
    target_image_embeddings_.clear();
    // Only load image embeddings when the version of their embedder matches the
-@@ -566,6 +567,8 @@ void ClientSidePhishingModel::OnImageEmbeddingModelFileAndEmbeddingListLoaded(
+@@ -635,6 +636,8 @@ void ClientSidePhishingModel::OnImageEmbeddingModelFileAndEmbeddingListLoaded(
    }
    base::UmaHistogramCounts100000("SBClientPhishing.ImageEmbeddingList.Size",
                                   target_image_embeddings_.size());
@@ -2548,7 +2416,7 @@ diff --git a/components/translate/core/language_detection/BUILD.gn b/components/
 diff --git a/components/viz/service/BUILD.gn b/components/viz/service/BUILD.gn
 --- a/components/viz/service/BUILD.gn
 +++ b/components/viz/service/BUILD.gn
-@@ -322,8 +322,8 @@ viz_component("service") {
+@@ -317,8 +317,8 @@ viz_component("service") {
      "//services/metrics/public/mojom",
      "//services/tracing/public/cpp",
      "//services/viz/privileged/mojom",
@@ -2562,7 +2430,7 @@ diff --git a/components/viz/service/BUILD.gn b/components/viz/service/BUILD.gn
 diff --git a/components/viz/service/gl/gpu_service_impl.cc b/components/viz/service/gl/gpu_service_impl.cc
 --- a/components/viz/service/gl/gpu_service_impl.cc
 +++ b/components/viz/service/gl/gpu_service_impl.cc
-@@ -678,22 +678,9 @@ void GpuServiceImpl::BindWebNNContextProvider(
+@@ -697,27 +697,9 @@ void GpuServiceImpl::BindWebNNContextProvider(
  
    CreateWebNNContextProviderIfNeeded();
  
@@ -2576,17 +2444,22 @@ diff --git a/components/viz/service/gl/gpu_service_impl.cc b/components/viz/serv
 -    return;
 -  }
 -
+-  // Bind the WebNNBrowserHost pipe now, on first WebNN use.
+-  mojo::PendingRemote<webnn::mojom::WebNNBrowserHost> webnn_browser_host;
+-  std::move(bind_webnn_browser_host_)
+-      .Run(webnn_browser_host.InitWithNewPipeAndPassReceiver());
+-
 -  webnn_context_provider_ = webnn::WebNNContextProviderImpl::Create(
 -      gpu_feature_info_, gpu_info_, shared_image_manager(),
 -      gpu_channel_manager_->peak_memory_monitor(),
 -      base::BindOnce(&GpuServiceImpl::LoseAllContexts, weak_ptr_),
--      main_runner(), GetGpuScheduler(), gpu_host_);
+-      main_runner(), GetGpuScheduler(), std::move(webnn_browser_host));
 -}
 +void GpuServiceImpl::CreateWebNNContextProviderIfNeeded() {}
  
  void GpuServiceImpl::BindWebNNServiceIntrospection(
      mojo::PendingReceiver<webnn::mojom::WebNNServiceIntrospection>
-@@ -707,9 +694,6 @@ void GpuServiceImpl::BindWebNNServiceIntrospection(
+@@ -731,9 +713,6 @@ void GpuServiceImpl::BindWebNNServiceIntrospection(
    }
  
    CreateWebNNContextProviderIfNeeded();
@@ -2599,7 +2472,7 @@ diff --git a/components/viz/service/gl/gpu_service_impl.cc b/components/viz/serv
 diff --git a/content/browser/BUILD.gn b/content/browser/BUILD.gn
 --- a/content/browser/BUILD.gn
 +++ b/content/browser/BUILD.gn
-@@ -306,10 +306,10 @@ source_set("browser") {
+@@ -322,10 +322,10 @@ source_set("browser") {
      "//services/viz/public/cpp/gpu",
      "//services/viz/public/mojom",
      "//services/webnn:buildflags",
@@ -2616,7 +2489,7 @@ diff --git a/content/browser/BUILD.gn b/content/browser/BUILD.gn
 diff --git a/content/browser/gpu/gpu_process_host.cc b/content/browser/gpu/gpu_process_host.cc
 --- a/content/browser/gpu/gpu_process_host.cc
 +++ b/content/browser/gpu/gpu_process_host.cc
-@@ -1480,9 +1480,9 @@ bool GpuProcessHost::LaunchGpuProcess() {
+@@ -1384,9 +1384,9 @@ bool GpuProcessHost::LaunchGpuProcess() {
    cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames);
    cmd_line->CopySwitchesFrom(browser_command_line,
                               switches::kGLSwitchesCopiedFromGpuProcessHost);
@@ -2632,7 +2505,7 @@ diff --git a/content/browser/gpu/gpu_process_host.cc b/content/browser/gpu/gpu_p
 diff --git a/content/browser/service_worker/service_worker_main_resource_loader.cc b/content/browser/service_worker/service_worker_main_resource_loader.cc
 --- a/content/browser/service_worker/service_worker_main_resource_loader.cc
 +++ b/content/browser/service_worker/service_worker_main_resource_loader.cc
-@@ -585,6 +585,7 @@ bool ServiceWorkerMainResourceLoader::StartRaceNetworkRequest(
+@@ -589,6 +589,7 @@ bool ServiceWorkerMainResourceLoader::StartRaceNetworkRequest(
      scoped_refptr<ServiceWorkerContextWrapper> context,
      scoped_refptr<ServiceWorkerVersion> version,
      base::OnceCallback<void()> clone_completed_for_fetch_handler_callback) {
@@ -2643,48 +2516,60 @@ diff --git a/content/browser/service_worker/service_worker_main_resource_loader.
 diff --git a/content/utility/services.cc b/content/utility/services.cc
 --- a/content/utility/services.cc
 +++ b/content/utility/services.cc
-@@ -294,10 +294,6 @@ auto RunMediaFoundationServiceBroker(
-       std::move(receiver), base::BindOnce(&EnsureSandboxedWin));
+@@ -297,12 +297,6 @@ auto RunMediaFoundationServiceBroker(
  }
+ #endif  // BUILDFLAG(IS_WIN)
  
+-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
 -auto RunWebNNCompilerService(
 -    mojo::PendingReceiver<webnn::mojom::WebNNCompilerService> receiver) {
 -  return std::make_unique<webnn::WebNNCompilerServiceImpl>(std::move(receiver));
 -}
- #endif  // BUILDFLAG(IS_WIN)
+-#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
  
  #if BUILDFLAG(IS_ANDROID)
-@@ -341,12 +337,6 @@ auto RunVideoCapture(
+ auto RunMediaDrmSupportService(
+@@ -352,28 +346,6 @@ auto RunVideoCapture(
    return service;
  }
  
 -auto RunOnDeviceModel(
 -    mojo::PendingReceiver<on_device_model::mojom::OnDeviceModelService>
 -        receiver) {
+-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+-          sandbox::policy::switches::kNoSandbox)) {
+-    CHECK(on_device_model::WasPreSandboxInitCalled());
+-
+-    // Sandbox must have been properly initialized (see crbug.com/499278708).
+-    auto* sandbox_linux = sandbox::policy::SandboxLinux::GetInstance();
+-    if (sandbox_linux->seccomp_bpf_supported() &&
+-        base::FeatureList::IsEnabled(
+-            sandbox::policy::features::
+-                kOnDeviceModelExecutionMultiThreadedSandbox)) {
+-      CHECK(sandbox_linux->seccomp_bpf_started());
+-    }
+-  }
+-#else
+-  CHECK(on_device_model::WasPreSandboxInitCalled());
+-#endif
 -  return on_device_model::OnDeviceModelService::Create(std::move(receiver));
 -}
--
+ 
  #if BUILDFLAG(ENABLE_VR) && !BUILDFLAG(IS_ANDROID)
  auto RunXrDeviceService(
-     mojo::PendingReceiver<device::mojom::XRDeviceService> receiver) {
-@@ -411,8 +401,6 @@ void RegisterMainThreadServices(mojo::ServiceFactory& services) {
+@@ -443,11 +415,7 @@ void RegisterMainThreadServices(mojo::ServiceFactory& services) {
    services.Add(RunOOPVideoDecoderFactoryProcessService);
  #endif
  
 -  services.Add(RunOnDeviceModel);
--
+ 
+-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
+-  services.Add(RunWebNNCompilerService);
+-#endif
+ 
  #if BUILDFLAG(IS_WIN) || (BUILDFLAG(GOOGLE_CHROME_BRANDING) && \
                            (BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)))
-   services.Add(RunShapeDetectionService);
-@@ -427,7 +415,7 @@ void RegisterMainThreadServices(mojo::ServiceFactory& services) {
- 
- #if BUILDFLAG(IS_WIN)
-   services.Add(RunMediaFoundationServiceBroker);
--  services.Add(RunWebNNCompilerService);
-+  // services.Add(RunWebNNCompilerService);
- #endif  // BUILDFLAG(IS_WIN)
- 
- #if BUILDFLAG(IS_ANDROID)
 diff --git a/content/utility/webnn/webnn_sandbox_init.cc b/content/utility/webnn/webnn_sandbox_init.cc
 --- a/content/utility/webnn/webnn_sandbox_init.cc
 +++ b/content/utility/webnn/webnn_sandbox_init.cc
@@ -2791,16 +2676,16 @@ diff --git a/services/on_device_model/BUILD.gn b/services/on_device_model/BUILD.
      sources = [
        "on_device_model_mojom_impl.cc",
        "on_device_model_mojom_impl.h",
-@@ -37,7 +39,7 @@ if (use_blink || (is_ios && build_with_internal_optimization_guide)) {
-       "//build:chromecast_buildflags",
+@@ -38,7 +40,7 @@ if (use_blink || (is_ios && build_with_internal_optimization_guide)) {
        "//components/optimization_guide/core:features",
+       "//services/on_device_model/decision",
        "//services/on_device_model/fake",
 -      "//services/on_device_model/ml:ml_no_internal",
 +      # "//services/on_device_model/ml:ml_no_internal",
  
        # TODO(crbug.com/41492700): Remove this once possible. This is a hack due
        # to an implicit dependency via //third_party/utf via language_detection
-@@ -46,7 +48,7 @@ if (use_blink || (is_ios && build_with_internal_optimization_guide)) {
+@@ -47,7 +49,7 @@ if (use_blink || (is_ios && build_with_internal_optimization_guide)) {
        "//third_party/utf",
      ]
      if (!is_fuchsia) {
@@ -2809,9 +2694,9 @@ diff --git a/services/on_device_model/BUILD.gn b/services/on_device_model/BUILD.
      }
      public_deps = [
        "//base",
-@@ -90,7 +92,7 @@ if (use_blink || (is_ios && build_with_internal_optimization_guide)) {
-       "//base/test:test_support",
+@@ -92,7 +94,7 @@ if (use_blink || (is_ios && build_with_internal_optimization_guide)) {
        "//mojo/public/cpp/test_support:test_utils",
+       "//services/on_device_model/decision:unit_tests",
        "//services/on_device_model/fake",
 -      "//services/on_device_model/ml:ml_no_internal",
 +      #"//services/on_device_model/ml:ml_no_internal",
@@ -2878,7 +2763,7 @@ diff --git a/services/on_device_model/fake/BUILD.gn b/services/on_device_model/f
 diff --git a/services/on_device_model/fake/fake_chrome_ml_api.cc b/services/on_device_model/fake/fake_chrome_ml_api.cc
 --- a/services/on_device_model/fake/fake_chrome_ml_api.cc
 +++ b/services/on_device_model/fake/fake_chrome_ml_api.cc
-@@ -138,7 +138,9 @@ bool g_calculate_tokens_decoded = false;
+@@ -144,7 +144,9 @@ bool g_calculate_tokens_decoded = false;
  
  }  // namespace
  
@@ -2888,8 +2773,8 @@ diff --git a/services/on_device_model/fake/fake_chrome_ml_api.cc b/services/on_d
  
  void SetMetricsFns(const ChromeMLMetricsFns* fns) {}
  
-@@ -532,7 +534,9 @@ void ASRAddAudioChunk(ChromeMLASRStream stream, ml::AudioBuffer* audio_buffer) {
- void ASRDestroyStream(ChromeMLASRStream stream) {}
+@@ -624,7 +626,9 @@ void ASRDestroyStream(ChromeMLASRStream stream) {
+ }
  
  const ChromeMLAPI g_api = {
 +#if false /*BUILDFLAG(BUILD_WITH_TFLITE_LIB)*/
@@ -2965,7 +2850,7 @@ diff --git a/services/on_device_model/ml/chrome_ml_api.h b/services/on_device_mo
  #include "third_party/dawn/include/dawn/webgpu.h"
  
  // This header defines the public interface to the ChromeML shared library. The
-@@ -466,12 +468,16 @@ struct ChromeMLAPI {
+@@ -496,12 +498,16 @@ struct ChromeMLAPI {
    // Initializes the Dawn proc table. This must be called before any other
    // functions. If there is a mismatch in the version of the Dawn proc table,
    // this function will crash. Please use TryInitDawnProcs below instead.
@@ -3004,7 +2889,7 @@ diff --git a/services/on_device_model/on_device_model.gni b/services/on_device_m
 diff --git a/services/on_device_model/on_device_model_service.cc b/services/on_device_model/on_device_model_service.cc
 --- a/services/on_device_model/on_device_model_service.cc
 +++ b/services/on_device_model/on_device_model_service.cc
-@@ -32,14 +32,7 @@ const base::FeatureParam<bool> kForceFastestInference{
+@@ -33,14 +33,7 @@ const base::FeatureParam<bool> kForceFastestInference{
      "on_device_model_force_fastest_inference", false};
  
  scoped_refptr<Backend> DefaultImpl() {
@@ -3051,7 +2936,7 @@ diff --git a/services/on_device_model/public/cpp/test_support/BUILD.gn b/service
 diff --git a/services/on_device_model/public/mojom/BUILD.gn b/services/on_device_model/public/mojom/BUILD.gn
 --- a/services/on_device_model/public/mojom/BUILD.gn
 +++ b/services/on_device_model/public/mojom/BUILD.gn
-@@ -71,7 +71,7 @@ mojom("mojom") {
+@@ -72,7 +72,7 @@ mojom("mojom") {
          "//services/on_device_model/public/cpp/chrome_ml_types_mojom_traits.cc",
        ]
        traits_public_deps = [
@@ -3100,7 +2985,7 @@ diff --git a/services/passage_embeddings/passage_embeddings_service.cc b/service
 diff --git a/services/webnn/BUILD.gn b/services/webnn/BUILD.gn
 --- a/services/webnn/BUILD.gn
 +++ b/services/webnn/BUILD.gn
-@@ -46,7 +46,7 @@ source_set("webnn_service_base") {
+@@ -47,7 +47,7 @@ source_set("webnn_service_base") {
      "webnn_constant_operand.h",
      "webnn_context_impl.cc",
      "webnn_context_impl.h",
@@ -3109,7 +2994,7 @@ diff --git a/services/webnn/BUILD.gn b/services/webnn/BUILD.gn
      "webnn_context_provider_impl.h",
      "webnn_context_provider_in_renderer.cc",
      "webnn_context_provider_in_renderer.h",
-@@ -83,7 +83,7 @@ source_set("webnn_service_base") {
+@@ -84,7 +84,7 @@ source_set("webnn_service_base") {
      ]
    }
  
@@ -3118,7 +3003,7 @@ diff --git a/services/webnn/BUILD.gn b/services/webnn/BUILD.gn
      deps += [ "//services/webnn/public/cpp:win" ]
    }
  
-@@ -206,7 +206,7 @@ component("webnn_service") {
+@@ -208,7 +208,7 @@ component("webnn_service") {
      }
    }
  
@@ -3127,7 +3012,7 @@ diff --git a/services/webnn/BUILD.gn b/services/webnn/BUILD.gn
      sources += [
        "ort/compiler_context_impl_ort.cc",
        "ort/compiler_context_impl_ort.h",
-@@ -287,7 +287,7 @@ source_set("webnn_test_support") {
+@@ -292,7 +292,7 @@ source_set("webnn_test_support") {
      deps += [ "//services/webnn/public/cpp:in_process_context_provider" ]
    }
  
@@ -3136,25 +3021,25 @@ diff --git a/services/webnn/BUILD.gn b/services/webnn/BUILD.gn
      deps += [
        "//services/webnn/public/cpp:win",
        "//ui/gfx/mojom",
-@@ -313,7 +313,7 @@ source_set("tests") {
+@@ -330,7 +330,7 @@ source_set("tests") {
      ]
    }
  
 -  if (is_win) {
 +  if (is_win && webnn_use_tflite) {
      sources += [
-       "ort/model_editor_test.cc",
-       "ort/platform_functions_ort_test.cc",
-@@ -336,7 +336,7 @@ source_set("tests") {
+       "host/execution_provider_initializer_unittest.cc",
+       "ort/epcontext_model_validator_test.cc",
+@@ -357,7 +357,7 @@ source_set("tests") {
      "//third_party/fp16",
    ]
  
 -  if (is_win) {
 +  if (is_win && webnn_use_tflite) {
      deps += [
-       "//ui/gl",
-       "//ui/gl/init",
-@@ -556,7 +556,7 @@ if (!is_debug) {
+       ":epcontext_model_validator_test_support",
+       ":webnn_switches",
+@@ -591,7 +591,7 @@ if (!is_debug) {
  
      # ASan inflates stack frames significantly, and the fuzzer deep call chain
      # overflows the default 1MB stack on Windows. Set to 8MB instead.
@@ -3178,7 +3063,7 @@ diff --git a/services/webnn/features.gni b/services/webnn/features.gni
 diff --git a/services/webnn/webnn_context_impl.cc b/services/webnn/webnn_context_impl.cc
 --- a/services/webnn/webnn_context_impl.cc
 +++ b/services/webnn/webnn_context_impl.cc
-@@ -206,8 +206,7 @@ WebNNContextImpl::~WebNNContextImpl() {
+@@ -276,8 +276,7 @@ WebNNContextImpl::~WebNNContextImpl() {
    if (has_context_provider_) {
      main_task_runner_->PostTask(
          FROM_HERE,
@@ -3188,7 +3073,7 @@ diff --git a/services/webnn/webnn_context_impl.cc b/services/webnn/webnn_context
    }
  
    if (g_destruction_callback_for_testing) {
-@@ -258,8 +257,7 @@ void WebNNContextImpl::OnDisconnect() {
+@@ -328,8 +327,7 @@ void WebNNContextImpl::OnDisconnect() {
  
    if (!remove_task) {
      remove_task =
@@ -3198,7 +3083,7 @@ diff --git a/services/webnn/webnn_context_impl.cc b/services/webnn/webnn_context
    }
  
    main_task_runner_->PostTask(FROM_HERE, std::move(remove_task));
-@@ -276,13 +274,11 @@ void WebNNContextImpl::DestroyAllContextsAndKillGpuProcess() {
+@@ -354,13 +352,11 @@ void WebNNContextImpl::DestroyAllContextsAndKillGpuProcess() {
    if (!main_task_runner_->RunsTasksInCurrentSequence()) {
      main_task_runner_->PostTask(
          FROM_HERE,
@@ -3214,7 +3099,7 @@ diff --git a/services/webnn/webnn_context_impl.cc b/services/webnn/webnn_context
  }
  #endif  // BUILDFLAG(IS_WIN)
  
-@@ -314,9 +310,7 @@ void WebNNContextImpl::CreateWeightsFile(
+@@ -392,9 +388,7 @@ void WebNNContextImpl::CreateWeightsFile(
    // CreateWeightsFile is only used by the GPU-process path.
    DCHECK(!is_context_provider_in_renderer_);
  
@@ -3228,7 +3113,7 @@ diff --git a/services/webnn/webnn_context_impl.cc b/services/webnn/webnn_context
 diff --git a/services/webnn/webnn_context_provider_impl.cc b/services/webnn/webnn_context_provider_impl.cc
 --- a/services/webnn/webnn_context_provider_impl.cc
 +++ b/services/webnn/webnn_context_provider_impl.cc
-@@ -305,7 +305,7 @@ void WebNNContextProviderImpl::GetAvailableExecutionProvidersDetails(
+@@ -304,7 +304,7 @@ void WebNNContextProviderImpl::GetAvailableExecutionProvidersDetails(
    // platforms and backends. This is because the ORT backend is the only one
    // that has multiple execution providers and where the available execution
    // providers can vary based on the system configuration.
@@ -3237,7 +3122,7 @@ diff --git a/services/webnn/webnn_context_provider_impl.cc b/services/webnn/webn
    std::optional<scoped_refptr<ort::Environment>> environment =
        ort::Environment::GetInstance();
    // If the ORT environment is not initialized, there is no EP information to
-@@ -329,7 +329,7 @@ void WebNNContextProviderImpl::UpdateWebNNServiceIntrospection() {
+@@ -328,7 +328,7 @@ void WebNNContextProviderImpl::UpdateWebNNServiceIntrospection() {
    service_introspection_client_->OnUpdateExistingContextDetails(
        std::move(contexts_details));
  
@@ -3246,7 +3131,7 @@ diff --git a/services/webnn/webnn_context_provider_impl.cc b/services/webnn/webn
    std::optional<scoped_refptr<ort::Environment>> environment =
        ort::Environment::GetInstance();
    // If the list of contexts is empty, then the ORT environment will be
-@@ -469,7 +469,7 @@ void WebNNContextProviderImpl::CreateWebNNContext(
+@@ -466,7 +466,7 @@ void WebNNContextProviderImpl::CreateWebNNContext(
  
    RecordDeviceType(options->device);
  
@@ -3255,7 +3140,7 @@ diff --git a/services/webnn/webnn_context_provider_impl.cc b/services/webnn/webn
    if (ort::ShouldTryCreateOrtContext()) {
      const base::CommandLine* command_line =
          base::CommandLine::ForCurrentProcess();
-@@ -880,25 +880,6 @@ void WebNNContextProviderImpl::DidEnsureWebNNExecutionProvidersReady(
+@@ -947,25 +947,7 @@ void WebNNContextProviderImpl::DidEnsureWebNNExecutionProvidersReady(
  void WebNNContextProviderImpl::ForceOrtEnvironmentCreationForIntrospection(
      ForceOrtEnvironmentCreationForIntrospectionCallback callback) {
    DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_checker_);
@@ -3267,13 +3152,13 @@ diff --git a/services/webnn/webnn_context_provider_impl.cc b/services/webnn/webn
 -    std::move(callback).Run(environment.value()->GetAvailableEpDetails());
 -    return;
 -  }
--
+ 
 -  if (base::win::GetVersion() < kWinAppRuntimeSupportedMinVersion) {
 -    DidEnsureWebNNExecutionProvidersReadyForIntrospection(
 -        main_thread_task_runner_, std::move(callback),
 -        /*ep_package_info=*/{});
 -  } else {
--    gpu_host_->EnsureWebNNExecutionProvidersReady(base::BindOnce(
+-    webnn_browser_host_->EnsureExecutionProvidersReady(base::BindOnce(
 -        &WebNNContextProviderImpl::
 -            DidEnsureWebNNExecutionProvidersReadyForIntrospection,
 -        AsWeakPtr(), main_thread_task_runner_, std::move(callback)));
@@ -3284,7 +3169,7 @@ diff --git a/services/webnn/webnn_context_provider_impl.cc b/services/webnn/webn
 diff --git a/third_party/blink/renderer/core/html/parser/html_document_parser.cc b/third_party/blink/renderer/core/html/parser/html_document_parser.cc
 --- a/third_party/blink/renderer/core/html/parser/html_document_parser.cc
 +++ b/third_party/blink/renderer/core/html/parser/html_document_parser.cc
-@@ -1809,6 +1809,7 @@ ALWAYS_INLINE bool HTMLDocumentParser::ShouldCheckTimeBudget(
+@@ -1938,6 +1938,7 @@ bool HTMLDocumentParser::ShouldPumpTokenizerNowForFinishAppend() const {
  }
  
  bool HTMLDocumentParser::ShouldSkipPreloadScan() {
@@ -3295,7 +3180,7 @@ diff --git a/third_party/blink/renderer/core/html/parser/html_document_parser.cc
 diff --git a/third_party/blink/renderer/core/speculation_rules/document_speculation_rules.cc b/third_party/blink/renderer/core/speculation_rules/document_speculation_rules.cc
 --- a/third_party/blink/renderer/core/speculation_rules/document_speculation_rules.cc
 +++ b/third_party/blink/renderer/core/speculation_rules/document_speculation_rules.cc
-@@ -857,6 +857,7 @@ void DocumentSpeculationRules::UpdateSpeculationCandidates() {
+@@ -843,6 +843,7 @@ void DocumentSpeculationRules::UpdateSpeculationCandidates() {
      return;
    }
  
@@ -3306,7 +3191,7 @@ diff --git a/third_party/blink/renderer/core/speculation_rules/document_speculat
 diff --git a/third_party/blink/renderer/platform/runtime_enabled_features.json5 b/third_party/blink/renderer/platform/runtime_enabled_features.json5
 --- a/third_party/blink/renderer/platform/runtime_enabled_features.json5
 +++ b/third_party/blink/renderer/platform/runtime_enabled_features.json5
-@@ -4820,7 +4820,7 @@
+@@ -5323,7 +5323,7 @@
        //
        // It also has some feature params defined throughout the codebase.
        name: "Prerender2",
@@ -3315,4 +3200,16 @@ diff --git a/third_party/blink/renderer/platform/runtime_enabled_features.json5 
      },
      {
        // Used to allow prerender cross-origin iframes with an opt-in response
+
+diff --git a/chrome/browser/ui/android/preloading/java/src/org/chromium/chrome/browser/preloading/AndroidPrerenderManager.java b/chrome/browser/ui/android/preloading/java/src/org/chromium/chrome/browser/preloading/AndroidPrerenderManager.java
+--- a/chrome/browser/ui/android/preloading/java/src/org/chromium/chrome/browser/preloading/AndroidPrerenderManager.java
++++ b/chrome/browser/ui/android/preloading/java/src/org/chromium/chrome/browser/preloading/AndroidPrerenderManager.java
+@@ -90,6 +90,7 @@ public class AndroidPrerenderManager {
+      * @param prerenderUrl The url to be prerendered.
+      */
+     public void startPrerendering(GURL prerenderUrl) {
++        if ((true)) return;
+         if (mNativeAndroidPrerenderManager == 0 || mTab == null) return;
+         AndroidPrerenderManagerJni.get()
+                 .startPrerendering(mNativeAndroidPrerenderManager, prerenderUrl, mTab);
 --

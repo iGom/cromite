@@ -5,64 +5,25 @@ Subject: Logcat crash reports UI
 Original License: GPL-2.0-or-later - https://spdx.org/licenses/GPL-2.0-or-later.html
 License: GPL-3.0-only - https://spdx.org/licenses/GPL-3.0-only.html
 ---
- .../crash/MinidumpUploadServiceImpl.java      |  22 +++
- .../crash_upload_list_android.cc              |  19 +-
- .../crash_upload_list_android.h               |   1 +
- chrome/browser/net/chrome_network_delegate.cc |   7 +
- chrome/browser/ui/BUILD.gn                    |   1 +
- chrome/browser/ui/webui/crashes/crashes_ui.cc | 183 ++++++++++++++++--
- .../crash/core/browser/crashes_ui_util.h      |   4 +
- .../crash/core/browser/resources/crashes.css  |  71 ++++++-
- .../crash/core/browser/resources/crashes.html |  17 ++
- .../crash/core/browser/resources/crashes.ts   |  94 +++------
- components/crash_strings.grdp                 |  22 ++-
- .../minidump_uploader/CrashFileManager.java   |   7 +-
- .../MinidumpUploadCallable.java               |  24 +--
- .../minidump_uploader/MinidumpUploader.java   |  34 +---
- .../upload_list/text_log_upload_list.cc       |   1 +
- components/upload_list/upload_list.cc         |  14 ++
- components/upload_list/upload_list.h          |   9 +
+ .../crash_upload_list/crash_upload_list_android.cc |   19 ++
+ .../crash_upload_list/crash_upload_list_android.h  |    1 
+ chrome/browser/net/chrome_network_delegate.cc      |    7 +
+ chrome/browser/ui/webui/crashes/BUILD.gn           |    1 
+ chrome/browser/ui/webui/crashes/crashes_ui.cc      |  183 +++++++++++++++++++-
+ components/crash/core/browser/crashes_ui_util.h    |    4 
+ .../crash/core/browser/resources/crashes.css       |   71 ++++++++
+ .../crash/core/browser/resources/crashes.html      |   17 ++
+ components/crash/core/browser/resources/crashes.ts |   94 +++-------
+ components/crash_strings.grdp                      |   22 ++
+ components/upload_list/text_log_upload_list.cc     |    1 
+ components/upload_list/upload_list.cc              |   14 ++
+ components/upload_list/upload_list.h               |    9 +
+ .../browser/crash/MinidumpUploadServiceImpl.java   |   22 ++
+ .../minidump_uploader/CrashFileManager.java        |    7 +
+ .../minidump_uploader/MinidumpUploadCallable.java  |   24 ---
+ .../minidump_uploader/MinidumpUploader.java        |   34 ----
  17 files changed, 389 insertions(+), 141 deletions(-)
 
-diff --git a/chrome/android/java/src/org/chromium/chrome/browser/crash/MinidumpUploadServiceImpl.java b/chrome/android/java/src/org/chromium/chrome/browser/crash/MinidumpUploadServiceImpl.java
---- a/chrome/android/java/src/org/chromium/chrome/browser/crash/MinidumpUploadServiceImpl.java
-+++ b/chrome/android/java/src/org/chromium/chrome/browser/crash/MinidumpUploadServiceImpl.java
-@@ -41,6 +41,11 @@ import java.lang.annotation.Retention;
- import java.lang.annotation.RetentionPolicy;
- import java.util.concurrent.atomic.AtomicBoolean;
- 
-+import org.chromium.base.task.AsyncTask;
-+import org.chromium.base.task.PostTask;
-+import org.chromium.base.task.TaskTraits;
-+import org.chromium.chrome.browser.crash.LogcatExtractionRunnable;
-+
- /** Service that is responsible for uploading crash minidumps to the Google crash server. */
- @NullMarked
- public class MinidumpUploadServiceImpl extends SplitCompatIntentService.Impl {
-@@ -85,6 +90,23 @@ public class MinidumpUploadServiceImpl extends SplitCompatIntentService.Impl {
-         assumeNonNull(getService()).setIntentRedelivery(true);
-     }
- 
-+    @CalledByNative
-+    public static void requestNewExtraction() {
-+        CrashFileManager crashFileManager =
-+                new CrashFileManager(ContextUtils.getApplicationContext().getCacheDir());
-+
-+        // Append logcat output to minidumps where are missing
-+        // getMinidumpsSansLogcat() also extract new files from crashpad
-+        File[] minidumpsSansLogcat = crashFileManager.getMinidumpsSansLogcat();
-+        if (minidumpsSansLogcat.length >= 1) {
-+            for (int i = 0; i < minidumpsSansLogcat.length; ++i) {
-+                File minidump = minidumpsSansLogcat[i];
-+                AsyncTask.THREAD_POOL_EXECUTOR.execute(
-+                        new LogcatExtractionRunnable(minidump));
-+            }
-+        }
-+    }
-+
-     /** Schedules uploading of all pending minidumps, using the JobScheduler API. */
-     public static void scheduleUploadJob() {
-         CrashReportingPermissionManager permissionManager =
 diff --git a/chrome/browser/crash_upload_list/crash_upload_list_android.cc b/chrome/browser/crash_upload_list/crash_upload_list_android.cc
 --- a/chrome/browser/crash_upload_list/crash_upload_list_android.cc
 +++ b/chrome/browser/crash_upload_list/crash_upload_list_android.cc
@@ -151,17 +112,17 @@ diff --git a/chrome/browser/net/chrome_network_delegate.cc b/chrome/browser/net/
    std::vector<base::FilePath> allowlist;
    std::vector<base::FilePath> all_download_dirs =
        base::android::GetAllPrivateDownloadsDirectories();
-diff --git a/chrome/browser/ui/BUILD.gn b/chrome/browser/ui/BUILD.gn
---- a/chrome/browser/ui/BUILD.gn
-+++ b/chrome/browser/ui/BUILD.gn
-@@ -891,6 +891,7 @@ static_library("ui") {
-     "//third_party/icu",
-     "//third_party/leveldatabase",
-     "//third_party/zlib",
+diff --git a/chrome/browser/ui/webui/crashes/BUILD.gn b/chrome/browser/ui/webui/crashes/BUILD.gn
+--- a/chrome/browser/ui/webui/crashes/BUILD.gn
++++ b/chrome/browser/ui/webui/crashes/BUILD.gn
+@@ -22,6 +22,7 @@ source_set("crashes") {
+     "//components/signin/public/base",
+     "//components/signin/public/identity_manager",
+     "//google_apis",
 +    "//third_party/zlib/google:zip",
-     "//ui/accessibility",
      "//ui/base",
-     "//ui/base/accelerators/global_accelerator_listener",
+     "//ui/webui",
+   ]
 diff --git a/chrome/browser/ui/webui/crashes/crashes_ui.cc b/chrome/browser/ui/webui/crashes/crashes_ui.cc
 --- a/chrome/browser/ui/webui/crashes/crashes_ui.cc
 +++ b/chrome/browser/ui/webui/crashes/crashes_ui.cc
@@ -782,6 +743,111 @@ diff --git a/components/crash_strings.grdp b/components/crash_strings.grdp
 +    Generate report
    </message>
  </grit-part>
+diff --git a/components/upload_list/text_log_upload_list.cc b/components/upload_list/text_log_upload_list.cc
+--- a/components/upload_list/text_log_upload_list.cc
++++ b/components/upload_list/text_log_upload_list.cc
+@@ -169,6 +169,7 @@ std::unique_ptr<UploadList::UploadInfo> TextLogUploadList::TryParseCsvLogEntry(
+   }
+   auto info = std::make_unique<TextLogUploadList::UploadInfo>(components[1],
+                                                               upload_time);
++  info->file_path = components[1];
+ 
+   // Add local ID if present.
+   if (components.size() > 2)
+diff --git a/components/upload_list/upload_list.cc b/components/upload_list/upload_list.cc
+--- a/components/upload_list/upload_list.cc
++++ b/components/upload_list/upload_list.cc
+@@ -99,6 +99,11 @@ std::vector<const UploadList::UploadInfo*> UploadList::GetUploads(
+   return uploads;
+ }
+ 
++void UploadList::RequestNewExtraction() {
++  // only available for Android. overrided in crash_upload_list_android.cc
++  NOTREACHED();
++}
++
+ void UploadList::OnLoadComplete(
+     std::vector<std::unique_ptr<UploadInfo>> uploads) {
+   uploads_ = std::move(uploads);
+@@ -111,3 +116,12 @@ void UploadList::OnClearComplete() {
+   if (!clear_callback_.is_null())
+     std::move(clear_callback_).Run();
+ }
++
++std::string UploadList::GetFilePathByLocalId(const std::string& local_id) {
++  for (const std::unique_ptr<UploadList::UploadInfo>& info : uploads_) {
++    if (info->local_id == local_id) {
++      return info->file_path;
++    }
++  }
++  return std::string();
++}
+diff --git a/components/upload_list/upload_list.h b/components/upload_list/upload_list.h
+--- a/components/upload_list/upload_list.h
++++ b/components/upload_list/upload_list.h
+@@ -70,6 +70,9 @@ class UploadList : public base::RefCountedThreadSafe<UploadList> {
+ 
+     // File size for locally stored data.
+     std::optional<int64_t> file_size;
++
++    // path of crash file
++    std::string file_path;
+   };
+ 
+   UploadList();
+@@ -100,6 +103,12 @@ class UploadList : public base::RefCountedThreadSafe<UploadList> {
+   // The |UploadInfo| pointers are still owned by this |UploadList| instance.
+   std::vector<const UploadInfo*> GetUploads(size_t max_count) const;
+ 
++  // Get full path of crash file for local_id
++  std::string GetFilePathByLocalId(const std::string& local_id);
++
++  // Request new log extraction
++  virtual void RequestNewExtraction();
++
+  protected:
+   virtual ~UploadList();
+ 
+
+diff --git a/chrome/android/java/src/org/chromium/chrome/browser/crash/MinidumpUploadServiceImpl.java b/chrome/android/java/src/org/chromium/chrome/browser/crash/MinidumpUploadServiceImpl.java
+--- a/chrome/android/java/src/org/chromium/chrome/browser/crash/MinidumpUploadServiceImpl.java
++++ b/chrome/android/java/src/org/chromium/chrome/browser/crash/MinidumpUploadServiceImpl.java
+@@ -41,6 +41,11 @@ import java.lang.annotation.Retention;
+ import java.lang.annotation.RetentionPolicy;
+ import java.util.concurrent.atomic.AtomicBoolean;
+ 
++import org.chromium.base.task.AsyncTask;
++import org.chromium.base.task.PostTask;
++import org.chromium.base.task.TaskTraits;
++import org.chromium.chrome.browser.crash.LogcatExtractionRunnable;
++
+ /** Service that is responsible for uploading crash minidumps to the Google crash server. */
+ @NullMarked
+ public class MinidumpUploadServiceImpl extends SplitCompatIntentService.Impl {
+@@ -85,6 +90,23 @@ public class MinidumpUploadServiceImpl extends SplitCompatIntentService.Impl {
+         assumeNonNull(getService()).setIntentRedelivery(true);
+     }
+ 
++    @CalledByNative
++    public static void requestNewExtraction() {
++        CrashFileManager crashFileManager =
++                new CrashFileManager(ContextUtils.getApplicationContext().getCacheDir());
++
++        // Append logcat output to minidumps where are missing
++        // getMinidumpsSansLogcat() also extract new files from crashpad
++        File[] minidumpsSansLogcat = crashFileManager.getMinidumpsSansLogcat();
++        if (minidumpsSansLogcat.length >= 1) {
++            for (int i = 0; i < minidumpsSansLogcat.length; ++i) {
++                File minidump = minidumpsSansLogcat[i];
++                AsyncTask.THREAD_POOL_EXECUTOR.execute(
++                        new LogcatExtractionRunnable(minidump));
++            }
++        }
++    }
++
+     /** Schedules uploading of all pending minidumps, using the JobScheduler API. */
+     public static void scheduleUploadJob() {
+         CrashReportingPermissionManager permissionManager =
 diff --git a/components/minidump_uploader/android/java/src/org/chromium/components/minidump_uploader/CrashFileManager.java b/components/minidump_uploader/android/java/src/org/chromium/components/minidump_uploader/CrashFileManager.java
 --- a/components/minidump_uploader/android/java/src/org/chromium/components/minidump_uploader/CrashFileManager.java
 +++ b/components/minidump_uploader/android/java/src/org/chromium/components/minidump_uploader/CrashFileManager.java
@@ -892,69 +958,4 @@ diff --git a/components/minidump_uploader/android/java/src/org/chromium/componen
              return Result.failure(e.toString());
          }
      }
-diff --git a/components/upload_list/text_log_upload_list.cc b/components/upload_list/text_log_upload_list.cc
---- a/components/upload_list/text_log_upload_list.cc
-+++ b/components/upload_list/text_log_upload_list.cc
-@@ -169,6 +169,7 @@ std::unique_ptr<UploadList::UploadInfo> TextLogUploadList::TryParseCsvLogEntry(
-   }
-   auto info = std::make_unique<TextLogUploadList::UploadInfo>(components[1],
-                                                               upload_time);
-+  info->file_path = components[1];
- 
-   // Add local ID if present.
-   if (components.size() > 2)
-diff --git a/components/upload_list/upload_list.cc b/components/upload_list/upload_list.cc
---- a/components/upload_list/upload_list.cc
-+++ b/components/upload_list/upload_list.cc
-@@ -99,6 +99,11 @@ std::vector<const UploadList::UploadInfo*> UploadList::GetUploads(
-   return uploads;
- }
- 
-+void UploadList::RequestNewExtraction() {
-+  // only available for Android. overrided in crash_upload_list_android.cc
-+  NOTREACHED();
-+}
-+
- void UploadList::OnLoadComplete(
-     std::vector<std::unique_ptr<UploadInfo>> uploads) {
-   uploads_ = std::move(uploads);
-@@ -111,3 +116,12 @@ void UploadList::OnClearComplete() {
-   if (!clear_callback_.is_null())
-     std::move(clear_callback_).Run();
- }
-+
-+std::string UploadList::GetFilePathByLocalId(const std::string& local_id) {
-+  for (const std::unique_ptr<UploadList::UploadInfo>& info : uploads_) {
-+    if (info->local_id == local_id) {
-+      return info->file_path;
-+    }
-+  }
-+  return std::string();
-+}
-diff --git a/components/upload_list/upload_list.h b/components/upload_list/upload_list.h
---- a/components/upload_list/upload_list.h
-+++ b/components/upload_list/upload_list.h
-@@ -70,6 +70,9 @@ class UploadList : public base::RefCountedThreadSafe<UploadList> {
- 
-     // File size for locally stored data.
-     std::optional<int64_t> file_size;
-+
-+    // path of crash file
-+    std::string file_path;
-   };
- 
-   UploadList();
-@@ -100,6 +103,12 @@ class UploadList : public base::RefCountedThreadSafe<UploadList> {
-   // The |UploadInfo| pointers are still owned by this |UploadList| instance.
-   std::vector<const UploadInfo*> GetUploads(size_t max_count) const;
- 
-+  // Get full path of crash file for local_id
-+  std::string GetFilePathByLocalId(const std::string& local_id);
-+
-+  // Request new log extraction
-+  virtual void RequestNewExtraction();
-+
-  protected:
-   virtual ~UploadList();
- 
 --

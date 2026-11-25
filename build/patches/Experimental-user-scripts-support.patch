@@ -27,209 +27,121 @@ Requires patch: Adds-support-for-writing-URIs.patch
 Original License: GPL-2.0-or-later - https://spdx.org/licenses/GPL-2.0-or-later.html
 License: GPL-3.0-only - https://spdx.org/licenses/GPL-3.0-only.html
 ---
- chrome/android/BUILD.gn                       |   8 +-
- .../android/java/res/xml/main_preferences.xml |   5 +
- .../browser/download/DownloadUtils.java       |   7 +
- .../init/ProcessInitializationHandler.java    |   4 +
- chrome/android/java_sources.gni               |   3 +
- chrome/browser/BUILD.gn                       |   5 +
- chrome/browser/about_flags.cc                 |   1 +
- chrome/browser/prefs/browser_prefs.cc         |   4 +
- chrome/browser/profiles/BUILD.gn              |   3 +
- ...hrome_browser_main_extra_parts_profiles.cc |   9 +
- chrome/browser/profiles/profile_manager.cc    |  11 +
- chrome/browser/profiles/renderer_updater.cc   |  19 +-
- chrome/browser/profiles/renderer_updater.h    |   3 +
- .../browser/ui/webui/chrome_web_ui_configs.cc |   8 +-
- chrome/chrome_paks.gni                        |   2 +
- chrome/common/renderer_configuration.mojom    |   1 +
- chrome/renderer/BUILD.gn                      |   6 +
- .../chrome_content_renderer_client.cc         |  55 ++
- .../renderer/chrome_render_thread_observer.cc |   7 +
- components/components_strings.grd             |   1 +
- components/user_scripts/README.md             | 150 ++++
- components/user_scripts/android/BUILD.gn      | 103 +++
- .../java/res/layout/accept_script_item.xml    | 160 ++++
- .../java/res/layout/accept_script_list.xml    |  10 +
- .../java/res/layout/scripts_preference.xml    |  40 +
- .../android/java/res/values/dimens.xml        |  11 +
- .../java/res/xml/userscripts_preferences.xml  |  34 +
- .../user_scripts/UserScriptsUtils.java        |  88 ++
- .../user_scripts/FragmentWindowAndroid.java   |  96 ++
- .../user_scripts/IUserScriptsUtils.java       |  22 +
- .../components/user_scripts/ScriptInfo.java   |  37 +
- .../user_scripts/ScriptListBaseAdapter.java   | 162 ++++
- .../user_scripts/ScriptListPreference.java    | 171 ++++
- .../user_scripts/UserScriptsBridge.java       | 212 +++++
- .../user_scripts/UserScriptsPreferences.java  | 122 +++
- .../user_scripts/android/java_sources.gni     |  18 +
- .../android/user_scripts_bridge.cc            | 174 ++++
- .../android/user_scripts_bridge.h             |  31 +
- ...Allow-playing-videos-in-background.user.js |  25 +
- .../assets/Dont-track-me-Google.user.js       | 826 ++++++++++++++++++
- .../user_scripts/assets/disable-amp.user.js   | 127 +++
- components/user_scripts/browser/BUILD.gn      |  79 ++
- .../user_scripts/browser/file_task_runner.cc  |  40 +
- .../user_scripts/browser/file_task_runner.h   |  34 +
- .../browser/renderer_startup_helper.cc        | 102 +++
- .../browser/renderer_startup_helper.h         | 105 +++
- .../browser/resources/browser_resources.grd   |  14 +
- .../browser/resources/user-script-ui/BUILD.gn |   8 +
- .../user-script-ui/user-scripts-ui.html       |  14 +
- .../user-script-ui/user-scripts-ui.js         |   9 +
- .../browser/ui/user_scripts_ui.cc             | 146 ++++
- .../user_scripts/browser/ui/user_scripts_ui.h |  46 +
- .../browser/user_script_loader.cc             | 727 +++++++++++++++
- .../user_scripts/browser/user_script_loader.h | 168 ++++
- .../browser/user_script_pref_info.cc          |  34 +
- .../browser/user_script_pref_info.h           |  72 ++
- .../user_scripts/browser/user_script_prefs.cc | 277 ++++++
- .../user_scripts/browser/user_script_prefs.h  |  62 ++
- .../browser/userscripts_browser_client.cc     |  78 ++
- .../browser/userscripts_browser_client.h      |  62 ++
- components/user_scripts/common/BUILD.gn       |  58 ++
- components/user_scripts/common/constants.h    |  15 +
- components/user_scripts/common/error_utils.cc |  54 ++
- components/user_scripts/common/error_utils.h  |  22 +
- components/user_scripts/common/host_id.cc     |  31 +
- components/user_scripts/common/host_id.h      |  35 +
- .../user_scripts/common/mojom/renderer.mojom  |  12 +
- .../user_scripts/common/script_constants.h    |  33 +
- components/user_scripts/common/url_pattern.cc | 813 +++++++++++++++++
- components/user_scripts/common/url_pattern.h  | 306 +++++++
- .../user_scripts/common/url_pattern_set.cc    | 229 +++++
- .../user_scripts/common/url_pattern_set.h     | 103 +++
- components/user_scripts/common/user_script.cc | 330 +++++++
- components/user_scripts/common/user_script.h  | 402 +++++++++
- .../common/user_scripts_features.cc           |  32 +
- .../common/user_scripts_features.h            |  36 +
- components/user_scripts/common/view_type.cc   |  37 +
- components/user_scripts/common/view_type.h    |  48 +
- components/user_scripts/renderer/BUILD.gn     |  65 ++
- .../renderer/extension_frame_helper.cc        |  95 ++
- .../renderer/extension_frame_helper.h         |  90 ++
- .../user_scripts/renderer/injection_host.cc   |  16 +
- .../user_scripts/renderer/injection_host.h    |  41 +
- .../renderer/resources/greasemonkey_api.js    |  82 ++
- .../user_scripts_renderer_resources.grd       |  14 +
- .../user_scripts/renderer/script_context.cc   | 190 ++++
- .../user_scripts/renderer/script_context.h    |  67 ++
- .../user_scripts/renderer/script_injection.cc | 296 +++++++
- .../user_scripts/renderer/script_injection.h  | 155 ++++
- .../renderer/script_injection_manager.cc      | 413 +++++++++
- .../renderer/script_injection_manager.h       | 100 +++
- .../user_scripts/renderer/script_injector.h   | 100 +++
- .../user_scripts/renderer/scripts_run_info.cc |  31 +
- .../user_scripts/renderer/scripts_run_info.h  |  70 ++
- .../renderer/user_script_injector.cc          | 227 +++++
- .../renderer/user_script_injector.h           |  86 ++
- .../user_scripts/renderer/user_script_set.cc  | 260 ++++++
- .../user_scripts/renderer/user_script_set.h   | 101 +++
- .../renderer/user_script_set_manager.cc       |  65 ++
- .../renderer/user_script_set_manager.h        |  56 ++
- .../renderer/user_scripts_dispatcher.cc       |  64 ++
- .../renderer/user_scripts_dispatcher.h        |  67 ++
- .../renderer/user_scripts_renderer_client.cc  | 108 +++
- .../renderer/user_scripts_renderer_client.h   |  38 +
- .../renderer/web_ui_injection_host.cc         |  40 +
- .../renderer/web_ui_injection_host.h          |  31 +
- .../strings/userscripts_strings.grdp          |  54 ++
- .../Experimental-user-scripts-support.inc     |  13 +
- tools/gritsettings/resource_ids.spec          |   6 +
- 109 files changed, 10492 insertions(+), 3 deletions(-)
- create mode 100644 components/user_scripts/README.md
- create mode 100755 components/user_scripts/android/BUILD.gn
- create mode 100644 components/user_scripts/android/java/res/layout/accept_script_item.xml
- create mode 100644 components/user_scripts/android/java/res/layout/accept_script_list.xml
- create mode 100644 components/user_scripts/android/java/res/layout/scripts_preference.xml
- create mode 100755 components/user_scripts/android/java/res/values/dimens.xml
- create mode 100644 components/user_scripts/android/java/res/xml/userscripts_preferences.xml
- create mode 100755 components/user_scripts/android/java/src/org/chromium/chrome/browser/user_scripts/UserScriptsUtils.java
- create mode 100644 components/user_scripts/android/java/src/org/chromium/components/user_scripts/FragmentWindowAndroid.java
- create mode 100644 components/user_scripts/android/java/src/org/chromium/components/user_scripts/IUserScriptsUtils.java
- create mode 100644 components/user_scripts/android/java/src/org/chromium/components/user_scripts/ScriptInfo.java
- create mode 100644 components/user_scripts/android/java/src/org/chromium/components/user_scripts/ScriptListBaseAdapter.java
- create mode 100644 components/user_scripts/android/java/src/org/chromium/components/user_scripts/ScriptListPreference.java
- create mode 100644 components/user_scripts/android/java/src/org/chromium/components/user_scripts/UserScriptsBridge.java
- create mode 100755 components/user_scripts/android/java/src/org/chromium/components/user_scripts/UserScriptsPreferences.java
- create mode 100644 components/user_scripts/android/java_sources.gni
- create mode 100644 components/user_scripts/android/user_scripts_bridge.cc
- create mode 100644 components/user_scripts/android/user_scripts_bridge.h
- create mode 100644 components/user_scripts/assets/Allow-playing-videos-in-background.user.js
- create mode 100644 components/user_scripts/assets/Dont-track-me-Google.user.js
- create mode 100644 components/user_scripts/assets/disable-amp.user.js
- create mode 100755 components/user_scripts/browser/BUILD.gn
- create mode 100755 components/user_scripts/browser/file_task_runner.cc
- create mode 100755 components/user_scripts/browser/file_task_runner.h
- create mode 100644 components/user_scripts/browser/renderer_startup_helper.cc
- create mode 100644 components/user_scripts/browser/renderer_startup_helper.h
- create mode 100644 components/user_scripts/browser/resources/browser_resources.grd
- create mode 100644 components/user_scripts/browser/resources/user-script-ui/BUILD.gn
- create mode 100644 components/user_scripts/browser/resources/user-script-ui/user-scripts-ui.html
- create mode 100644 components/user_scripts/browser/resources/user-script-ui/user-scripts-ui.js
- create mode 100644 components/user_scripts/browser/ui/user_scripts_ui.cc
- create mode 100644 components/user_scripts/browser/ui/user_scripts_ui.h
- create mode 100755 components/user_scripts/browser/user_script_loader.cc
- create mode 100755 components/user_scripts/browser/user_script_loader.h
- create mode 100644 components/user_scripts/browser/user_script_pref_info.cc
- create mode 100644 components/user_scripts/browser/user_script_pref_info.h
- create mode 100644 components/user_scripts/browser/user_script_prefs.cc
- create mode 100644 components/user_scripts/browser/user_script_prefs.h
- create mode 100755 components/user_scripts/browser/userscripts_browser_client.cc
- create mode 100755 components/user_scripts/browser/userscripts_browser_client.h
- create mode 100755 components/user_scripts/common/BUILD.gn
- create mode 100755 components/user_scripts/common/constants.h
- create mode 100755 components/user_scripts/common/error_utils.cc
- create mode 100755 components/user_scripts/common/error_utils.h
- create mode 100755 components/user_scripts/common/host_id.cc
- create mode 100755 components/user_scripts/common/host_id.h
- create mode 100644 components/user_scripts/common/mojom/renderer.mojom
- create mode 100755 components/user_scripts/common/script_constants.h
- create mode 100755 components/user_scripts/common/url_pattern.cc
- create mode 100755 components/user_scripts/common/url_pattern.h
- create mode 100755 components/user_scripts/common/url_pattern_set.cc
- create mode 100755 components/user_scripts/common/url_pattern_set.h
- create mode 100755 components/user_scripts/common/user_script.cc
- create mode 100755 components/user_scripts/common/user_script.h
- create mode 100644 components/user_scripts/common/user_scripts_features.cc
- create mode 100644 components/user_scripts/common/user_scripts_features.h
- create mode 100755 components/user_scripts/common/view_type.cc
- create mode 100755 components/user_scripts/common/view_type.h
- create mode 100755 components/user_scripts/renderer/BUILD.gn
- create mode 100755 components/user_scripts/renderer/extension_frame_helper.cc
- create mode 100755 components/user_scripts/renderer/extension_frame_helper.h
- create mode 100755 components/user_scripts/renderer/injection_host.cc
- create mode 100755 components/user_scripts/renderer/injection_host.h
- create mode 100755 components/user_scripts/renderer/resources/greasemonkey_api.js
- create mode 100755 components/user_scripts/renderer/resources/user_scripts_renderer_resources.grd
- create mode 100755 components/user_scripts/renderer/script_context.cc
- create mode 100755 components/user_scripts/renderer/script_context.h
- create mode 100755 components/user_scripts/renderer/script_injection.cc
- create mode 100755 components/user_scripts/renderer/script_injection.h
- create mode 100755 components/user_scripts/renderer/script_injection_manager.cc
- create mode 100755 components/user_scripts/renderer/script_injection_manager.h
- create mode 100755 components/user_scripts/renderer/script_injector.h
- create mode 100755 components/user_scripts/renderer/scripts_run_info.cc
- create mode 100755 components/user_scripts/renderer/scripts_run_info.h
- create mode 100755 components/user_scripts/renderer/user_script_injector.cc
- create mode 100755 components/user_scripts/renderer/user_script_injector.h
- create mode 100755 components/user_scripts/renderer/user_script_set.cc
- create mode 100755 components/user_scripts/renderer/user_script_set.h
- create mode 100755 components/user_scripts/renderer/user_script_set_manager.cc
- create mode 100755 components/user_scripts/renderer/user_script_set_manager.h
- create mode 100755 components/user_scripts/renderer/user_scripts_dispatcher.cc
- create mode 100755 components/user_scripts/renderer/user_scripts_dispatcher.h
- create mode 100755 components/user_scripts/renderer/user_scripts_renderer_client.cc
- create mode 100755 components/user_scripts/renderer/user_scripts_renderer_client.h
- create mode 100755 components/user_scripts/renderer/web_ui_injection_host.cc
- create mode 100755 components/user_scripts/renderer/web_ui_injection_host.h
- create mode 100755 components/user_scripts/strings/userscripts_strings.grdp
- create mode 100644 cromite_flags/chrome/browser/about_flags_cc/Experimental-user-scripts-support.inc
+ chrome/android/BUILD.gn                            |    8 
+ chrome/android/java_sources.gni                    |    3 
+ chrome/browser/BUILD.gn                            |    5 
+ chrome/browser/about_flags.cc                      |    1 
+ chrome/browser/prefs/browser_prefs.cc              |    4 
+ chrome/browser/profiles/BUILD.gn                   |    3 
+ .../chrome_browser_main_extra_parts_profiles.cc    |    9 
+ chrome/browser/profiles/profile_manager.cc         |   11 
+ chrome/browser/profiles/renderer_updater.cc        |   21 -
+ chrome/browser/profiles/renderer_updater.h         |    3 
+ chrome/browser/ui/webui/chrome_web_ui_configs.cc   |    8 
+ chrome/chrome_paks.gni                             |    2 
+ chrome/common/renderer_configuration.mojom         |    1 
+ chrome/renderer/BUILD.gn                           |    6 
+ chrome/renderer/chrome_content_renderer_client.cc  |   55 +
+ chrome/renderer/chrome_render_thread_observer.cc   |    7 
+ components/components_strings.grd                  |    1 
+ components/user_scripts/README.md                  |  150 ++++
+ components/user_scripts/android/BUILD.gn           |  103 ++
+ components/user_scripts/android/java_sources.gni   |   18 
+ .../Allow-playing-videos-in-background.user.js     |   25 +
+ .../assets/Dont-track-me-Google.user.js            |  826 ++++++++++++++++++++
+ components/user_scripts/assets/disable-amp.user.js |  127 +++
+ components/user_scripts/browser/BUILD.gn           |   79 ++
+ .../user_scripts/browser/file_task_runner.cc       |   40 +
+ components/user_scripts/browser/file_task_runner.h |   34 +
+ .../browser/renderer_startup_helper.cc             |  102 ++
+ .../user_scripts/browser/renderer_startup_helper.h |  105 +++
+ .../browser/resources/browser_resources.grd        |   14 
+ .../browser/resources/user-script-ui/BUILD.gn      |    8 
+ .../resources/user-script-ui/user-scripts-ui.html  |   14 
+ .../resources/user-script-ui/user-scripts-ui.js    |    9 
+ .../user_scripts/browser/ui/user_scripts_ui.cc     |  146 ++++
+ .../user_scripts/browser/ui/user_scripts_ui.h      |   46 +
+ .../user_scripts/browser/user_script_loader.cc     |  727 ++++++++++++++++++
+ .../user_scripts/browser/user_script_loader.h      |  168 ++++
+ .../user_scripts/browser/user_script_pref_info.cc  |   34 +
+ .../user_scripts/browser/user_script_pref_info.h   |   72 ++
+ .../user_scripts/browser/user_script_prefs.cc      |  277 +++++++
+ .../user_scripts/browser/user_script_prefs.h       |   62 ++
+ .../browser/userscripts_browser_client.cc          |   78 ++
+ .../browser/userscripts_browser_client.h           |   62 ++
+ components/user_scripts/common/BUILD.gn            |   58 +
+ components/user_scripts/common/constants.h         |   15 
+ components/user_scripts/common/error_utils.cc      |   54 +
+ components/user_scripts/common/error_utils.h       |   22 +
+ components/user_scripts/common/host_id.cc          |   31 +
+ components/user_scripts/common/host_id.h           |   35 +
+ .../user_scripts/common/mojom/renderer.mojom       |   12 
+ components/user_scripts/common/script_constants.h  |   33 +
+ components/user_scripts/common/url_pattern.cc      |  813 ++++++++++++++++++++
+ components/user_scripts/common/url_pattern.h       |  306 +++++++
+ components/user_scripts/common/url_pattern_set.cc  |  229 ++++++
+ components/user_scripts/common/url_pattern_set.h   |  103 ++
+ components/user_scripts/common/user_script.cc      |  330 ++++++++
+ components/user_scripts/common/user_script.h       |  402 ++++++++++
+ .../user_scripts/common/user_scripts_features.cc   |   32 +
+ .../user_scripts/common/user_scripts_features.h    |   36 +
+ components/user_scripts/common/view_type.cc        |   37 +
+ components/user_scripts/common/view_type.h         |   48 +
+ components/user_scripts/renderer/BUILD.gn          |   65 ++
+ .../renderer/extension_frame_helper.cc             |   95 ++
+ .../user_scripts/renderer/extension_frame_helper.h |   90 ++
+ components/user_scripts/renderer/injection_host.cc |   16 
+ components/user_scripts/renderer/injection_host.h  |   41 +
+ .../renderer/resources/greasemonkey_api.js         |   82 ++
+ .../resources/user_scripts_renderer_resources.grd  |   14 
+ components/user_scripts/renderer/script_context.cc |  190 +++++
+ components/user_scripts/renderer/script_context.h  |   67 ++
+ .../user_scripts/renderer/script_injection.cc      |  296 +++++++
+ .../user_scripts/renderer/script_injection.h       |  155 ++++
+ .../renderer/script_injection_manager.cc           |  413 ++++++++++
+ .../renderer/script_injection_manager.h            |  100 ++
+ components/user_scripts/renderer/script_injector.h |  100 ++
+ .../user_scripts/renderer/scripts_run_info.cc      |   31 +
+ .../user_scripts/renderer/scripts_run_info.h       |   70 ++
+ .../user_scripts/renderer/user_script_injector.cc  |  227 +++++
+ .../user_scripts/renderer/user_script_injector.h   |   86 ++
+ .../user_scripts/renderer/user_script_set.cc       |  260 ++++++
+ components/user_scripts/renderer/user_script_set.h |  101 ++
+ .../renderer/user_script_set_manager.cc            |   65 ++
+ .../renderer/user_script_set_manager.h             |   56 +
+ .../renderer/user_scripts_dispatcher.cc            |   64 ++
+ .../renderer/user_scripts_dispatcher.h             |   67 ++
+ .../renderer/user_scripts_renderer_client.cc       |  108 +++
+ .../renderer/user_scripts_renderer_client.h        |   38 +
+ .../user_scripts/renderer/web_ui_injection_host.cc |   40 +
+ .../user_scripts/renderer/web_ui_injection_host.h  |   31 +
+ .../user_scripts/strings/userscripts_strings.grdp  |   54 +
+ .../Experimental-user-scripts-support.inc          |   13 
+ tools/gritsettings/resource_ids.spec               |    6 
+ chrome/android/java/res/xml/main_preferences.xml   |    5 
+ .../chrome/browser/download/DownloadUtils.java     |    7 
+ .../browser/init/ProcessInitializationHandler.java |    4 
+ .../android/java/res/layout/accept_script_item.xml |  160 ++++
+ .../android/java/res/layout/accept_script_list.xml |   10 
+ .../android/java/res/layout/scripts_preference.xml |   40 +
+ .../android/java/res/values/dimens.xml             |   11 
+ .../java/res/xml/userscripts_preferences.xml       |   34 +
+ .../browser/user_scripts/UserScriptsUtils.java     |   88 ++
+ .../user_scripts/FragmentWindowAndroid.java        |   96 ++
+ .../components/user_scripts/IUserScriptsUtils.java |   22 +
+ .../components/user_scripts/ScriptInfo.java        |   37 +
+ .../user_scripts/ScriptListBaseAdapter.java        |  162 ++++
+ .../user_scripts/ScriptListPreference.java         |  171 ++++
+ .../components/user_scripts/UserScriptsBridge.java |  212 +++++
+ .../user_scripts/UserScriptsPreferences.java       |  122 +++
+ .../user_scripts/android/user_scripts_bridge.cc    |  174 ++++
+ .../user_scripts/android/user_scripts_bridge.h     |   31 +
+ 109 files changed, 10492 insertions(+), 5 deletions(-)
 
 diff --git a/chrome/android/BUILD.gn b/chrome/android/BUILD.gn
 --- a/chrome/android/BUILD.gn
 +++ b/chrome/android/BUILD.gn
-@@ -172,7 +172,11 @@ if (_is_default_toolchain) {
+@@ -147,7 +147,11 @@ if (_is_default_toolchain) {
        "//chrome/android/java/res_app/layout/main_forked_with_secondary_ui_container.xml",
      ]
  
@@ -242,7 +154,7 @@ diff --git a/chrome/android/BUILD.gn b/chrome/android/BUILD.gn
        ":chrome_base_module_resources",
        ":ui_locale_string_resources",
        "//chrome/android/webapk/libs/common:splash_resources",
-@@ -768,6 +772,7 @@ if (_is_default_toolchain) {
+@@ -761,6 +765,7 @@ if (_is_default_toolchain) {
        "//components/ukm/android:java",
        "//components/url_formatter/android:url_formatter_java",
        "//components/user_prefs/android:java",
@@ -250,7 +162,7 @@ diff --git a/chrome/android/BUILD.gn b/chrome/android/BUILD.gn
        "//components/variations:variations_java",
        "//components/variations/android:variations_java",
        "//components/viz/service:service_java",
-@@ -1838,6 +1843,7 @@ if (_is_default_toolchain) {
+@@ -1837,6 +1842,7 @@ if (_is_default_toolchain) {
    java_group("chrome_public_non_pak_assets") {
      deps = [
        "//chrome/android/webapk/libs/runtime_library:runtime_library_assets",
@@ -258,66 +170,6 @@ diff --git a/chrome/android/BUILD.gn b/chrome/android/BUILD.gn
      ]
    }
  
-diff --git a/chrome/android/java/res/xml/main_preferences.xml b/chrome/android/java/res/xml/main_preferences.xml
---- a/chrome/android/java/res/xml/main_preferences.xml
-+++ b/chrome/android/java/res/xml/main_preferences.xml
-@@ -133,6 +133,11 @@ found in the LICENSE file.
-         android:key="useragent_settings"
-         android:order="20"
-         android:title="@string/prefs_useragent_settings"/>
-+    <org.chromium.components.browser_ui.settings.ChromeBasePreference
-+        android:fragment="org.chromium.components.user_scripts.UserScriptsPreferences"
-+        android:key="userscripts_settings"
-+        android:order="20"
-+        android:title="@string/prefs_userscripts_settings"/>
-     <org.chromium.components.browser_ui.settings.ChromeBasePreference
-         android:fragment="org.chromium.chrome.browser.language.settings.LanguageSettings"
-         android:key="languages"
-diff --git a/chrome/android/java/src/org/chromium/chrome/browser/download/DownloadUtils.java b/chrome/android/java/src/org/chromium/chrome/browser/download/DownloadUtils.java
---- a/chrome/android/java/src/org/chromium/chrome/browser/download/DownloadUtils.java
-+++ b/chrome/android/java/src/org/chromium/chrome/browser/download/DownloadUtils.java
-@@ -89,6 +89,7 @@ import org.chromium.ui.base.DeviceFormFactor;
- import org.chromium.ui.base.MimeTypeUtils;
- import org.chromium.ui.widget.Toast;
- import org.chromium.url.GURL;
-+import org.chromium.chrome.browser.user_scripts.UserScriptsUtils;
- 
- import java.io.File;
- import java.util.Locale;
-@@ -487,6 +488,12 @@ public class DownloadUtils {
-      * @param req The {@link DownloadOpenRequest} with all open-file parameters.
-      */
-     private static boolean doOpenFile(DownloadOpenRequest req) {
-+        if (UserScriptsUtils.getInstance().openFile(
-+                req.mFilePath, req.mMimeType, req.mDownloadGuid,
-+                req.mOriginalUrl, req.mReferrer,
-+                getUriForItem(req.mFilePath))) {
-+            return true;
-+        }
-         DownloadManagerService service = DownloadManagerService.getDownloadManagerService();
-         boolean isIncognito = OtrProfileId.isOffTheRecord(req.mOtrProfileId);
- 
-diff --git a/chrome/android/java/src/org/chromium/chrome/browser/init/ProcessInitializationHandler.java b/chrome/android/java/src/org/chromium/chrome/browser/init/ProcessInitializationHandler.java
---- a/chrome/android/java/src/org/chromium/chrome/browser/init/ProcessInitializationHandler.java
-+++ b/chrome/android/java/src/org/chromium/chrome/browser/init/ProcessInitializationHandler.java
-@@ -153,6 +153,8 @@ import java.util.Date;
- import java.util.List;
- import java.util.Locale;
- 
-+import org.chromium.chrome.browser.user_scripts.UserScriptsUtils;
-+
- /**
-  * Handles the initialization dependencies of the browser process. This is meant to handle the
-  * initialization that is not tied to any particular Activity, and the logic that should only be
-@@ -639,6 +641,8 @@ public class ProcessInitializationHandler {
- 
-                     initAsyncDiskTask();
- 
-+                    UserScriptsUtils.Initialize();
-+
-                     AfterStartupTaskUtils.setStartupComplete();
- 
-                     PartnerBrowserCustomizations.getInstance()
 diff --git a/chrome/android/java_sources.gni b/chrome/android/java_sources.gni
 --- a/chrome/android/java_sources.gni
 +++ b/chrome/android/java_sources.gni
@@ -338,22 +190,22 @@ diff --git a/chrome/android/java_sources.gni b/chrome/android/java_sources.gni
 diff --git a/chrome/browser/BUILD.gn b/chrome/browser/BUILD.gn
 --- a/chrome/browser/BUILD.gn
 +++ b/chrome/browser/BUILD.gn
-@@ -2533,6 +2533,11 @@ source_set("browser") {
+@@ -2945,6 +2945,11 @@ source_set("browser") {
+       "//ui/android",
+       "//url",
      ]
- 
-     deps -= [ "//components/storage_monitor" ]
 +    deps += [
 +      "//components/user_scripts/common",
 +      "//components/user_scripts/browser",
 +      "//components/user_scripts/android",
 +    ]
    } else {
-     #!is_android
-     deps += [
+     public_deps += [
+       "//chrome/browser/accessibility/phrase_segmentation",
 diff --git a/chrome/browser/about_flags.cc b/chrome/browser/about_flags.cc
 --- a/chrome/browser/about_flags.cc
 +++ b/chrome/browser/about_flags.cc
-@@ -214,6 +214,7 @@
+@@ -210,6 +210,7 @@
  #include "components/universal_optout/features.h"
  #include "components/variations/variations_switches.h"
  #include "components/version_info/channel.h"
@@ -364,7 +216,7 @@ diff --git a/chrome/browser/about_flags.cc b/chrome/browser/about_flags.cc
 diff --git a/chrome/browser/prefs/browser_prefs.cc b/chrome/browser/prefs/browser_prefs.cc
 --- a/chrome/browser/prefs/browser_prefs.cc
 +++ b/chrome/browser/prefs/browser_prefs.cc
-@@ -297,6 +297,7 @@
+@@ -309,6 +309,7 @@
  #include "components/feed/core/v2/ios_shared_prefs.h"      // nogncheck
  #include "components/ntp_tiles/popular_sites_impl.h"
  #include "components/permissions/contexts/geolocation_permission_context_android.h"
@@ -372,7 +224,7 @@ diff --git a/chrome/browser/prefs/browser_prefs.cc b/chrome/browser/prefs/browse
  #include "components/webapps/browser/android/install_prompt_prefs.h"
  #endif  // BUILDFLAG(IS_ANDROID)
  
-@@ -1949,6 +1950,9 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
+@@ -2272,6 +2273,9 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
  #endif
    ZeroSuggestProvider::RegisterProfilePrefs(registry);
    NtpCustomBackgroundService::RegisterProfilePrefs(registry);
@@ -385,20 +237,20 @@ diff --git a/chrome/browser/prefs/browser_prefs.cc b/chrome/browser/prefs/browse
 diff --git a/chrome/browser/profiles/BUILD.gn b/chrome/browser/profiles/BUILD.gn
 --- a/chrome/browser/profiles/BUILD.gn
 +++ b/chrome/browser/profiles/BUILD.gn
-@@ -421,6 +421,9 @@ source_set("profile") {
+@@ -451,6 +451,9 @@ source_set("profile") {
      "//content/public/browser",
      "//extensions/buildflags",
    ]
 +  if (is_android) {
 +    deps += [ "//components/user_scripts/browser" ]
 +  }
-   if (enable_extensions) {
+   if (enable_extensions_core) {
      deps += [ "//extensions/browser" ]
    }
 diff --git a/chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.cc b/chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.cc
 --- a/chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.cc
 +++ b/chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.cc
-@@ -664,6 +664,11 @@
+@@ -662,6 +662,11 @@
  #include "chrome/browser/net/nss_service_factory.h"
  #endif
  
@@ -410,7 +262,7 @@ diff --git a/chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.cc
  void AddProfilesExtraParts(ChromeBrowserMainParts* main_parts) {
    main_parts->AddParts(std::make_unique<ChromeBrowserMainExtraPartsProfiles>());
  }
-@@ -1610,6 +1615,10 @@ void ChromeBrowserMainExtraPartsProfiles::
+@@ -1579,6 +1584,10 @@ void ChromeBrowserMainExtraPartsProfiles::
  
    WebDataServiceFactory::GetInstance();
    webrtc_event_logging::WebRtcEventLogManagerKeyedServiceFactory::GetInstance();
@@ -435,10 +287,10 @@ diff --git a/chrome/browser/profiles/profile_manager.cc b/chrome/browser/profile
  #if BUILDFLAG(ENABLE_SESSION_SERVICE)
  #include "chrome/browser/sessions/app_session_service_factory.h"
  #include "chrome/browser/sessions/session_service_factory.h"
-@@ -1601,6 +1605,13 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
-   // extension::ManagementPolicy) and InitProfileUserPrefs (for setting the
-   // initializing the supervised flag if necessary).
-   ChildAccountServiceFactory::GetForProfile(profile)->Init();
+@@ -1610,6 +1614,13 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
+       ->GetSupervisedUserExtensionsDelegate()
+       ->UpdateManagementPolicyRegistration();
+ #endif  // BUILDFLAG(ENABLE_EXTENSIONS_CORE)
 +#if BUILDFLAG(IS_ANDROID)
 +  user_scripts::UserScriptsBrowserClient* userscript_client =
 +      user_scripts::UserScriptsBrowserClient::GetInstance();
@@ -446,22 +298,22 @@ diff --git a/chrome/browser/profiles/profile_manager.cc b/chrome/browser/profile
 +    userscript_client->SetProfile(profile);
 +  }
 +#endif
- #if BUILDFLAG(ENABLE_EXTENSIONS_CORE)
-   // After the ManagementPolicy has been set, update it for the Supervised User
-   // Extension Delegate, which has been created before the profile
+ 
+   // Ensure NavigationPredictorKeyedService is started.
+   NavigationPredictorKeyedServiceFactory::GetForProfile(profile);
 diff --git a/chrome/browser/profiles/renderer_updater.cc b/chrome/browser/profiles/renderer_updater.cc
 --- a/chrome/browser/profiles/renderer_updater.cc
 +++ b/chrome/browser/profiles/renderer_updater.cc
-@@ -39,6 +39,8 @@
- #include "chrome/browser/signin/bound_session_credentials/bound_session_cookie_refresh_service_factory.h"
- #endif  // BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
+@@ -47,6 +47,8 @@
+ #include "net/http/http_request_headers.h"
+ #endif
  
 +#include "components/user_scripts/browser/user_script_prefs.h"
 +
  RendererUpdater::RendererUpdater(Profile* profile)
      : profile_(profile),
        is_off_the_record_(profile_->IsOffTheRecord()),
-@@ -74,6 +76,9 @@ RendererUpdater::RendererUpdater(Profile* profile)
+@@ -82,6 +84,9 @@ RendererUpdater::RendererUpdater(Profile* profile)
    force_youtube_restrict_.Init(policy::policy_prefs::kForceYouTubeRestrict,
                                 pref_service);
    allowed_domains_for_apps_.Init(prefs::kAllowedDomainsForApps, pref_service);
@@ -471,10 +323,10 @@ diff --git a/chrome/browser/profiles/renderer_updater.cc b/chrome/browser/profil
  
    pref_change_registrar_.Init(pref_service);
    pref_change_registrar_.Add(
-@@ -88,6 +93,12 @@ RendererUpdater::RendererUpdater(Profile* profile)
-       prefs::kAllowedDomainsForApps,
-       base::BindRepeating(&RendererUpdater::UpdateAllRenderers,
-                           base::Unretained(this)));
+@@ -106,6 +111,12 @@ RendererUpdater::RendererUpdater(Profile* profile)
+                                 base::Unretained(this)));
+   }
+ #endif
 +#if BUILDFLAG(IS_ANDROID)
 +  pref_change_registrar_.Add(
 +      user_scripts::prefs::kUserScriptsEnabled,
@@ -484,23 +336,28 @@ diff --git a/chrome/browser/profiles/renderer_updater.cc b/chrome/browser/profil
  }
  
  RendererUpdater::~RendererUpdater() {
-@@ -231,5 +242,11 @@ chrome::mojom::DynamicParamsPtr RendererUpdater::CreateRendererDynamicParams()
+@@ -251,10 +262,14 @@ chrome::mojom::DynamicParamsPtr RendererUpdater::CreateRendererDynamicParams()
        GetBoundSessionThrottlerParams(),
  #endif
        force_google_safesearch_.GetValue(), force_youtube_restrict_.GetValue(),
--      allowed_domains_for_apps_.GetValue());
+-      allowed_domains_for_apps_.GetValue()
 +      allowed_domains_for_apps_.GetValue(),
+ #if BUILDFLAG(ENABLE_REQUEST_HEADER_INTEGRITY) && !BUILDFLAG(IS_ANDROID)
+-          ,
+-      GetPlatformRuntimeHeaders()
++      GetPlatformRuntimeHeaders(),
++#endif
 +#if BUILDFLAG(IS_ANDROID)
 +      activate_userscripts_.GetValue()
 +#else
 +      false
-+#endif
-+  );
+ #endif
+   );
  }
 diff --git a/chrome/browser/profiles/renderer_updater.h b/chrome/browser/profiles/renderer_updater.h
 --- a/chrome/browser/profiles/renderer_updater.h
 +++ b/chrome/browser/profiles/renderer_updater.h
-@@ -102,6 +102,9 @@ class RendererUpdater : public KeyedService
+@@ -116,6 +116,9 @@ class RendererUpdater : public KeyedService
  
    // Prefs that we sync to the renderers.
    BooleanPrefMember force_google_safesearch_;
@@ -509,7 +366,7 @@ diff --git a/chrome/browser/profiles/renderer_updater.h b/chrome/browser/profile
 +#endif
    IntegerPrefMember force_youtube_restrict_;
    StringPrefMember allowed_domains_for_apps_;
- };
+ 
 diff --git a/chrome/browser/ui/webui/chrome_web_ui_configs.cc b/chrome/browser/ui/webui/chrome_web_ui_configs.cc
 --- a/chrome/browser/ui/webui/chrome_web_ui_configs.cc
 +++ b/chrome/browser/ui/webui/chrome_web_ui_configs.cc
@@ -524,7 +381,7 @@ diff --git a/chrome/browser/ui/webui/chrome_web_ui_configs.cc b/chrome/browser/u
  #include "chrome/browser/ui/webui/regional_capabilities_internals/regional_capabilities_internals_ui.h"
  #include "chrome/browser/ui/webui/saved_tab_groups_unsupported/saved_tab_groups_unsupported_ui.h"
  #include "chrome/browser/ui/webui/segmentation_internals/segmentation_internals_ui.h"
-@@ -488,7 +492,9 @@ void RegisterChromeWebUIConfigs() {
+@@ -519,7 +523,9 @@ void RegisterChromeWebUIConfigs() {
    map.AddWebUIConfig(
        std::make_unique<safe_browsing::ChromeSafeBrowsingUIConfig>());
  #endif
@@ -538,7 +395,7 @@ diff --git a/chrome/browser/ui/webui/chrome_web_ui_configs.cc b/chrome/browser/u
 diff --git a/chrome/chrome_paks.gni b/chrome/chrome_paks.gni
 --- a/chrome/chrome_paks.gni
 +++ b/chrome/chrome_paks.gni
-@@ -150,6 +150,7 @@ template("chrome_extra_paks") {
+@@ -166,6 +166,7 @@ template("chrome_extra_paks") {
        "$root_gen_dir/third_party/blink/public/resources/inspector_overlay_resources.pak",
        "$root_gen_dir/third_party/blink/public/strings/permission_element_generated_strings.pak",
        "$root_gen_dir/ui/resources/ui_lottie_resources.pak",
@@ -546,7 +403,7 @@ diff --git a/chrome/chrome_paks.gni b/chrome/chrome_paks.gni
        "$root_gen_dir/ui/webui/resources/webui_resources.pak",
      ]
  
-@@ -181,6 +182,7 @@ template("chrome_extra_paks") {
+@@ -203,6 +204,7 @@ template("chrome_extra_paks") {
        "//third_party/blink/public/strings:permission_element_generated_strings",
        "//ui/resources:ui_lottie_resources_grd",
        "//ui/webui/resources",
@@ -557,10 +414,10 @@ diff --git a/chrome/chrome_paks.gni b/chrome/chrome_paks.gni
 diff --git a/chrome/common/renderer_configuration.mojom b/chrome/common/renderer_configuration.mojom
 --- a/chrome/common/renderer_configuration.mojom
 +++ b/chrome/common/renderer_configuration.mojom
-@@ -30,6 +30,7 @@ struct DynamicParams {
-   bool force_safe_search = true;
-   int32 youtube_restrict = 0;
-   string allowed_domains_for_apps;
+@@ -43,6 +43,7 @@ struct DynamicParams {
+   // without any IPC of their own.
+   [EnableIf=enable_request_header_integrity]
+   network.mojom.HttpRequestHeaders request_integrity_headers;
 +  bool allow_userscript = false;
  };
  
@@ -568,7 +425,7 @@ diff --git a/chrome/common/renderer_configuration.mojom b/chrome/common/renderer
 diff --git a/chrome/renderer/BUILD.gn b/chrome/renderer/BUILD.gn
 --- a/chrome/renderer/BUILD.gn
 +++ b/chrome/renderer/BUILD.gn
-@@ -237,6 +237,12 @@ static_library("renderer") {
+@@ -247,6 +247,12 @@ static_library("renderer") {
      deps += [ "//components/webapps/isolated_web_apps:scheme" ]
    }
  
@@ -580,12 +437,12 @@ diff --git a/chrome/renderer/BUILD.gn b/chrome/renderer/BUILD.gn
 +
    data_deps = [ "//tools/v8_context_snapshot" ]
  
-   configs += [ "//build/config/compiler:wexit_time_destructors" ]
+   if (enable_bound_session_credentials) {
 diff --git a/chrome/renderer/chrome_content_renderer_client.cc b/chrome/renderer/chrome_content_renderer_client.cc
 --- a/chrome/renderer/chrome_content_renderer_client.cc
 +++ b/chrome/renderer/chrome_content_renderer_client.cc
-@@ -274,6 +274,11 @@
- #include "chrome/renderer/media/chrome_key_systems.h"
+@@ -281,6 +281,11 @@
+ #include "chrome/renderer/searchbox/searchbox_extension.h"
  #endif
  
 +#if BUILDFLAG(IS_ANDROID)
@@ -596,8 +453,8 @@ diff --git a/chrome/renderer/chrome_content_renderer_client.cc b/chrome/renderer
  using autofill::AutofillAgent;
  using autofill::PasswordAutofillAgent;
  using autofill::PasswordGenerationAgent;
-@@ -465,6 +470,14 @@ void ChromeContentRendererClient::RenderThreadStarted() {
-       WebString::FromAscii(extensions::kExtensionScheme));
+@@ -479,6 +484,14 @@ void ChromeContentRendererClient::RenderThreadStarted() {
+         // BUILDFLAG(IS_CHROMEOS)
  #endif  // BUILDFLAG(ENABLE_EXTENSIONS_CORE)
  
 +#if BUILDFLAG(IS_ANDROID)
@@ -611,7 +468,7 @@ diff --git a/chrome/renderer/chrome_content_renderer_client.cc b/chrome/renderer
  #if BUILDFLAG(ENABLE_SPELLCHECK)
    if (!spellcheck_)
      InitSpellCheck();
-@@ -676,6 +689,15 @@ void ChromeContentRendererClient::RenderFrameCreated(
+@@ -690,6 +703,15 @@ void ChromeContentRendererClient::RenderFrameCreated(
        render_frame, std::make_unique<ChromePrintRenderFrameHelperDelegate>());
  #endif
  
@@ -627,7 +484,7 @@ diff --git a/chrome/renderer/chrome_content_renderer_client.cc b/chrome/renderer
  #if BUILDFLAG(ENABLE_PAINT_PREVIEW)
    new paint_preview::PaintPreviewRecorderImpl(render_frame);
  #endif
-@@ -1438,6 +1460,17 @@ void ChromeContentRendererClient::RunScriptsAtDocumentStart(
+@@ -1515,6 +1537,17 @@ void ChromeContentRendererClient::RunScriptsAtDocumentStart(
        render_frame);
    // |render_frame| might be dead by now.
  #endif
@@ -645,7 +502,7 @@ diff --git a/chrome/renderer/chrome_content_renderer_client.cc b/chrome/renderer
  }
  
  void ChromeContentRendererClient::RunScriptsAtDocumentEnd(
-@@ -1447,6 +1480,17 @@ void ChromeContentRendererClient::RunScriptsAtDocumentEnd(
+@@ -1524,6 +1557,17 @@ void ChromeContentRendererClient::RunScriptsAtDocumentEnd(
        render_frame);
    // |render_frame| might be dead by now.
  #endif
@@ -663,7 +520,7 @@ diff --git a/chrome/renderer/chrome_content_renderer_client.cc b/chrome/renderer
  }
  
  void ChromeContentRendererClient::RunScriptsAtDocumentIdle(
-@@ -1456,6 +1500,17 @@ void ChromeContentRendererClient::RunScriptsAtDocumentIdle(
+@@ -1533,6 +1577,17 @@ void ChromeContentRendererClient::RunScriptsAtDocumentIdle(
        render_frame);
    // |render_frame| might be dead by now.
  #endif
@@ -684,9 +541,9 @@ diff --git a/chrome/renderer/chrome_content_renderer_client.cc b/chrome/renderer
 diff --git a/chrome/renderer/chrome_render_thread_observer.cc b/chrome/renderer/chrome_render_thread_observer.cc
 --- a/chrome/renderer/chrome_render_thread_observer.cc
 +++ b/chrome/renderer/chrome_render_thread_observer.cc
-@@ -52,6 +52,10 @@
- #include "third_party/blink/public/web/web_security_policy.h"
- #include "third_party/blink/public/web/web_view.h"
+@@ -57,6 +57,10 @@
+ #include "chrome/common/request_header_integrity/platform_runtime_headers.h"  // nogncheck
+ #endif
  
 +#if BUILDFLAG(IS_ANDROID)
 +#include "components/user_scripts/renderer/user_scripts_renderer_client.h"
@@ -695,8 +552,8 @@ diff --git a/chrome/renderer/chrome_render_thread_observer.cc b/chrome/renderer/
  #if BUILDFLAG(IS_CHROMEOS)
  #include "chrome/renderer/ash_merge_session_loader_throttle.h"
  #endif
-@@ -214,6 +218,9 @@ void ChromeRenderThreadObserver::SetConfiguration(
-     chrome::mojom::DynamicParamsPtr params) {
+@@ -223,6 +227,9 @@ void ChromeRenderThreadObserver::SetConfiguration(
+ #endif
    base::AutoLock lock(dynamic_params_lock_);
    dynamic_params_ = std::move(params);
 +#if BUILDFLAG(IS_ANDROID)
@@ -704,12 +561,12 @@ diff --git a/chrome/renderer/chrome_render_thread_observer.cc b/chrome/renderer/
 +#endif
  }
  
- #if !BUILDFLAG(IS_ANDROID)
+ void ChromeRenderThreadObserver::SetConfigurationOnProcessLockUpdate(
 diff --git a/components/components_strings.grd b/components/components_strings.grd
 --- a/components/components_strings.grd
 +++ b/components/components_strings.grd
 @@ -343,6 +343,7 @@
-       <part file="version_ui_strings.grdp" />
+       <part file="web_distiller_strings.grdp" />
        <part file="webapps_strings.grdp" />
        <part file="wallet_strings.grdp" />
 +      <part file="user_scripts/strings/userscripts_strings.grdp" />
@@ -979,1239 +836,6 @@ new file mode 100755
 +    "//content/public/browser",
 +  ]
 +}
-diff --git a/components/user_scripts/android/java/res/layout/accept_script_item.xml b/components/user_scripts/android/java/res/layout/accept_script_item.xml
-new file mode 100644
---- /dev/null
-+++ b/components/user_scripts/android/java/res/layout/accept_script_item.xml
-@@ -0,0 +1,160 @@
-+<?xml version="1.0" encoding="utf-8"?>
-+<!-- Copyright 2017 The Chromium Authors. All rights reserved.
-+     Use of this source code is governed by a BSD-style license that can be
-+     found in the LICENSE file. -->
-+
-+<LinearLayout
-+    xmlns:android="http://schemas.android.com/apk/res/android"
-+    xmlns:app="http://schemas.android.com/apk/res-auto"
-+    xmlns:tools="http://schemas.android.com/tools"
-+    android:layout_width="match_parent"
-+    android:layout_height="wrap_content"
-+    android:orientation="vertical"
-+    android:layout_gravity="center_vertical" >
-+
-+    <LinearLayout
-+        android:layout_marginStart="0dp"
-+        android:paddingStart="@dimen/draggable_list_item_padding"
-+        android:paddingEnd="@dimen/draggable_list_item_padding"
-+        style="@style/ListItemContainer">
-+
-+        <Switch
-+            android:id="@+id/switch_widget"
-+            android:layout_width="wrap_content"
-+            android:layout_height="wrap_content"
-+            android:paddingEnd="15dp"
-+            android:focusable="false"
-+            android:background="@null" />
-+
-+        <LinearLayout
-+            android:layout_width="0dp"
-+            android:layout_height="wrap_content"
-+            android:layout_weight="1"
-+            android:orientation="vertical"
-+            android:layout_gravity="center_vertical" >
-+
-+            <TextView
-+                android:id="@+id/title"
-+                android:layout_width="match_parent"
-+                android:layout_height="wrap_content"
-+                style="@style/PreferenceTitle" />
-+
-+            <TextView
-+                android:id="@+id/description"
-+                android:layout_width="match_parent"
-+                android:layout_height="wrap_content"
-+                style="@style/PreferenceSummary" />
-+
-+            <LinearLayout
-+                android:layout_width="match_parent"
-+                android:layout_height="wrap_content"
-+                android:layout_weight="1"
-+                android:paddingTop="5dp"
-+                android:layout_gravity="center_vertical" >
-+
-+               <TextView
-+                    android:layout_width="wrap_content"
-+                    android:layout_height="wrap_content"
-+                    android:paddingEnd="5dp"
-+                    style="@style/PreferenceSummary"
-+                    android:text="@string/scripts_item_version"
-+                    android:textStyle="bold" />
-+
-+                <TextView
-+                    android:id="@+id/version"
-+                    android:layout_width="match_parent"
-+                    android:layout_height="wrap_content"
-+                    style="@style/PreferenceSummary" />
-+
-+            </LinearLayout>
-+
-+            <LinearLayout
-+                android:layout_width="match_parent"
-+                android:layout_height="wrap_content"
-+                android:layout_weight="1"
-+                android:layout_gravity="center_vertical" >
-+
-+               <TextView
-+                    android:layout_width="wrap_content"
-+                    android:layout_height="wrap_content"
-+                    android:paddingEnd="5dp"
-+                    style="@style/PreferenceSummary"
-+                    android:text="@string/scripts_item_filename"
-+                    android:textStyle="bold" />
-+
-+                <TextView
-+                    android:id="@+id/file"
-+                    android:layout_width="match_parent"
-+                    android:layout_height="wrap_content"
-+                    style="@style/PreferenceSummary" />
-+
-+            </LinearLayout>
-+
-+            <LinearLayout
-+                android:id="@+id/url_container"
-+                android:layout_width="match_parent"
-+                android:layout_height="wrap_content"
-+                android:layout_weight="1"
-+                android:layout_gravity="center_vertical" >
-+
-+               <TextView
-+                    android:layout_width="wrap_content"
-+                    android:layout_height="wrap_content"
-+                    android:paddingEnd="5dp"
-+                    style="@style/PreferenceSummary"
-+                    android:text="@string/scripts_item_url"
-+                    android:textStyle="bold" />
-+
-+                <TextView
-+                    android:id="@+id/url"
-+                    android:layout_width="match_parent"
-+                    android:layout_height="wrap_content"
-+                    android:autoLink="web"
-+                    android:focusable="true"
-+                    android:linksClickable="true" />
-+
-+            </LinearLayout>
-+
-+        </LinearLayout>
-+
-+        <org.chromium.ui.listmenu.ListMenuButton
-+            android:id="@+id/more"
-+            android:layout_width="wrap_content"
-+            android:layout_height="match_parent"
-+            android:paddingStart="@dimen/default_list_row_padding"
-+            android:paddingEnd="@dimen/default_list_row_padding"
-+            android:background="@null"
-+            android:src="@drawable/ic_more_vert_24dp"
-+            app:menuMaxWidth="@dimen/pref_scripts_item_popup_width"
-+            app:tint="@color/default_icon_color_tint_list"
-+            tools:ignore="ContentDescription" />
-+
-+    </LinearLayout>
-+
-+    <LinearLayout
-+        android:id="@+id/error_layout"
-+        android:layout_marginStart="0dp"
-+        android:paddingStart="@dimen/draggable_list_item_padding"
-+        android:paddingEnd="2dp"
-+        android:layout_width="match_parent"
-+        android:layout_height="wrap_content"
-+        style="@style/ListItemContainer">
-+
-+        <ImageView
-+                android:id="@+id/icon"
-+                android:layout_width="40dp"
-+                android:layout_height="wrap_content"
-+                android:paddingEnd="15dp"
-+                android:adjustViewBounds="true"
-+                android:importantForAccessibility="no"
-+                app:srcCompat="@drawable/ic_error_outline_red_24dp"/>
-+
-+        <TextView
-+            android:id="@+id/error"
-+            android:layout_width="match_parent"
-+            android:layout_height="wrap_content"
-+            android:textColor="#F00"
-+            style="@style/PreferenceSummary" />
-+
-+    </LinearLayout>
-+</LinearLayout>
-diff --git a/components/user_scripts/android/java/res/layout/accept_script_list.xml b/components/user_scripts/android/java/res/layout/accept_script_list.xml
-new file mode 100644
---- /dev/null
-+++ b/components/user_scripts/android/java/res/layout/accept_script_list.xml
-@@ -0,0 +1,10 @@
-+<?xml version="1.0" encoding="utf-8"?>
-+<!-- Copyright 2017 The Chromium Authors. All rights reserved.
-+     Use of this source code is governed by a BSD-style license that can be
-+     found in the LICENSE file. -->
-+
-+<androidx.recyclerview.widget.RecyclerView
-+    xmlns:android="http://schemas.android.com/apk/res/android"
-+    android:id="@+id/script_list"
-+    android:layout_width="match_parent"
-+    android:layout_height="wrap_content" />
-\ No newline at end of file
-diff --git a/components/user_scripts/android/java/res/layout/scripts_preference.xml b/components/user_scripts/android/java/res/layout/scripts_preference.xml
-new file mode 100644
---- /dev/null
-+++ b/components/user_scripts/android/java/res/layout/scripts_preference.xml
-@@ -0,0 +1,40 @@
-+<?xml version="1.0" encoding="utf-8"?>
-+<!-- Copyright 2017 The Chromium Authors. All rights reserved.
-+     Use of this source code is governed by a BSD-style license that can be
-+     found in the LICENSE file. -->
-+
-+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-+    android:id="@+id/accept_scripts_list_container"
-+    style="@style/PreferenceLayout"
-+    android:layout_width="match_parent"
-+    android:layout_height="wrap_content"
-+    android:paddingStart="0dp"
-+    android:paddingEnd="0dp"
-+    android:padding="0dp"
-+    android:orientation="vertical" >
-+
-+    <TextView
-+        android:layout_width="match_parent"
-+        android:layout_height="wrap_content"
-+        android:padding="@dimen/draggable_list_item_padding"
-+        android:text="@string/scripts_list_description" />
-+
-+    <FrameLayout
-+        android:id="@android:id/widget_frame"
-+        android:layout_width="match_parent"
-+        android:layout_height="wrap_content" />
-+
-+    <TextView
-+        android:id="@+id/add_script"
-+        android:layout_width="match_parent"
-+        android:layout_height="wrap_content"
-+        android:background="?attr/selectableItemBackground"
-+        android:clickable="true"
-+        android:gravity="center_vertical"
-+        android:padding="@dimen/draggable_list_item_padding"
-+        android:paddingStart="@dimen/pref_scripts_add_button_padding"
-+        android:drawablePadding="@dimen/pref_scripts_add_button_padding"
-+        android:text="@string/add_script"
-+        style="@style/PreferenceTitle" />
-+
-+</LinearLayout>
-\ No newline at end of file
-diff --git a/components/user_scripts/android/java/res/values/dimens.xml b/components/user_scripts/android/java/res/values/dimens.xml
-new file mode 100755
---- /dev/null
-+++ b/components/user_scripts/android/java/res/values/dimens.xml
-@@ -0,0 +1,11 @@
-+<?xml version="1.0" encoding="utf-8"?>
-+<!-- Copyright 2014 The Chromium Authors. All rights reserved.
-+     Use of this source code is governed by a BSD-style license that can be
-+     found in the LICENSE file. -->
-+
-+<resources xmlns:tools="http://schemas.android.com/tools">
-+
-+    <dimen name="pref_scripts_add_button_padding">24dp</dimen>
-+    <dimen name="pref_scripts_item_popup_width">260dp</dimen>
-+
-+</resources>
-diff --git a/components/user_scripts/android/java/res/xml/userscripts_preferences.xml b/components/user_scripts/android/java/res/xml/userscripts_preferences.xml
-new file mode 100644
---- /dev/null
-+++ b/components/user_scripts/android/java/res/xml/userscripts_preferences.xml
-@@ -0,0 +1,34 @@
-+<?xml version="1.0" encoding="utf-8"?>
-+<!--
-+    This file is part of Bromite.
-+
-+    Bromite is free software: you can redistribute it and/or modify
-+    it under the terms of the GNU General Public License as published by
-+    the Free Software Foundation, either version 3 of the License, or
-+    (at your option) any later version.
-+
-+    Bromite is distributed in the hope that it will be useful,
-+    but WITHOUT ANY WARRANTY; without even the implied warranty of
-+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+    GNU General Public License for more details.
-+
-+    You should have received a copy of the GNU General Public License
-+    along with Bromite. If not, see <https://www.gnu.org/licenses/>.
-+-->
-+
-+<PreferenceScreen
-+    xmlns:android="http://schemas.android.com/apk/res/android"
-+    xmlns:app="http://schemas.android.com/apk/res-auto">
-+
-+    <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
-+        android:key="enabled_switch"
-+        android:title="@string/option_userscript_flag"
-+        android:summaryOn="@string/option_userscript_flag_on"
-+        android:summaryOff="@string/option_userscript_flag_off" />
-+
-+    <org.chromium.components.user_scripts.ScriptListPreference
-+        android:key="script_list"
-+        android:layout="@layout/scripts_preference"
-+        android:widgetLayout="@layout/accept_script_list" />
-+
-+</PreferenceScreen>
-diff --git a/components/user_scripts/android/java/src/org/chromium/chrome/browser/user_scripts/UserScriptsUtils.java b/components/user_scripts/android/java/src/org/chromium/chrome/browser/user_scripts/UserScriptsUtils.java
-new file mode 100755
---- /dev/null
-+++ b/components/user_scripts/android/java/src/org/chromium/chrome/browser/user_scripts/UserScriptsUtils.java
-@@ -0,0 +1,88 @@
-+/*
-+    This file is part of Bromite.
-+
-+    Bromite is free software: you can redistribute it and/or modify
-+    it under the terms of the GNU General Public License as published by
-+    the Free Software Foundation, either version 3 of the License, or
-+    (at your option) any later version.
-+
-+    Bromite is distributed in the hope that it will be useful,
-+    but WITHOUT ANY WARRANTY; without even the implied warranty of
-+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+    GNU General Public License for more details.
-+
-+    You should have received a copy of the GNU General Public License
-+    along with Bromite. If not, see <https://www.gnu.org/licenses/>.
-+*/
-+
-+package org.chromium.chrome.browser.user_scripts;
-+
-+import android.content.Context;
-+import android.content.Intent;
-+import android.provider.Browser;
-+import android.provider.MediaStore;
-+import android.net.Uri;
-+
-+import org.chromium.base.ContextUtils;
-+import org.chromium.base.ContentUriUtils;
-+import org.chromium.base.IntentUtils;
-+
-+import org.chromium.chrome.browser.IntentHandler;
-+import org.chromium.chrome.browser.settings.SettingsNavigationFactory;
-+import org.chromium.components.browser_ui.settings.SettingsNavigation;
-+
-+import org.chromium.components.user_scripts.UserScriptsPreferences;
-+import org.chromium.components.user_scripts.UserScriptsBridge;
-+import org.chromium.components.user_scripts.IUserScriptsUtils;
-+
-+public class UserScriptsUtils implements IUserScriptsUtils
-+{
-+    private static UserScriptsUtils instance;
-+
-+    private UserScriptsUtils() {}
-+
-+    public static void Initialize() {
-+        instance = new UserScriptsUtils();
-+        UserScriptsBridge.registerUtils(instance);
-+    }
-+
-+    public static UserScriptsUtils getInstance() {
-+        if (instance == null) Initialize();
-+        return instance;
-+    }
-+
-+    public boolean openFile(String filePath, String mimeType, String downloadGuid,
-+                            String originalUrl, String referrer, Uri contentUri) {
-+        if (UserScriptsBridge.isEnabled() == false) return false;
-+
-+        Context context = ContextUtils.getApplicationContext();
-+
-+        String visibleName = filePath;
-+        if (ContentUriUtils.isContentUri(visibleName)) {
-+            visibleName = ContentUriUtils.getDisplayName(contentUri, context,
-+                MediaStore.MediaColumns.DISPLAY_NAME);
-+        }
-+
-+        if (visibleName.toUpperCase().endsWith(".USER.JS") == false) return false;
-+
-+        SettingsNavigation settingsNavigation =
-+                    SettingsNavigationFactory.createSettingsNavigation();
-+        Intent intent = settingsNavigation.createSettingsIntent(
-+                context, UserScriptsPreferences.class,
-+                UserScriptsPreferences.createFragmentArgsForInstall(filePath));
-+        IntentUtils.safeStartActivity(context, intent);
-+
-+        return true;
-+    }
-+
-+    public void openSourceFile(String scriptKey) {
-+        Context context = ContextUtils.getApplicationContext();
-+
-+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("chrome://user-scripts/?key=" + scriptKey));
-+        intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
-+        intent.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
-+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-+        intent.setPackage(context.getPackageName());
-+        IntentHandler.startChromeLauncherActivityForTrustedIntent(intent);
-+    }
-+}
-diff --git a/components/user_scripts/android/java/src/org/chromium/components/user_scripts/FragmentWindowAndroid.java b/components/user_scripts/android/java/src/org/chromium/components/user_scripts/FragmentWindowAndroid.java
-new file mode 100644
---- /dev/null
-+++ b/components/user_scripts/android/java/src/org/chromium/components/user_scripts/FragmentWindowAndroid.java
-@@ -0,0 +1,96 @@
-+// Copyright 2019 The Chromium Authors. All rights reserved.
-+// Use of this source code is governed by a BSD-style license that can be
-+// found in the LICENSE file.
-+
-+package org.chromium.components.user_scripts;
-+
-+import android.annotation.TargetApi;
-+import android.app.Activity;
-+import android.content.Context;
-+import android.content.Intent;
-+import android.content.IntentSender;
-+import android.os.Build;
-+import android.view.View;
-+
-+import androidx.fragment.app.Fragment;
-+import androidx.annotation.Nullable;
-+
-+import org.chromium.ui.base.ActivityKeyboardVisibilityDelegate;
-+import org.chromium.ui.base.ImmutableWeakReference;
-+import org.chromium.ui.base.IntentRequestTracker;
-+import org.chromium.ui.base.IntentRequestTracker.Delegate;
-+import org.chromium.ui.base.WindowAndroid;
-+import org.chromium.ui.insets.InsetObserver;
-+
-+import java.lang.ref.WeakReference;
-+
-+import org.chromium.ui.permissions.ActivityAndroidPermissionDelegate;
-+
-+/**
-+ * Implements intent sending for a fragment based window. This should be created when
-+ * onAttach() is called on the fragment, and destroyed when onDetach() is called.
-+ */
-+public class FragmentWindowAndroid extends WindowAndroid {
-+    private Fragment mFragment;
-+
-+    private static class TrackerDelegateImpl implements Delegate {
-+        private final Fragment mFragment;
-+        // This WeakReference is purely to avoid gc churn of creating a new WeakReference in
-+        // every getActivity call. It is not needed for correctness.
-+        private ImmutableWeakReference<Activity> mActivityWeakRefHolder;
-+
-+        /**
-+         * Create an instance of delegate for the given fragment that will own the
-+         * IntentRequestTracker.
-+         * @param fragment The fragment that owns the IntentRequestTracker.
-+         */
-+        private TrackerDelegateImpl(Fragment fragment) {
-+            mFragment = fragment;
-+        }
-+
-+        @Override
-+        public boolean startActivityForResult(Intent intent, int requestCode) {
-+            mFragment.startActivityForResult(intent, requestCode, null);
-+            return true;
-+        }
-+
-+        @Override
-+        public boolean startIntentSenderForResult(IntentSender intentSender, int requestCode) {
-+            try {
-+                mFragment.startIntentSenderForResult(
-+                        intentSender, requestCode, new Intent(), 0, 0, 0, null);
-+            } catch (IntentSender.SendIntentException e) {
-+                return false;
-+            }
-+            return true;
-+        }
-+
-+        @Override
-+        public void finishActivity(int requestCode) {
-+            Activity activity = getActivity().get();
-+            if (activity == null) return;
-+            activity.finishActivity(requestCode);
-+        }
-+
-+        @Override
-+        public final WeakReference<Activity> getActivity() {
-+            if (mActivityWeakRefHolder == null
-+                    || mActivityWeakRefHolder.get() != mFragment.getActivity()) {
-+                mActivityWeakRefHolder = new ImmutableWeakReference<>(mFragment.getActivity());
-+            }
-+            return mActivityWeakRefHolder;
-+        }
-+    }
-+
-+    FragmentWindowAndroid(Context context, Fragment fragment, @Nullable InsetObserver insetObserver) {
-+        super(context,
-+              /*activityTopResumedSupported*/ false,
-+              IntentRequestTracker.createFromDelegate(new TrackerDelegateImpl(fragment)),
-+              insetObserver,
-+              /* trackOcclusion= */ true);
-+        mFragment = fragment;
-+
-+        setKeyboardDelegate(new ActivityKeyboardVisibilityDelegate(getActivity()));
-+        setAndroidPermissionDelegate(new ActivityAndroidPermissionDelegate(getActivity()));
-+    }
-+}
-diff --git a/components/user_scripts/android/java/src/org/chromium/components/user_scripts/IUserScriptsUtils.java b/components/user_scripts/android/java/src/org/chromium/components/user_scripts/IUserScriptsUtils.java
-new file mode 100644
---- /dev/null
-+++ b/components/user_scripts/android/java/src/org/chromium/components/user_scripts/IUserScriptsUtils.java
-@@ -0,0 +1,22 @@
-+/*
-+    This file is part of Bromite.
-+
-+    Bromite is free software: you can redistribute it and/or modify
-+    it under the terms of the GNU General Public License as published by
-+    the Free Software Foundation, either version 3 of the License, or
-+    (at your option) any later version.
-+
-+    Bromite is distributed in the hope that it will be useful,
-+    but WITHOUT ANY WARRANTY; without even the implied warranty of
-+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+    GNU General Public License for more details.
-+
-+    You should have received a copy of the GNU General Public License
-+    along with Bromite. If not, see <https://www.gnu.org/licenses/>.
-+*/
-+
-+package org.chromium.components.user_scripts;
-+
-+public interface IUserScriptsUtils {
-+    public void openSourceFile(String scriptKey);
-+}
-\ No newline at end of file
-diff --git a/components/user_scripts/android/java/src/org/chromium/components/user_scripts/ScriptInfo.java b/components/user_scripts/android/java/src/org/chromium/components/user_scripts/ScriptInfo.java
-new file mode 100644
---- /dev/null
-+++ b/components/user_scripts/android/java/src/org/chromium/components/user_scripts/ScriptInfo.java
-@@ -0,0 +1,37 @@
-+/*
-+    This file is part of Bromite.
-+
-+    Bromite is free software: you can redistribute it and/or modify
-+    it under the terms of the GNU General Public License as published by
-+    the Free Software Foundation, either version 3 of the License, or
-+    (at your option) any later version.
-+
-+    Bromite is distributed in the hope that it will be useful,
-+    but WITHOUT ANY WARRANTY; without even the implied warranty of
-+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+    GNU General Public License for more details.
-+
-+    You should have received a copy of the GNU General Public License
-+    along with Bromite. If not, see <https://www.gnu.org/licenses/>.
-+*/
-+
-+package org.chromium.components.user_scripts;
-+
-+import java.time.LocalDateTime;
-+
-+public class ScriptInfo {
-+    public String Key;
-+    public String Name;
-+    public String Description;
-+    public String Version;
-+    public String FilePath;
-+    public String UrlSource;
-+
-+    public boolean Enabled;
-+    public LocalDateTime InstallTime;
-+
-+    public String ParserError;
-+    public boolean ForceDisabled;
-+
-+    public ScriptInfo() {}
-+}
-diff --git a/components/user_scripts/android/java/src/org/chromium/components/user_scripts/ScriptListBaseAdapter.java b/components/user_scripts/android/java/src/org/chromium/components/user_scripts/ScriptListBaseAdapter.java
-new file mode 100644
---- /dev/null
-+++ b/components/user_scripts/android/java/src/org/chromium/components/user_scripts/ScriptListBaseAdapter.java
-@@ -0,0 +1,162 @@
-+/*
-+    This file is part of Bromite.
-+
-+    Bromite is free software: you can redistribute it and/or modify
-+    it under the terms of the GNU General Public License as published by
-+    the Free Software Foundation, either version 3 of the License, or
-+    (at your option) any later version.
-+
-+    Bromite is distributed in the hope that it will be useful,
-+    but WITHOUT ANY WARRANTY; without even the implied warranty of
-+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+    GNU General Public License for more details.
-+
-+    You should have received a copy of the GNU General Public License
-+    along with Bromite. If not, see <https://www.gnu.org/licenses/>.
-+*/
-+
-+package org.chromium.components.user_scripts;
-+
-+import android.content.Context;
-+import android.view.LayoutInflater;
-+import android.view.MotionEvent;
-+import android.view.View;
-+import android.view.ViewGroup;
-+import android.view.accessibility.AccessibilityManager;
-+import android.view.accessibility.AccessibilityManager.AccessibilityStateChangeListener;
-+import android.widget.ImageView;
-+import android.widget.TextView;
-+import android.widget.Switch;
-+import android.widget.CompoundButton;
-+import android.widget.LinearLayout;
-+
-+import androidx.annotation.DrawableRes;
-+import androidx.annotation.NonNull;
-+import androidx.core.view.ViewCompat;
-+import androidx.recyclerview.widget.RecyclerView.ViewHolder;
-+
-+import org.chromium.components.browser_ui.widget.dragreorder.DragReorderableListAdapter;
-+import org.chromium.components.browser_ui.widget.dragreorder.DragStateDelegate;
-+import org.chromium.ui.listmenu.ListMenuButton;
-+import org.chromium.ui.listmenu.ListMenuDelegate;
-+
-+import java.util.ArrayList;
-+import java.util.List;
-+
-+public class ScriptListBaseAdapter extends DragReorderableListAdapter<ScriptInfo> {
-+
-+    class ItemClickListener {
-+        void onScriptOnOff(boolean Enabled) {}
-+        void onScriptClicked() {}
-+    }
-+
-+    static class ScriptInfoRowViewHolder extends ViewHolder {
-+        private TextView mTitle;
-+        private TextView mDescription;
-+        private TextView mVersion;
-+        private TextView mFile;
-+        private TextView mUrl;
-+        private TextView mError;
-+        private Switch mSwitch;
-+        private ImageView mIcon;
-+        private LinearLayout mErrorLayout;
-+        private LinearLayout mUrlContainer;
-+
-+        private ListMenuButton mMoreButton;
-+
-+        private CompoundButton.OnCheckedChangeListener mOnOffListener;
-+
-+        ScriptInfoRowViewHolder(View view) {
-+            super(view);
-+
-+            mSwitch = view.findViewById(R.id.switch_widget);
-+            mTitle = view.findViewById(R.id.title);
-+            mDescription = view.findViewById(R.id.description);
-+            mVersion = view.findViewById(R.id.version);
-+            mFile = view.findViewById(R.id.file);
-+            mUrl = view.findViewById(R.id.url);
-+            mUrlContainer = view.findViewById(R.id.url_container);
-+            mError = view.findViewById(R.id.error);
-+            mIcon = view.findViewById(R.id.icon);
-+            mErrorLayout = view.findViewById(R.id.error_layout);
-+
-+            mMoreButton = view.findViewById(R.id.more);
-+        }
-+
-+        protected void updateScriptInfo(ScriptInfo item) {
-+            mSwitch.setOnCheckedChangeListener(null);
-+            mSwitch.setChecked(item.Enabled);
-+            mSwitch.setOnCheckedChangeListener(mOnOffListener);
-+
-+            mSwitch.setEnabled(true);
-+            if (item.ForceDisabled) {
-+                mSwitch.setEnabled(false);
-+            }
-+
-+            mTitle.setText(item.Name);
-+            mDescription.setText(item.Description);
-+            mVersion.setText(item.Version);
-+            mFile.setText(item.Key);
-+            mUrl.setText(item.UrlSource);
-+            mError.setText(item.ParserError);
-+
-+            mUrl.setVisibility(View.VISIBLE);
-+            if (item.UrlSource == null || item.UrlSource.isEmpty()) {
-+                mUrlContainer.setVisibility(View.GONE);
-+            }
-+            mErrorLayout.setVisibility(View.VISIBLE);
-+            if (item.ParserError == null || item.ParserError.isEmpty()) {
-+                mErrorLayout.setVisibility(View.GONE);
-+            }
-+        }
-+
-+        void setMenuButtonDelegate(@NonNull ListMenuDelegate delegate) {
-+            mMoreButton.setVisibility(View.VISIBLE);
-+            mMoreButton.setDelegate(delegate);
-+            // Set item row end padding 0 when MenuButton is visible.
-+            ViewCompat.setPaddingRelative(itemView, ViewCompat.getPaddingStart(itemView),
-+                    itemView.getPaddingTop(), 0, itemView.getPaddingBottom());
-+        }
-+
-+        void setItemListener(@NonNull ItemClickListener listener) {
-+            mOnOffListener = (buttonView, isChecked) -> listener.onScriptOnOff(isChecked);
-+            mSwitch.setOnCheckedChangeListener(mOnOffListener);
-+            itemView.setOnClickListener(view -> listener.onScriptClicked());
-+        }
-+    }
-+
-+    ScriptListBaseAdapter(Context context) {
-+        super(context);
-+    }
-+
-+    @Override
-+    public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
-+        View row = LayoutInflater.from(viewGroup.getContext())
-+                           .inflate(R.layout.accept_script_item, viewGroup, false);
-+        return new ScriptInfoRowViewHolder(row);
-+    }
-+
-+    @Override
-+    public void onBindViewHolder(ViewHolder viewHolder, int i) {
-+        ((ScriptInfoRowViewHolder) viewHolder).updateScriptInfo(mItems.get(i));
-+    }
-+
-+    void setDisplayedScriptInfo(List<ScriptInfo> values) {
-+        mItems = new ArrayList<>(values);
-+        notifyDataSetChanged();
-+    }
-+
-+    @Override
-+    protected void setOrder(List<ScriptInfo> order) {
-+    }
-+
-+    @Override
-+    protected boolean isActivelyDraggable(ViewHolder viewHolder) {
-+        return isPassivelyDraggable(viewHolder);
-+    }
-+
-+    @Override
-+    protected boolean isPassivelyDraggable(ViewHolder viewHolder) {
-+        return viewHolder instanceof ScriptInfoRowViewHolder;
-+    }
-+}
-diff --git a/components/user_scripts/android/java/src/org/chromium/components/user_scripts/ScriptListPreference.java b/components/user_scripts/android/java/src/org/chromium/components/user_scripts/ScriptListPreference.java
-new file mode 100644
---- /dev/null
-+++ b/components/user_scripts/android/java/src/org/chromium/components/user_scripts/ScriptListPreference.java
-@@ -0,0 +1,171 @@
-+/*
-+    This file is part of Bromite.
-+
-+    Bromite is free software: you can redistribute it and/or modify
-+    it under the terms of the GNU General Public License as published by
-+    the Free Software Foundation, either version 3 of the License, or
-+    (at your option) any later version.
-+
-+    Bromite is distributed in the hope that it will be useful,
-+    but WITHOUT ANY WARRANTY; without even the implied warranty of
-+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+    GNU General Public License for more details.
-+
-+    You should have received a copy of the GNU General Public License
-+    along with Bromite. If not, see <https://www.gnu.org/licenses/>.
-+*/
-+
-+package org.chromium.components.user_scripts;
-+
-+import android.content.Context;
-+import android.content.Intent;
-+import android.provider.Browser;
-+import android.net.Uri;
-+import android.util.AttributeSet;
-+import android.widget.TextView;
-+import android.widget.Toast;
-+
-+import androidx.preference.Preference;
-+import androidx.preference.PreferenceViewHolder;
-+import androidx.recyclerview.widget.DividerItemDecoration;
-+import androidx.recyclerview.widget.LinearLayoutManager;
-+import androidx.recyclerview.widget.RecyclerView;
-+import androidx.recyclerview.widget.RecyclerView.ViewHolder;
-+
-+import org.chromium.ui.base.WindowAndroid;
-+import org.chromium.ui.base.ActivityWindowAndroid;
-+
-+import org.chromium.base.ApplicationStatus;
-+import org.chromium.base.ContextUtils;
-+import org.chromium.components.browser_ui.widget.ListItemBuilder;
-+import org.chromium.components.browser_ui.widget.TintedDrawable;
-+import org.chromium.components.browser_ui.widget.BrowserUiListMenuUtils;
-+import org.chromium.ui.listmenu.BasicListMenu;
-+import org.chromium.ui.listmenu.ListMenu;
-+import org.chromium.ui.listmenu.ListMenuItemProperties;
-+import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
-+
-+import org.chromium.components.user_scripts.ScriptListBaseAdapter;
-+import org.chromium.components.user_scripts.FragmentWindowAndroid;
-+
-+import java.util.List;
-+
-+public class ScriptListPreference extends Preference {
-+    private static class ScriptListAdapter
-+            extends ScriptListBaseAdapter {
-+        private final Context mContext;
-+
-+        ScriptListAdapter(Context context) {
-+            super(context);
-+            mContext = context;
-+        }
-+
-+        @Override
-+        public void onBindViewHolder(ViewHolder holder, int position) {
-+            super.onBindViewHolder(holder, position);
-+
-+            final ScriptInfo info = getItemByPosition(position);
-+
-+            ModelList menuItems = new ModelList();
-+
-+            menuItems.add(new ListItemBuilder().withTitleRes(R.string.remove).build());
-+            menuItems.add(new ListItemBuilder().withTitleRes(R.string.scripts_view_source)
-+                    .withEnabled(info.ParserError == null || info.ParserError.isEmpty())
-+                    .build());
-+
-+            ListMenu.Delegate delegate = (model, view) -> {
-+                int textId = model.get(ListMenuItemProperties.TITLE_ID);
-+                if (textId == R.string.remove) {
-+                    UserScriptsBridge.RemoveScript(info.Key);
-+                } else if (textId == R.string.scripts_view_source) {
-+                    UserScriptsBridge.getUtils().openSourceFile(info.Key);
-+                }
-+            };
-+            ((ScriptInfoRowViewHolder) holder)
-+                    .setMenuButtonDelegate(() -> BrowserUiListMenuUtils.getBasicListMenu(mContext, menuItems, delegate));
-+            ((ScriptInfoRowViewHolder) holder)
-+                    .setItemListener(new ScriptListBaseAdapter.ItemClickListener() {
-+                        @Override
-+                        public void onScriptOnOff(boolean Enabled) {
-+                            UserScriptsBridge.SetScriptEnabled(info.Key, Enabled);
-+                        }
-+
-+                        @Override
-+                        public void onScriptClicked() {}
-+                    });
-+        }
-+
-+        // @Override
-+        public void onDataUpdated(boolean enabled) {
-+            List<ScriptInfo> list = UserScriptsBridge.getUserScriptItems();
-+            if (enabled == false) {
-+                for (ScriptInfo script : list) {
-+                    script.ForceDisabled = true;
-+                }
-+            }
-+            setDisplayedScriptInfo(list);
-+        }
-+    }
-+
-+    private TextView mAddButton;
-+    private RecyclerView mRecyclerView;
-+    private ScriptListAdapter mAdapter;
-+    private FragmentWindowAndroid mWindowAndroid;
-+
-+    public ScriptListPreference(Context context, AttributeSet attrs) {
-+        super(context, attrs);
-+        mAdapter = new ScriptListAdapter(context);
-+    }
-+
-+    public void setWindowAndroid(FragmentWindowAndroid windowAndroid) {
-+        mWindowAndroid = windowAndroid;
-+    }
-+
-+    @Override
-+    public void onBindViewHolder(PreferenceViewHolder holder) {
-+        super.onBindViewHolder(holder);
-+
-+        mAddButton = (TextView) holder.findViewById(R.id.add_script);
-+        mAddButton.setCompoundDrawablesRelativeWithIntrinsicBounds(
-+                TintedDrawable.constructTintedDrawable(
-+                        getContext(), R.drawable.plus, R.color.default_control_color_active_baseline),
-+                null, null, null);
-+        mAddButton.setOnClickListener(view -> {
-+            UserScriptsBridge.SelectAndAddScriptFromFile(mWindowAndroid);
-+        });
-+
-+        mRecyclerView = (RecyclerView) holder.findViewById(R.id.script_list);
-+        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
-+        mRecyclerView.setLayoutManager(layoutManager);
-+        mRecyclerView.addItemDecoration(
-+                new DividerItemDecoration(getContext(), layoutManager.getOrientation()));
-+        mRecyclerView.setEnabled(this.isEnabled());
-+        UserScriptsBridge.RegisterLoadCallback(this);
-+
-+        // We do not want the RecyclerView to be announced by screen readers every time
-+        // the view is bound.
-+        if (mRecyclerView.getAdapter() != mAdapter) {
-+            mRecyclerView.setAdapter(mAdapter);
-+            // Initialize script list.
-+            mAdapter.onDataUpdated(this.isEnabled());
-+        }
-+    }
-+
-+    @Override
-+    public void setEnabled (boolean enabled) {
-+        super.setEnabled(enabled);
-+        if (mRecyclerView != null) mRecyclerView.setEnabled(enabled);
-+        NotifyScriptsChanged();
-+    }
-+
-+    public void NotifyScriptsChanged() {
-+        mAdapter.onDataUpdated(this.isEnabled());
-+    }
-+
-+    public void OnUserScriptLoaded(boolean result, String error) {
-+        if (result == false) {
-+            Toast toast = Toast.makeText(getContext(), error, Toast.LENGTH_LONG);
-+            toast.show();
-+        }
-+    }
-+}
-diff --git a/components/user_scripts/android/java/src/org/chromium/components/user_scripts/UserScriptsBridge.java b/components/user_scripts/android/java/src/org/chromium/components/user_scripts/UserScriptsBridge.java
-new file mode 100644
---- /dev/null
-+++ b/components/user_scripts/android/java/src/org/chromium/components/user_scripts/UserScriptsBridge.java
-@@ -0,0 +1,212 @@
-+/*
-+    This file is part of Bromite.
-+
-+    Bromite is free software: you can redistribute it and/or modify
-+    it under the terms of the GNU General Public License as published by
-+    the Free Software Foundation, either version 3 of the License, or
-+    (at your option) any later version.
-+
-+    Bromite is distributed in the hope that it will be useful,
-+    but WITHOUT ANY WARRANTY; without even the implied warranty of
-+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+    GNU General Public License for more details.
-+
-+    You should have received a copy of the GNU General Public License
-+    along with Bromite. If not, see <https://www.gnu.org/licenses/>.
-+*/
-+
-+package org.chromium.components.user_scripts;
-+
-+import java.util.ArrayList;
-+import java.util.List;
-+import java.lang.ref.WeakReference;
-+
-+import org.json.JSONArray;
-+import org.json.JSONException;
-+import org.json.JSONObject;
-+
-+import android.content.Context;
-+import android.content.Intent;
-+import android.net.Uri;
-+import android.provider.MediaStore;
-+import androidx.annotation.Nullable;
-+import android.app.AlertDialog;
-+import android.content.DialogInterface;
-+
-+import org.jni_zero.CalledByNative;
-+import org.jni_zero.JNINamespace;
-+import org.jni_zero.NativeMethods;
-+import org.chromium.base.ContentUriUtils;
-+import org.chromium.base.Log;
-+import org.chromium.ui.base.WindowAndroid;
-+
-+import org.chromium.components.user_scripts.ScriptListPreference;
-+import org.chromium.components.user_scripts.IUserScriptsUtils;
-+
-+@JNINamespace("user_scripts")
-+public class UserScriptsBridge {
-+    private static final String TAG = "UserScript";
-+
-+    static WeakReference<ScriptListPreference> observer;
-+
-+    private static IUserScriptsUtils utilInstance;
-+
-+    public static void registerUtils(IUserScriptsUtils instance) {
-+        utilInstance = instance;
-+    }
-+
-+    public static IUserScriptsUtils getUtils() {
-+        return utilInstance;
-+    }
-+
-+    public static boolean isEnabled() {
-+        return UserScriptsBridgeJni.get().isEnabled();
-+    }
-+
-+    public static void setEnabled(boolean enabled) {
-+        UserScriptsBridgeJni.get().setEnabled(enabled);
-+    }
-+
-+    public static void RemoveScript(String key) {
-+        UserScriptsBridgeJni.get().removeScript(key);
-+    }
-+
-+    public static void SetScriptEnabled(String key,
-+                                        boolean enabled) {
-+        UserScriptsBridgeJni.get().setScriptEnabled(key, enabled);
-+    }
-+
-+    public static void Reload() {
-+        UserScriptsBridgeJni.get().reload();
-+    }
-+
-+    public static void SelectAndAddScriptFromFile(WindowAndroid window) {
-+        Context context = window.getContext().get();
-+
-+        Intent fileSelector = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-+        fileSelector.addCategory(Intent.CATEGORY_OPENABLE);
-+        fileSelector.setType("*/*");
-+        fileSelector.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-+
-+        window.showIntent(fileSelector,
-+            new WindowAndroid.IntentCallback() {
-+                @Override
-+                public void onIntentCompleted(int resultCode, Intent data) {
-+                    if (data == null) return;
-+                    Uri filePath = data.getData();
-+                    TryToInstall(context, filePath.toString());
-+                }
-+            },
-+            null);
-+    }
-+
-+    public static void TryToInstall(Context context, String ScriptFullPath) {
-+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-+            @Override
-+            public void onClick(DialogInterface dialog, int which) {
-+                switch (which){
-+                    case DialogInterface.BUTTON_POSITIVE:
-+                        UserScriptsBridgeJni.get().tryToInstall(ScriptFullPath);
-+                        break;
-+
-+                    case DialogInterface.BUTTON_NEGATIVE:
-+                        break;
-+                }
-+            }
-+        };
-+
-+        String scriptName = ScriptFullPath;
-+        if (ContentUriUtils.isContentUri(scriptName)) {
-+            scriptName = ContentUriUtils.getFilePathFromContentUri(Uri.parse(scriptName));
-+            if (scriptName == null) {
-+                // fallback to content uri name if fail
-+                scriptName = ContentUriUtils.getDisplayName(Uri.parse(ScriptFullPath), context,
-+                    MediaStore.MediaColumns.DISPLAY_NAME);
-+            }
-+        }
-+
-+        String message = context.getString(R.string.ask_to_install, scriptName);
-+
-+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-+        builder.setMessage(message)
-+            .setPositiveButton(context.getString(R.string.ok), dialogClickListener)
-+            .setNegativeButton(context.getString(R.string.no), dialogClickListener)
-+            .show();
-+    }
-+
-+    public static List<ScriptInfo> getUserScriptItems() {
-+        List<ScriptInfo> list = new ArrayList<>();
-+        try {
-+            String json = UserScriptsBridgeJni.get().getScriptsInfo();
-+
-+            JSONObject jsonObject = new JSONObject(json);
-+
-+            JSONArray scripts = jsonObject.names();
-+            if (scripts != null) {
-+                Log.i(TAG, "User Scripts Loaded: %s", json);
-+                Log.i(TAG, "Totals scripts: %s", Integer.toString(scripts.length()));
-+                for (int i = 0; i < scripts.length(); i++) {
-+                    String key = (String) scripts.get(i);
-+                    JSONObject script = jsonObject.getJSONObject(key);
-+
-+                    ScriptInfo si = new ScriptInfo();
-+                    si.Key = key;
-+                    list.add(si);
-+
-+                    if(script.has("name")) si.Name = script.getString("name");
-+                    if(script.has("description")) si.Description = script.getString("description");
-+                    if(script.has("version")) si.Version = script.getString("version");
-+                    if(script.has("file_path")) si.FilePath = script.getString("file_path");
-+                    if(script.has("url_source")) si.UrlSource = script.getString("url_source");
-+                    if(script.has("parser_error")) si.ParserError = script.getString("parser_error");
-+                    if(script.has("force_disabled")) si.ForceDisabled = script.getBoolean("force_disabled");;
-+                    si.Enabled = script.getBoolean("enabled");
-+                }
-+            } else {
-+                Log.i(TAG, "User Scripts list empty");
-+            }
-+        } catch (Exception e) {
-+            Log.e(TAG, "User Scripts Load Error", e.toString());
-+        }
-+        return list;
-+    }
-+
-+    public static void RegisterLoadCallback(ScriptListPreference caller) {
-+        UserScriptsBridgeJni.get().registerLoadCallback();
-+        observer = new WeakReference<ScriptListPreference>(caller);
-+    }
-+
-+    @CalledByNative
-+    private static void shouldRefreshUserScriptList() {
-+        ScriptListPreference reference = observer.get();
-+        if (reference != null) {
-+            reference.NotifyScriptsChanged();
-+        }
-+    }
-+
-+    @CalledByNative
-+    private static void onUserScriptLoaded(boolean result, String error) {
-+        ScriptListPreference reference = observer.get();
-+        if (reference != null) {
-+            reference.OnUserScriptLoaded(result, error);
-+        }
-+    }
-+
-+    @NativeMethods
-+    public interface Natives {
-+        boolean isEnabled();
-+        void setEnabled(boolean enabled);
-+
-+        String getScriptsInfo();
-+
-+        void removeScript(String scriptKey);
-+        void setScriptEnabled(String scriptKey, boolean enabled);
-+
-+        void reload();
-+        void selectAndAddScriptFromFile(WindowAndroid window);
-+        void tryToInstall(String scriptFullPath);
-+
-+        void registerLoadCallback();
-+    }
-+
-+}
-diff --git a/components/user_scripts/android/java/src/org/chromium/components/user_scripts/UserScriptsPreferences.java b/components/user_scripts/android/java/src/org/chromium/components/user_scripts/UserScriptsPreferences.java
-new file mode 100755
---- /dev/null
-+++ b/components/user_scripts/android/java/src/org/chromium/components/user_scripts/UserScriptsPreferences.java
-@@ -0,0 +1,122 @@
-+/*
-+    This file is part of Bromite.
-+
-+    Bromite is free software: you can redistribute it and/or modify
-+    it under the terms of the GNU General Public License as published by
-+    the Free Software Foundation, either version 3 of the License, or
-+    (at your option) any later version.
-+
-+    Bromite is distributed in the hope that it will be useful,
-+    but WITHOUT ANY WARRANTY; without even the implied warranty of
-+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+    GNU General Public License for more details.
-+
-+    You should have received a copy of the GNU General Public License
-+    along with Bromite. If not, see <https://www.gnu.org/licenses/>.
-+*/
-+
-+package org.chromium.components.user_scripts;
-+
-+import android.app.Activity;
-+import android.content.Context;
-+import android.content.Intent;
-+import android.os.Bundle;
-+import android.provider.Browser;
-+import android.net.Uri;
-+import android.view.MenuItem;
-+import android.view.View;
-+
-+import androidx.preference.Preference;
-+import androidx.preference.PreferenceFragmentCompat;
-+
-+import org.chromium.base.Log;
-+import org.chromium.ui.base.WindowAndroid;
-+import org.chromium.ui.base.ActivityWindowAndroid;
-+
-+import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
-+import org.chromium.components.browser_ui.settings.SettingsFragment;
-+import org.chromium.components.browser_ui.settings.SettingsUtils;
-+import org.chromium.components.browser_ui.settings.TextMessagePreference;
-+
-+import org.chromium.components.user_scripts.UserScriptsBridge;
-+import org.chromium.components.user_scripts.FragmentWindowAndroid;
-+
-+public class UserScriptsPreferences
-+        extends PreferenceFragmentCompat
-+        implements SettingsUtils.ISupportHelpAndFeedback, SettingsFragment {
-+
-+    private static final String PREF_ENABLED_SWITCH = "enabled_switch";
-+    private static final String PREF_SCRIPTLISTPREFERENCE = "script_list";
-+
-+    public static final String EXTRA_SCRIPT_FILE = "org.chromium.chrome.preferences.script_file";
-+
-+    private FragmentWindowAndroid mWindowAndroid;
-+
-+    @Override
-+    public @AnimationType int getAnimationType() {
-+        return AnimationType.PROPERTY;
-+    }
-+
-+    @Override
-+    public void onDestroy() {
-+        if (mWindowAndroid != null) mWindowAndroid.destroy();
-+        super.onDestroy();
-+    }
-+
-+    @Override
-+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-+        getActivity().setTitle(R.string.prefs_userscripts_settings);
-+        SettingsUtils.addPreferencesFromResource(this, R.xml.userscripts_preferences);
-+
-+        ChromeSwitchPreference enabledSwitch =
-+                (ChromeSwitchPreference) findPreference(PREF_ENABLED_SWITCH);
-+        ScriptListPreference listPreference =
-+                (ScriptListPreference) findPreference(PREF_SCRIPTLISTPREFERENCE);
-+
-+        boolean enabled = UserScriptsBridge.isEnabled();
-+        enabledSwitch.setChecked(enabled);
-+        listPreference.setEnabled(enabled);
-+        enabledSwitch.setOnPreferenceChangeListener((preference, newValue) -> {
-+            UserScriptsBridge.setEnabled((boolean) newValue);
-+            listPreference.setEnabled((boolean) newValue);
-+            return true;
-+        });
-+
-+        mWindowAndroid = new FragmentWindowAndroid(getContext(), this, /*InsetObserver*/ null);
-+        listPreference.setWindowAndroid(mWindowAndroid);
-+    }
-+
-+    @Override
-+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-+        // handle picker callback from SelectFileDialog
-+        mWindowAndroid.getIntentRequestTracker().onActivityResult(requestCode, resultCode, data);
-+    }
-+
-+    public void onHelpAndFeebackPressed() {
-+        Context context = getContext();
-+
-+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/bromite/bromite/wiki/UserScripts"));
-+        // Let Chromium know that this intent is from Chromium, so that it does not close the app when
-+        // the user presses 'back' button.
-+        intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
-+        intent.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
-+        intent.setPackage(context.getPackageName());
-+        context.startActivity(intent);
-+    }
-+
-+    public static Bundle createFragmentArgsForInstall(String filePath) {
-+        Bundle fragmentArgs = new Bundle();
-+        fragmentArgs.putSerializable(EXTRA_SCRIPT_FILE, filePath);
-+        return fragmentArgs;
-+    }
-+
-+    @Override
-+    public void onActivityCreated(Bundle savedInstanceState) {
-+        super.onActivityCreated(savedInstanceState);
-+
-+        String scriptToInstall = (String)getArguments().getSerializable(EXTRA_SCRIPT_FILE);
-+        if (scriptToInstall != null) {
-+            UserScriptsBridge.TryToInstall(getContext(), scriptToInstall);
-+        }
-+    }
-+}
 diff --git a/components/user_scripts/android/java_sources.gni b/components/user_scripts/android/java_sources.gni
 new file mode 100644
 --- /dev/null
@@ -2235,222 +859,6 @@ new file mode 100644
 +userscripts_java_sources = [
 +  "//components/user_scripts/android/java/src/org/chromium/chrome/browser/user_scripts/UserScriptsUtils.java",
 +]
-diff --git a/components/user_scripts/android/user_scripts_bridge.cc b/components/user_scripts/android/user_scripts_bridge.cc
-new file mode 100644
---- /dev/null
-+++ b/components/user_scripts/android/user_scripts_bridge.cc
-@@ -0,0 +1,174 @@
-+/*
-+    This file is part of Bromite.
-+
-+    Bromite is free software: you can redistribute it and/or modify
-+    it under the terms of the GNU General Public License as published by
-+    the Free Software Foundation, either version 3 of the License, or
-+    (at your option) any later version.
-+
-+    Bromite is distributed in the hope that it will be useful,
-+    but WITHOUT ANY WARRANTY; without even the implied warranty of
-+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+    GNU General Public License for more details.
-+
-+    You should have received a copy of the GNU General Public License
-+    along with Bromite. If not, see <https://www.gnu.org/licenses/>.
-+*/
-+
-+#include <jni.h>
-+#include <algorithm>
-+#include <string>
-+#include <vector>
-+#include <sstream>
-+#include <iterator>
-+
-+#include "base/android/callback_android.h"
-+#include "base/android/jni_android.h"
-+#include "base/android/jni_array.h"
-+#include "base/android/jni_string.h"
-+#include "base/android/scoped_java_ref.h"
-+#include "ui/android/window_android.h"
-+
-+#include "components/user_scripts/android/user_scripts_jni_headers/UserScriptsBridge_jni.h"
-+#include "../browser/userscripts_browser_client.h"
-+#include "user_scripts_bridge.h"
-+
-+using base::android::AttachCurrentThread;
-+using base::android::ConvertJavaStringToUTF8;
-+using base::android::ConvertUTF16ToJavaString;
-+using base::android::ConvertUTF8ToJavaString;
-+using base::android::JavaRef;
-+using base::android::ScopedJavaGlobalRef;
-+using base::android::ScopedJavaLocalRef;
-+using content::BrowserContext;
-+
-+namespace {
-+
-+user_scripts::UserScriptsBrowserClient* GetUserScriptsBrowserClient() {
-+  return user_scripts::UserScriptsBrowserClient::GetInstance();
-+}
-+
-+class CallbackObserver : public user_scripts::UserScriptLoader::Observer {
-+  private:
-+    void OnScriptsLoaded(user_scripts::UserScriptLoader* loader,
-+                         content::BrowserContext* browser_context) override {
-+        user_scripts::ShouldRefreshUserScriptList(base::android::AttachCurrentThread());
-+    }
-+
-+    void OnUserScriptLoaded(user_scripts::UserScriptLoader* loader,
-+                            bool result, const std::string& error) override {
-+        user_scripts::OnUserScriptLoaded(base::android::AttachCurrentThread(),
-+          result, error);
-+    }
-+
-+    void OnUserScriptLoaderDestroyed(user_scripts::UserScriptLoader* loader) override {}
-+};
-+
-+CallbackObserver* g_userscripts_loader_observer = NULL;
-+
-+}
-+
-+namespace user_scripts {
-+
-+static jboolean JNI_UserScriptsBridge_IsEnabled(
-+                    JNIEnv* env) {
-+  user_scripts::UserScriptsBrowserClient* client = GetUserScriptsBrowserClient();
-+  if (client == NULL) return false;
-+  return client->GetPrefs()->IsEnabled();
-+}
-+
-+static void JNI_UserScriptsBridge_SetEnabled(
-+                    JNIEnv* env,
-+                    jboolean is_enabled) {
-+  user_scripts::UserScriptsBrowserClient* client = GetUserScriptsBrowserClient();
-+  if (client == NULL) return;
-+  client->GetPrefs()->SetEnabled(is_enabled);
-+  client->GetLoader()->StartLoad();
-+}
-+
-+static base::android::ScopedJavaLocalRef<jstring> JNI_UserScriptsBridge_GetScriptsInfo(
-+                    JNIEnv* env) {
-+  user_scripts::UserScriptsBrowserClient* client = GetUserScriptsBrowserClient();
-+  if (client == NULL) return ConvertUTF8ToJavaString(env, {});
-+
-+  std::string json = client->GetPrefs()->GetScriptsInfo();
-+  return ConvertUTF8ToJavaString(env, json);
-+}
-+
-+static void JNI_UserScriptsBridge_RemoveScript(
-+                    JNIEnv* env,
-+                    const JavaRef<jstring>& jscript_key) {
-+  user_scripts::UserScriptsBrowserClient* client = GetUserScriptsBrowserClient();
-+  if (client == NULL) return;
-+
-+  std::string script_key = base::android::ConvertJavaStringToUTF8(jscript_key);
-+  client->GetLoader()->RemoveScript(script_key);
-+}
-+
-+static void JNI_UserScriptsBridge_SetScriptEnabled(
-+                    JNIEnv* env,
-+                    const JavaRef<jstring>& jscript_key,
-+                    jboolean is_enabled) {
-+  user_scripts::UserScriptsBrowserClient* client = GetUserScriptsBrowserClient();
-+  if (client == NULL) return;
-+
-+  std::string script_key = base::android::ConvertJavaStringToUTF8(jscript_key);
-+  client->GetLoader()->SetScriptEnabled(script_key, is_enabled);
-+}
-+
-+static void JNI_UserScriptsBridge_Reload(
-+                    JNIEnv* env) {
-+  user_scripts::UserScriptsBrowserClient* client = GetUserScriptsBrowserClient();
-+  if (client == NULL) return;
-+
-+  client->GetLoader()->StartLoad();
-+  user_scripts::ShouldRefreshUserScriptList(env);
-+}
-+
-+static void JNI_UserScriptsBridge_SelectAndAddScriptFromFile(
-+                    JNIEnv* env,
-+                    const JavaRef<jobject>& jwindow_android) {
-+  user_scripts::UserScriptsBrowserClient* client = GetUserScriptsBrowserClient();
-+  if (client == NULL) return;
-+
-+  client->GetLoader()->SelectAndAddScriptFromFile(
-+                    ui::WindowAndroid::FromJavaWindowAndroid(jwindow_android));
-+}
-+
-+static void JNI_UserScriptsBridge_TryToInstall(JNIEnv* env,
-+                         const JavaRef<jstring>& jscript_path) {
-+  user_scripts::UserScriptsBrowserClient* client = GetUserScriptsBrowserClient();
-+  if (client == NULL) return;
-+
-+  std::string script_path = base::android::ConvertJavaStringToUTF8(jscript_path);
-+  base::FilePath path(script_path);
-+
-+  client->GetLoader()->TryToInstall(path);
-+}
-+
-+static void JNI_UserScriptsBridge_RegisterLoadCallback(
-+                    JNIEnv* env) {
-+  user_scripts::UserScriptsBrowserClient* client = GetUserScriptsBrowserClient();
-+  if (client == NULL) return;
-+
-+  if (g_userscripts_loader_observer == NULL) {
-+    g_userscripts_loader_observer = new CallbackObserver();
-+    client->GetLoader()->AddObserver(g_userscripts_loader_observer);
-+  }
-+}
-+
-+static void ShouldRefreshUserScriptList(JNIEnv* env) {
-+  Java_UserScriptsBridge_shouldRefreshUserScriptList(env);
-+}
-+
-+static void OnUserScriptLoaded(JNIEnv* env,
-+              bool result, const std::string& error) {
-+  base::android::ScopedJavaLocalRef<jstring> j_error =
-+    base::android::ConvertUTF8ToJavaString(env, error);
-+
-+  Java_UserScriptsBridge_onUserScriptLoaded(env, result, j_error);
-+}
-+
-+DEFINE_JNI(UserScriptsBridge)
-+
-+}
-diff --git a/components/user_scripts/android/user_scripts_bridge.h b/components/user_scripts/android/user_scripts_bridge.h
-new file mode 100644
---- /dev/null
-+++ b/components/user_scripts/android/user_scripts_bridge.h
-@@ -0,0 +1,31 @@
-+/*
-+    This file is part of Bromite.
-+
-+    Bromite is free software: you can redistribute it and/or modify
-+    it under the terms of the GNU General Public License as published by
-+    the Free Software Foundation, either version 3 of the License, or
-+    (at your option) any later version.
-+
-+    Bromite is distributed in the hope that it will be useful,
-+    but WITHOUT ANY WARRANTY; without even the implied warranty of
-+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+    GNU General Public License for more details.
-+
-+    You should have received a copy of the GNU General Public License
-+    along with Bromite. If not, see <https://www.gnu.org/licenses/>.
-+*/
-+
-+#ifndef COMPONENTS_USERSCRIPS_HELPER_ANDROID_H_
-+#define COMPONENTS_USERSCRIPS_HELPER_ANDROID_H_
-+
-+#include <jni.h>
-+
-+namespace user_scripts {
-+
-+static void ShouldRefreshUserScriptList(JNIEnv* env);
-+static void OnUserScriptLoaded(JNIEnv* env,
-+              bool result, const std::string& error);
-+
-+}  // namespace user_scripts
-+
-+#endif
-\ No newline at end of file
 diff --git a/components/user_scripts/assets/Allow-playing-videos-in-background.user.js b/components/user_scripts/assets/Allow-playing-videos-in-background.user.js
 new file mode 100644
 --- /dev/null
@@ -11491,7 +9899,7 @@ new file mode 100644
 diff --git a/tools/gritsettings/resource_ids.spec b/tools/gritsettings/resource_ids.spec
 --- a/tools/gritsettings/resource_ids.spec
 +++ b/tools/gritsettings/resource_ids.spec
-@@ -1409,6 +1409,12 @@
+@@ -1421,6 +1421,12 @@
      "META": {"sizes": {"includes": [50]}},
      "includes": [7505],
    },
@@ -11504,4 +9912,1514 @@ diff --git a/tools/gritsettings/resource_ids.spec b/tools/gritsettings/resource_
    # END components/ section.
  
    # START ios/ section.
+
+diff --git a/chrome/android/java/res/xml/main_preferences.xml b/chrome/android/java/res/xml/main_preferences.xml
+--- a/chrome/android/java/res/xml/main_preferences.xml
++++ b/chrome/android/java/res/xml/main_preferences.xml
+@@ -133,6 +133,11 @@ found in the LICENSE file.
+         android:key="useragent_settings"
+         android:order="20"
+         android:title="@string/prefs_useragent_settings"/>
++    <org.chromium.components.browser_ui.settings.ChromeBasePreference
++        android:fragment="org.chromium.components.user_scripts.UserScriptsPreferences"
++        android:key="userscripts_settings"
++        android:order="20"
++        android:title="@string/prefs_userscripts_settings"/>
+     <org.chromium.components.browser_ui.settings.ChromeBasePreference
+         android:fragment="org.chromium.chrome.browser.language.settings.LanguageSettings"
+         android:key="languages"
+diff --git a/chrome/android/java/src/org/chromium/chrome/browser/download/DownloadUtils.java b/chrome/android/java/src/org/chromium/chrome/browser/download/DownloadUtils.java
+--- a/chrome/android/java/src/org/chromium/chrome/browser/download/DownloadUtils.java
++++ b/chrome/android/java/src/org/chromium/chrome/browser/download/DownloadUtils.java
+@@ -89,6 +89,7 @@ import org.chromium.ui.base.DeviceFormFactor;
+ import org.chromium.ui.base.MimeTypeUtils;
+ import org.chromium.ui.widget.Toast;
+ import org.chromium.url.GURL;
++import org.chromium.chrome.browser.user_scripts.UserScriptsUtils;
+ 
+ import java.io.File;
+ import java.util.Locale;
+@@ -487,6 +488,12 @@ public class DownloadUtils {
+      * @param req The {@link DownloadOpenRequest} with all open-file parameters.
+      */
+     private static boolean doOpenFile(DownloadOpenRequest req) {
++        if (UserScriptsUtils.getInstance().openFile(
++                req.mFilePath, req.mMimeType, req.mDownloadGuid,
++                req.mOriginalUrl, req.mReferrer,
++                getUriForItem(req.mFilePath))) {
++            return true;
++        }
+         DownloadManagerService service = DownloadManagerService.getDownloadManagerService();
+         boolean isIncognito = OtrProfileId.isOffTheRecord(req.mOtrProfileId);
+ 
+diff --git a/chrome/android/java/src/org/chromium/chrome/browser/init/ProcessInitializationHandler.java b/chrome/android/java/src/org/chromium/chrome/browser/init/ProcessInitializationHandler.java
+--- a/chrome/android/java/src/org/chromium/chrome/browser/init/ProcessInitializationHandler.java
++++ b/chrome/android/java/src/org/chromium/chrome/browser/init/ProcessInitializationHandler.java
+@@ -153,6 +153,8 @@ import java.util.Date;
+ import java.util.List;
+ import java.util.Locale;
+ 
++import org.chromium.chrome.browser.user_scripts.UserScriptsUtils;
++
+ /**
+  * Handles the initialization dependencies of the browser process. This is meant to handle the
+  * initialization that is not tied to any particular Activity, and the logic that should only be
+@@ -639,6 +641,8 @@ public class ProcessInitializationHandler {
+ 
+                     initAsyncDiskTask();
+ 
++                    UserScriptsUtils.Initialize();
++
+                     AfterStartupTaskUtils.setStartupComplete();
+ 
+                     PartnerBrowserCustomizations.getInstance()
+diff --git a/components/user_scripts/android/java/res/layout/accept_script_item.xml b/components/user_scripts/android/java/res/layout/accept_script_item.xml
+new file mode 100644
+--- /dev/null
++++ b/components/user_scripts/android/java/res/layout/accept_script_item.xml
+@@ -0,0 +1,160 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright 2017 The Chromium Authors. All rights reserved.
++     Use of this source code is governed by a BSD-style license that can be
++     found in the LICENSE file. -->
++
++<LinearLayout
++    xmlns:android="http://schemas.android.com/apk/res/android"
++    xmlns:app="http://schemas.android.com/apk/res-auto"
++    xmlns:tools="http://schemas.android.com/tools"
++    android:layout_width="match_parent"
++    android:layout_height="wrap_content"
++    android:orientation="vertical"
++    android:layout_gravity="center_vertical" >
++
++    <LinearLayout
++        android:layout_marginStart="0dp"
++        android:paddingStart="@dimen/draggable_list_item_padding"
++        android:paddingEnd="@dimen/draggable_list_item_padding"
++        style="@style/ListItemContainer">
++
++        <Switch
++            android:id="@+id/switch_widget"
++            android:layout_width="wrap_content"
++            android:layout_height="wrap_content"
++            android:paddingEnd="15dp"
++            android:focusable="false"
++            android:background="@null" />
++
++        <LinearLayout
++            android:layout_width="0dp"
++            android:layout_height="wrap_content"
++            android:layout_weight="1"
++            android:orientation="vertical"
++            android:layout_gravity="center_vertical" >
++
++            <TextView
++                android:id="@+id/title"
++                android:layout_width="match_parent"
++                android:layout_height="wrap_content"
++                style="@style/PreferenceTitle" />
++
++            <TextView
++                android:id="@+id/description"
++                android:layout_width="match_parent"
++                android:layout_height="wrap_content"
++                style="@style/PreferenceSummary" />
++
++            <LinearLayout
++                android:layout_width="match_parent"
++                android:layout_height="wrap_content"
++                android:layout_weight="1"
++                android:paddingTop="5dp"
++                android:layout_gravity="center_vertical" >
++
++               <TextView
++                    android:layout_width="wrap_content"
++                    android:layout_height="wrap_content"
++                    android:paddingEnd="5dp"
++                    style="@style/PreferenceSummary"
++                    android:text="@string/scripts_item_version"
++                    android:textStyle="bold" />
++
++                <TextView
++                    android:id="@+id/version"
++                    android:layout_width="match_parent"
++                    android:layout_height="wrap_content"
++                    style="@style/PreferenceSummary" />
++
++            </LinearLayout>
++
++            <LinearLayout
++                android:layout_width="match_parent"
++                android:layout_height="wrap_content"
++                android:layout_weight="1"
++                android:layout_gravity="center_vertical" >
++
++               <TextView
++                    android:layout_width="wrap_content"
++                    android:layout_height="wrap_content"
++                    android:paddingEnd="5dp"
++                    style="@style/PreferenceSummary"
++                    android:text="@string/scripts_item_filename"
++                    android:textStyle="bold" />
++
++                <TextView
++                    android:id="@+id/file"
++                    android:layout_width="match_parent"
++                    android:layout_height="wrap_content"
++                    style="@style/PreferenceSummary" />
++
++            </LinearLayout>
++
++            <LinearLayout
++                android:id="@+id/url_container"
++                android:layout_width="match_parent"
++                android:layout_height="wrap_content"
++                android:layout_weight="1"
++                android:layout_gravity="center_vertical" >
++
++               <TextView
++                    android:layout_width="wrap_content"
++                    android:layout_height="wrap_content"
++                    android:paddingEnd="5dp"
++                    style="@style/PreferenceSummary"
++                    android:text="@string/scripts_item_url"
++                    android:textStyle="bold" />
++
++                <TextView
++                    android:id="@+id/url"
++                    android:layout_width="match_parent"
++                    android:layout_height="wrap_content"
++                    android:autoLink="web"
++                    android:focusable="true"
++                    android:linksClickable="true" />
++
++            </LinearLayout>
++
++        </LinearLayout>
++
++        <org.chromium.ui.listmenu.ListMenuButton
++            android:id="@+id/more"
++            android:layout_width="wrap_content"
++            android:layout_height="match_parent"
++            android:paddingStart="@dimen/default_list_row_padding"
++            android:paddingEnd="@dimen/default_list_row_padding"
++            android:background="@null"
++            android:src="@drawable/ic_more_vert_24dp"
++            app:menuMaxWidth="@dimen/pref_scripts_item_popup_width"
++            app:tint="@color/default_icon_color_tint_list"
++            tools:ignore="ContentDescription" />
++
++    </LinearLayout>
++
++    <LinearLayout
++        android:id="@+id/error_layout"
++        android:layout_marginStart="0dp"
++        android:paddingStart="@dimen/draggable_list_item_padding"
++        android:paddingEnd="2dp"
++        android:layout_width="match_parent"
++        android:layout_height="wrap_content"
++        style="@style/ListItemContainer">
++
++        <ImageView
++                android:id="@+id/icon"
++                android:layout_width="40dp"
++                android:layout_height="wrap_content"
++                android:paddingEnd="15dp"
++                android:adjustViewBounds="true"
++                android:importantForAccessibility="no"
++                app:srcCompat="@drawable/ic_error_outline_red_24dp"/>
++
++        <TextView
++            android:id="@+id/error"
++            android:layout_width="match_parent"
++            android:layout_height="wrap_content"
++            android:textColor="#F00"
++            style="@style/PreferenceSummary" />
++
++    </LinearLayout>
++</LinearLayout>
+diff --git a/components/user_scripts/android/java/res/layout/accept_script_list.xml b/components/user_scripts/android/java/res/layout/accept_script_list.xml
+new file mode 100644
+--- /dev/null
++++ b/components/user_scripts/android/java/res/layout/accept_script_list.xml
+@@ -0,0 +1,10 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright 2017 The Chromium Authors. All rights reserved.
++     Use of this source code is governed by a BSD-style license that can be
++     found in the LICENSE file. -->
++
++<androidx.recyclerview.widget.RecyclerView
++    xmlns:android="http://schemas.android.com/apk/res/android"
++    android:id="@+id/script_list"
++    android:layout_width="match_parent"
++    android:layout_height="wrap_content" />
+\ No newline at end of file
+diff --git a/components/user_scripts/android/java/res/layout/scripts_preference.xml b/components/user_scripts/android/java/res/layout/scripts_preference.xml
+new file mode 100644
+--- /dev/null
++++ b/components/user_scripts/android/java/res/layout/scripts_preference.xml
+@@ -0,0 +1,40 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright 2017 The Chromium Authors. All rights reserved.
++     Use of this source code is governed by a BSD-style license that can be
++     found in the LICENSE file. -->
++
++<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
++    android:id="@+id/accept_scripts_list_container"
++    style="@style/PreferenceLayout"
++    android:layout_width="match_parent"
++    android:layout_height="wrap_content"
++    android:paddingStart="0dp"
++    android:paddingEnd="0dp"
++    android:padding="0dp"
++    android:orientation="vertical" >
++
++    <TextView
++        android:layout_width="match_parent"
++        android:layout_height="wrap_content"
++        android:padding="@dimen/draggable_list_item_padding"
++        android:text="@string/scripts_list_description" />
++
++    <FrameLayout
++        android:id="@android:id/widget_frame"
++        android:layout_width="match_parent"
++        android:layout_height="wrap_content" />
++
++    <TextView
++        android:id="@+id/add_script"
++        android:layout_width="match_parent"
++        android:layout_height="wrap_content"
++        android:background="?attr/selectableItemBackground"
++        android:clickable="true"
++        android:gravity="center_vertical"
++        android:padding="@dimen/draggable_list_item_padding"
++        android:paddingStart="@dimen/pref_scripts_add_button_padding"
++        android:drawablePadding="@dimen/pref_scripts_add_button_padding"
++        android:text="@string/add_script"
++        style="@style/PreferenceTitle" />
++
++</LinearLayout>
+\ No newline at end of file
+diff --git a/components/user_scripts/android/java/res/values/dimens.xml b/components/user_scripts/android/java/res/values/dimens.xml
+new file mode 100755
+--- /dev/null
++++ b/components/user_scripts/android/java/res/values/dimens.xml
+@@ -0,0 +1,11 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright 2014 The Chromium Authors. All rights reserved.
++     Use of this source code is governed by a BSD-style license that can be
++     found in the LICENSE file. -->
++
++<resources xmlns:tools="http://schemas.android.com/tools">
++
++    <dimen name="pref_scripts_add_button_padding">24dp</dimen>
++    <dimen name="pref_scripts_item_popup_width">260dp</dimen>
++
++</resources>
+diff --git a/components/user_scripts/android/java/res/xml/userscripts_preferences.xml b/components/user_scripts/android/java/res/xml/userscripts_preferences.xml
+new file mode 100644
+--- /dev/null
++++ b/components/user_scripts/android/java/res/xml/userscripts_preferences.xml
+@@ -0,0 +1,34 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!--
++    This file is part of Bromite.
++
++    Bromite is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Bromite is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Bromite. If not, see <https://www.gnu.org/licenses/>.
++-->
++
++<PreferenceScreen
++    xmlns:android="http://schemas.android.com/apk/res/android"
++    xmlns:app="http://schemas.android.com/apk/res-auto">
++
++    <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
++        android:key="enabled_switch"
++        android:title="@string/option_userscript_flag"
++        android:summaryOn="@string/option_userscript_flag_on"
++        android:summaryOff="@string/option_userscript_flag_off" />
++
++    <org.chromium.components.user_scripts.ScriptListPreference
++        android:key="script_list"
++        android:layout="@layout/scripts_preference"
++        android:widgetLayout="@layout/accept_script_list" />
++
++</PreferenceScreen>
+diff --git a/components/user_scripts/android/java/src/org/chromium/chrome/browser/user_scripts/UserScriptsUtils.java b/components/user_scripts/android/java/src/org/chromium/chrome/browser/user_scripts/UserScriptsUtils.java
+new file mode 100755
+--- /dev/null
++++ b/components/user_scripts/android/java/src/org/chromium/chrome/browser/user_scripts/UserScriptsUtils.java
+@@ -0,0 +1,88 @@
++/*
++    This file is part of Bromite.
++
++    Bromite is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Bromite is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Bromite. If not, see <https://www.gnu.org/licenses/>.
++*/
++
++package org.chromium.chrome.browser.user_scripts;
++
++import android.content.Context;
++import android.content.Intent;
++import android.provider.Browser;
++import android.provider.MediaStore;
++import android.net.Uri;
++
++import org.chromium.base.ContextUtils;
++import org.chromium.base.ContentUriUtils;
++import org.chromium.base.IntentUtils;
++
++import org.chromium.chrome.browser.IntentHandler;
++import org.chromium.chrome.browser.settings.SettingsNavigationFactory;
++import org.chromium.components.browser_ui.settings.SettingsNavigation;
++
++import org.chromium.components.user_scripts.UserScriptsPreferences;
++import org.chromium.components.user_scripts.UserScriptsBridge;
++import org.chromium.components.user_scripts.IUserScriptsUtils;
++
++public class UserScriptsUtils implements IUserScriptsUtils
++{
++    private static UserScriptsUtils instance;
++
++    private UserScriptsUtils() {}
++
++    public static void Initialize() {
++        instance = new UserScriptsUtils();
++        UserScriptsBridge.registerUtils(instance);
++    }
++
++    public static UserScriptsUtils getInstance() {
++        if (instance == null) Initialize();
++        return instance;
++    }
++
++    public boolean openFile(String filePath, String mimeType, String downloadGuid,
++                            String originalUrl, String referrer, Uri contentUri) {
++        if (UserScriptsBridge.isEnabled() == false) return false;
++
++        Context context = ContextUtils.getApplicationContext();
++
++        String visibleName = filePath;
++        if (ContentUriUtils.isContentUri(visibleName)) {
++            visibleName = ContentUriUtils.getDisplayName(contentUri, context,
++                MediaStore.MediaColumns.DISPLAY_NAME);
++        }
++
++        if (visibleName.toUpperCase().endsWith(".USER.JS") == false) return false;
++
++        SettingsNavigation settingsNavigation =
++                    SettingsNavigationFactory.createSettingsNavigation();
++        Intent intent = settingsNavigation.createSettingsIntent(
++                context, UserScriptsPreferences.class,
++                UserScriptsPreferences.createFragmentArgsForInstall(filePath));
++        IntentUtils.safeStartActivity(context, intent);
++
++        return true;
++    }
++
++    public void openSourceFile(String scriptKey) {
++        Context context = ContextUtils.getApplicationContext();
++
++        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("chrome://user-scripts/?key=" + scriptKey));
++        intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
++        intent.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
++        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
++        intent.setPackage(context.getPackageName());
++        IntentHandler.startChromeLauncherActivityForTrustedIntent(intent);
++    }
++}
+diff --git a/components/user_scripts/android/java/src/org/chromium/components/user_scripts/FragmentWindowAndroid.java b/components/user_scripts/android/java/src/org/chromium/components/user_scripts/FragmentWindowAndroid.java
+new file mode 100644
+--- /dev/null
++++ b/components/user_scripts/android/java/src/org/chromium/components/user_scripts/FragmentWindowAndroid.java
+@@ -0,0 +1,96 @@
++// Copyright 2019 The Chromium Authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++package org.chromium.components.user_scripts;
++
++import android.annotation.TargetApi;
++import android.app.Activity;
++import android.content.Context;
++import android.content.Intent;
++import android.content.IntentSender;
++import android.os.Build;
++import android.view.View;
++
++import androidx.fragment.app.Fragment;
++import androidx.annotation.Nullable;
++
++import org.chromium.ui.base.ActivityKeyboardVisibilityDelegate;
++import org.chromium.ui.base.ImmutableWeakReference;
++import org.chromium.ui.base.IntentRequestTracker;
++import org.chromium.ui.base.IntentRequestTracker.Delegate;
++import org.chromium.ui.base.WindowAndroid;
++import org.chromium.ui.insets.InsetObserver;
++
++import java.lang.ref.WeakReference;
++
++import org.chromium.ui.permissions.ActivityAndroidPermissionDelegate;
++
++/**
++ * Implements intent sending for a fragment based window. This should be created when
++ * onAttach() is called on the fragment, and destroyed when onDetach() is called.
++ */
++public class FragmentWindowAndroid extends WindowAndroid {
++    private Fragment mFragment;
++
++    private static class TrackerDelegateImpl implements Delegate {
++        private final Fragment mFragment;
++        // This WeakReference is purely to avoid gc churn of creating a new WeakReference in
++        // every getActivity call. It is not needed for correctness.
++        private ImmutableWeakReference<Activity> mActivityWeakRefHolder;
++
++        /**
++         * Create an instance of delegate for the given fragment that will own the
++         * IntentRequestTracker.
++         * @param fragment The fragment that owns the IntentRequestTracker.
++         */
++        private TrackerDelegateImpl(Fragment fragment) {
++            mFragment = fragment;
++        }
++
++        @Override
++        public boolean startActivityForResult(Intent intent, int requestCode) {
++            mFragment.startActivityForResult(intent, requestCode, null);
++            return true;
++        }
++
++        @Override
++        public boolean startIntentSenderForResult(IntentSender intentSender, int requestCode) {
++            try {
++                mFragment.startIntentSenderForResult(
++                        intentSender, requestCode, new Intent(), 0, 0, 0, null);
++            } catch (IntentSender.SendIntentException e) {
++                return false;
++            }
++            return true;
++        }
++
++        @Override
++        public void finishActivity(int requestCode) {
++            Activity activity = getActivity().get();
++            if (activity == null) return;
++            activity.finishActivity(requestCode);
++        }
++
++        @Override
++        public final WeakReference<Activity> getActivity() {
++            if (mActivityWeakRefHolder == null
++                    || mActivityWeakRefHolder.get() != mFragment.getActivity()) {
++                mActivityWeakRefHolder = new ImmutableWeakReference<>(mFragment.getActivity());
++            }
++            return mActivityWeakRefHolder;
++        }
++    }
++
++    FragmentWindowAndroid(Context context, Fragment fragment, @Nullable InsetObserver insetObserver) {
++        super(context,
++              /*activityTopResumedSupported*/ false,
++              IntentRequestTracker.createFromDelegate(new TrackerDelegateImpl(fragment)),
++              insetObserver,
++              /* trackOcclusion= */ true);
++        mFragment = fragment;
++
++        setKeyboardDelegate(new ActivityKeyboardVisibilityDelegate(getActivity()));
++        setAndroidPermissionDelegate(new ActivityAndroidPermissionDelegate(getActivity()));
++    }
++}
+diff --git a/components/user_scripts/android/java/src/org/chromium/components/user_scripts/IUserScriptsUtils.java b/components/user_scripts/android/java/src/org/chromium/components/user_scripts/IUserScriptsUtils.java
+new file mode 100644
+--- /dev/null
++++ b/components/user_scripts/android/java/src/org/chromium/components/user_scripts/IUserScriptsUtils.java
+@@ -0,0 +1,22 @@
++/*
++    This file is part of Bromite.
++
++    Bromite is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Bromite is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Bromite. If not, see <https://www.gnu.org/licenses/>.
++*/
++
++package org.chromium.components.user_scripts;
++
++public interface IUserScriptsUtils {
++    public void openSourceFile(String scriptKey);
++}
+\ No newline at end of file
+diff --git a/components/user_scripts/android/java/src/org/chromium/components/user_scripts/ScriptInfo.java b/components/user_scripts/android/java/src/org/chromium/components/user_scripts/ScriptInfo.java
+new file mode 100644
+--- /dev/null
++++ b/components/user_scripts/android/java/src/org/chromium/components/user_scripts/ScriptInfo.java
+@@ -0,0 +1,37 @@
++/*
++    This file is part of Bromite.
++
++    Bromite is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Bromite is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Bromite. If not, see <https://www.gnu.org/licenses/>.
++*/
++
++package org.chromium.components.user_scripts;
++
++import java.time.LocalDateTime;
++
++public class ScriptInfo {
++    public String Key;
++    public String Name;
++    public String Description;
++    public String Version;
++    public String FilePath;
++    public String UrlSource;
++
++    public boolean Enabled;
++    public LocalDateTime InstallTime;
++
++    public String ParserError;
++    public boolean ForceDisabled;
++
++    public ScriptInfo() {}
++}
+diff --git a/components/user_scripts/android/java/src/org/chromium/components/user_scripts/ScriptListBaseAdapter.java b/components/user_scripts/android/java/src/org/chromium/components/user_scripts/ScriptListBaseAdapter.java
+new file mode 100644
+--- /dev/null
++++ b/components/user_scripts/android/java/src/org/chromium/components/user_scripts/ScriptListBaseAdapter.java
+@@ -0,0 +1,162 @@
++/*
++    This file is part of Bromite.
++
++    Bromite is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Bromite is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Bromite. If not, see <https://www.gnu.org/licenses/>.
++*/
++
++package org.chromium.components.user_scripts;
++
++import android.content.Context;
++import android.view.LayoutInflater;
++import android.view.MotionEvent;
++import android.view.View;
++import android.view.ViewGroup;
++import android.view.accessibility.AccessibilityManager;
++import android.view.accessibility.AccessibilityManager.AccessibilityStateChangeListener;
++import android.widget.ImageView;
++import android.widget.TextView;
++import android.widget.Switch;
++import android.widget.CompoundButton;
++import android.widget.LinearLayout;
++
++import androidx.annotation.DrawableRes;
++import androidx.annotation.NonNull;
++import androidx.core.view.ViewCompat;
++import androidx.recyclerview.widget.RecyclerView.ViewHolder;
++
++import org.chromium.components.browser_ui.widget.dragreorder.DragReorderableListAdapter;
++import org.chromium.components.browser_ui.widget.dragreorder.DragStateDelegate;
++import org.chromium.ui.listmenu.ListMenuButton;
++import org.chromium.ui.listmenu.ListMenuDelegate;
++
++import java.util.ArrayList;
++import java.util.List;
++
++public class ScriptListBaseAdapter extends DragReorderableListAdapter<ScriptInfo> {
++
++    class ItemClickListener {
++        void onScriptOnOff(boolean Enabled) {}
++        void onScriptClicked() {}
++    }
++
++    static class ScriptInfoRowViewHolder extends ViewHolder {
++        private TextView mTitle;
++        private TextView mDescription;
++        private TextView mVersion;
++        private TextView mFile;
++        private TextView mUrl;
++        private TextView mError;
++        private Switch mSwitch;
++        private ImageView mIcon;
++        private LinearLayout mErrorLayout;
++        private LinearLayout mUrlContainer;
++
++        private ListMenuButton mMoreButton;
++
++        private CompoundButton.OnCheckedChangeListener mOnOffListener;
++
++        ScriptInfoRowViewHolder(View view) {
++            super(view);
++
++            mSwitch = view.findViewById(R.id.switch_widget);
++            mTitle = view.findViewById(R.id.title);
++            mDescription = view.findViewById(R.id.description);
++            mVersion = view.findViewById(R.id.version);
++            mFile = view.findViewById(R.id.file);
++            mUrl = view.findViewById(R.id.url);
++            mUrlContainer = view.findViewById(R.id.url_container);
++            mError = view.findViewById(R.id.error);
++            mIcon = view.findViewById(R.id.icon);
++            mErrorLayout = view.findViewById(R.id.error_layout);
++
++            mMoreButton = view.findViewById(R.id.more);
++        }
++
++        protected void updateScriptInfo(ScriptInfo item) {
++            mSwitch.setOnCheckedChangeListener(null);
++            mSwitch.setChecked(item.Enabled);
++            mSwitch.setOnCheckedChangeListener(mOnOffListener);
++
++            mSwitch.setEnabled(true);
++            if (item.ForceDisabled) {
++                mSwitch.setEnabled(false);
++            }
++
++            mTitle.setText(item.Name);
++            mDescription.setText(item.Description);
++            mVersion.setText(item.Version);
++            mFile.setText(item.Key);
++            mUrl.setText(item.UrlSource);
++            mError.setText(item.ParserError);
++
++            mUrl.setVisibility(View.VISIBLE);
++            if (item.UrlSource == null || item.UrlSource.isEmpty()) {
++                mUrlContainer.setVisibility(View.GONE);
++            }
++            mErrorLayout.setVisibility(View.VISIBLE);
++            if (item.ParserError == null || item.ParserError.isEmpty()) {
++                mErrorLayout.setVisibility(View.GONE);
++            }
++        }
++
++        void setMenuButtonDelegate(@NonNull ListMenuDelegate delegate) {
++            mMoreButton.setVisibility(View.VISIBLE);
++            mMoreButton.setDelegate(delegate);
++            // Set item row end padding 0 when MenuButton is visible.
++            ViewCompat.setPaddingRelative(itemView, ViewCompat.getPaddingStart(itemView),
++                    itemView.getPaddingTop(), 0, itemView.getPaddingBottom());
++        }
++
++        void setItemListener(@NonNull ItemClickListener listener) {
++            mOnOffListener = (buttonView, isChecked) -> listener.onScriptOnOff(isChecked);
++            mSwitch.setOnCheckedChangeListener(mOnOffListener);
++            itemView.setOnClickListener(view -> listener.onScriptClicked());
++        }
++    }
++
++    ScriptListBaseAdapter(Context context) {
++        super(context);
++    }
++
++    @Override
++    public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
++        View row = LayoutInflater.from(viewGroup.getContext())
++                           .inflate(R.layout.accept_script_item, viewGroup, false);
++        return new ScriptInfoRowViewHolder(row);
++    }
++
++    @Override
++    public void onBindViewHolder(ViewHolder viewHolder, int i) {
++        ((ScriptInfoRowViewHolder) viewHolder).updateScriptInfo(mItems.get(i));
++    }
++
++    void setDisplayedScriptInfo(List<ScriptInfo> values) {
++        mItems = new ArrayList<>(values);
++        notifyDataSetChanged();
++    }
++
++    @Override
++    protected void setOrder(List<ScriptInfo> order) {
++    }
++
++    @Override
++    protected boolean isActivelyDraggable(ViewHolder viewHolder) {
++        return isPassivelyDraggable(viewHolder);
++    }
++
++    @Override
++    protected boolean isPassivelyDraggable(ViewHolder viewHolder) {
++        return viewHolder instanceof ScriptInfoRowViewHolder;
++    }
++}
+diff --git a/components/user_scripts/android/java/src/org/chromium/components/user_scripts/ScriptListPreference.java b/components/user_scripts/android/java/src/org/chromium/components/user_scripts/ScriptListPreference.java
+new file mode 100644
+--- /dev/null
++++ b/components/user_scripts/android/java/src/org/chromium/components/user_scripts/ScriptListPreference.java
+@@ -0,0 +1,171 @@
++/*
++    This file is part of Bromite.
++
++    Bromite is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Bromite is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Bromite. If not, see <https://www.gnu.org/licenses/>.
++*/
++
++package org.chromium.components.user_scripts;
++
++import android.content.Context;
++import android.content.Intent;
++import android.provider.Browser;
++import android.net.Uri;
++import android.util.AttributeSet;
++import android.widget.TextView;
++import android.widget.Toast;
++
++import androidx.preference.Preference;
++import androidx.preference.PreferenceViewHolder;
++import androidx.recyclerview.widget.DividerItemDecoration;
++import androidx.recyclerview.widget.LinearLayoutManager;
++import androidx.recyclerview.widget.RecyclerView;
++import androidx.recyclerview.widget.RecyclerView.ViewHolder;
++
++import org.chromium.ui.base.WindowAndroid;
++import org.chromium.ui.base.ActivityWindowAndroid;
++
++import org.chromium.base.ApplicationStatus;
++import org.chromium.base.ContextUtils;
++import org.chromium.components.browser_ui.widget.ListItemBuilder;
++import org.chromium.components.browser_ui.widget.TintedDrawable;
++import org.chromium.components.browser_ui.widget.BrowserUiListMenuUtils;
++import org.chromium.ui.listmenu.BasicListMenu;
++import org.chromium.ui.listmenu.ListMenu;
++import org.chromium.ui.listmenu.ListMenuItemProperties;
++import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
++
++import org.chromium.components.user_scripts.ScriptListBaseAdapter;
++import org.chromium.components.user_scripts.FragmentWindowAndroid;
++
++import java.util.List;
++
++public class ScriptListPreference extends Preference {
++    private static class ScriptListAdapter
++            extends ScriptListBaseAdapter {
++        private final Context mContext;
++
++        ScriptListAdapter(Context context) {
++            super(context);
++            mContext = context;
++        }
++
++        @Override
++        public void onBindViewHolder(ViewHolder holder, int position) {
++            super.onBindViewHolder(holder, position);
++
++            final ScriptInfo info = getItemByPosition(position);
++
++            ModelList menuItems = new ModelList();
++
++            menuItems.add(new ListItemBuilder().withTitleRes(R.string.remove).build());
++            menuItems.add(new ListItemBuilder().withTitleRes(R.string.scripts_view_source)
++                    .withEnabled(info.ParserError == null || info.ParserError.isEmpty())
++                    .build());
++
++            ListMenu.Delegate delegate = (model, view) -> {
++                int textId = model.get(ListMenuItemProperties.TITLE_ID);
++                if (textId == R.string.remove) {
++                    UserScriptsBridge.RemoveScript(info.Key);
++                } else if (textId == R.string.scripts_view_source) {
++                    UserScriptsBridge.getUtils().openSourceFile(info.Key);
++                }
++            };
++            ((ScriptInfoRowViewHolder) holder)
++                    .setMenuButtonDelegate(() -> BrowserUiListMenuUtils.getBasicListMenu(mContext, menuItems, delegate));
++            ((ScriptInfoRowViewHolder) holder)
++                    .setItemListener(new ScriptListBaseAdapter.ItemClickListener() {
++                        @Override
++                        public void onScriptOnOff(boolean Enabled) {
++                            UserScriptsBridge.SetScriptEnabled(info.Key, Enabled);
++                        }
++
++                        @Override
++                        public void onScriptClicked() {}
++                    });
++        }
++
++        // @Override
++        public void onDataUpdated(boolean enabled) {
++            List<ScriptInfo> list = UserScriptsBridge.getUserScriptItems();
++            if (enabled == false) {
++                for (ScriptInfo script : list) {
++                    script.ForceDisabled = true;
++                }
++            }
++            setDisplayedScriptInfo(list);
++        }
++    }
++
++    private TextView mAddButton;
++    private RecyclerView mRecyclerView;
++    private ScriptListAdapter mAdapter;
++    private FragmentWindowAndroid mWindowAndroid;
++
++    public ScriptListPreference(Context context, AttributeSet attrs) {
++        super(context, attrs);
++        mAdapter = new ScriptListAdapter(context);
++    }
++
++    public void setWindowAndroid(FragmentWindowAndroid windowAndroid) {
++        mWindowAndroid = windowAndroid;
++    }
++
++    @Override
++    public void onBindViewHolder(PreferenceViewHolder holder) {
++        super.onBindViewHolder(holder);
++
++        mAddButton = (TextView) holder.findViewById(R.id.add_script);
++        mAddButton.setCompoundDrawablesRelativeWithIntrinsicBounds(
++                TintedDrawable.constructTintedDrawable(
++                        getContext(), R.drawable.plus, R.color.default_control_color_active_baseline),
++                null, null, null);
++        mAddButton.setOnClickListener(view -> {
++            UserScriptsBridge.SelectAndAddScriptFromFile(mWindowAndroid);
++        });
++
++        mRecyclerView = (RecyclerView) holder.findViewById(R.id.script_list);
++        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
++        mRecyclerView.setLayoutManager(layoutManager);
++        mRecyclerView.addItemDecoration(
++                new DividerItemDecoration(getContext(), layoutManager.getOrientation()));
++        mRecyclerView.setEnabled(this.isEnabled());
++        UserScriptsBridge.RegisterLoadCallback(this);
++
++        // We do not want the RecyclerView to be announced by screen readers every time
++        // the view is bound.
++        if (mRecyclerView.getAdapter() != mAdapter) {
++            mRecyclerView.setAdapter(mAdapter);
++            // Initialize script list.
++            mAdapter.onDataUpdated(this.isEnabled());
++        }
++    }
++
++    @Override
++    public void setEnabled (boolean enabled) {
++        super.setEnabled(enabled);
++        if (mRecyclerView != null) mRecyclerView.setEnabled(enabled);
++        NotifyScriptsChanged();
++    }
++
++    public void NotifyScriptsChanged() {
++        mAdapter.onDataUpdated(this.isEnabled());
++    }
++
++    public void OnUserScriptLoaded(boolean result, String error) {
++        if (result == false) {
++            Toast toast = Toast.makeText(getContext(), error, Toast.LENGTH_LONG);
++            toast.show();
++        }
++    }
++}
+diff --git a/components/user_scripts/android/java/src/org/chromium/components/user_scripts/UserScriptsBridge.java b/components/user_scripts/android/java/src/org/chromium/components/user_scripts/UserScriptsBridge.java
+new file mode 100644
+--- /dev/null
++++ b/components/user_scripts/android/java/src/org/chromium/components/user_scripts/UserScriptsBridge.java
+@@ -0,0 +1,212 @@
++/*
++    This file is part of Bromite.
++
++    Bromite is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Bromite is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Bromite. If not, see <https://www.gnu.org/licenses/>.
++*/
++
++package org.chromium.components.user_scripts;
++
++import java.util.ArrayList;
++import java.util.List;
++import java.lang.ref.WeakReference;
++
++import org.json.JSONArray;
++import org.json.JSONException;
++import org.json.JSONObject;
++
++import android.content.Context;
++import android.content.Intent;
++import android.net.Uri;
++import android.provider.MediaStore;
++import androidx.annotation.Nullable;
++import android.app.AlertDialog;
++import android.content.DialogInterface;
++
++import org.jni_zero.CalledByNative;
++import org.jni_zero.JNINamespace;
++import org.jni_zero.NativeMethods;
++import org.chromium.base.ContentUriUtils;
++import org.chromium.base.Log;
++import org.chromium.ui.base.WindowAndroid;
++
++import org.chromium.components.user_scripts.ScriptListPreference;
++import org.chromium.components.user_scripts.IUserScriptsUtils;
++
++@JNINamespace("user_scripts")
++public class UserScriptsBridge {
++    private static final String TAG = "UserScript";
++
++    static WeakReference<ScriptListPreference> observer;
++
++    private static IUserScriptsUtils utilInstance;
++
++    public static void registerUtils(IUserScriptsUtils instance) {
++        utilInstance = instance;
++    }
++
++    public static IUserScriptsUtils getUtils() {
++        return utilInstance;
++    }
++
++    public static boolean isEnabled() {
++        return UserScriptsBridgeJni.get().isEnabled();
++    }
++
++    public static void setEnabled(boolean enabled) {
++        UserScriptsBridgeJni.get().setEnabled(enabled);
++    }
++
++    public static void RemoveScript(String key) {
++        UserScriptsBridgeJni.get().removeScript(key);
++    }
++
++    public static void SetScriptEnabled(String key,
++                                        boolean enabled) {
++        UserScriptsBridgeJni.get().setScriptEnabled(key, enabled);
++    }
++
++    public static void Reload() {
++        UserScriptsBridgeJni.get().reload();
++    }
++
++    public static void SelectAndAddScriptFromFile(WindowAndroid window) {
++        Context context = window.getContext().get();
++
++        Intent fileSelector = new Intent(Intent.ACTION_OPEN_DOCUMENT);
++        fileSelector.addCategory(Intent.CATEGORY_OPENABLE);
++        fileSelector.setType("*/*");
++        fileSelector.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
++
++        window.showIntent(fileSelector,
++            new WindowAndroid.IntentCallback() {
++                @Override
++                public void onIntentCompleted(int resultCode, Intent data) {
++                    if (data == null) return;
++                    Uri filePath = data.getData();
++                    TryToInstall(context, filePath.toString());
++                }
++            },
++            null);
++    }
++
++    public static void TryToInstall(Context context, String ScriptFullPath) {
++        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
++            @Override
++            public void onClick(DialogInterface dialog, int which) {
++                switch (which){
++                    case DialogInterface.BUTTON_POSITIVE:
++                        UserScriptsBridgeJni.get().tryToInstall(ScriptFullPath);
++                        break;
++
++                    case DialogInterface.BUTTON_NEGATIVE:
++                        break;
++                }
++            }
++        };
++
++        String scriptName = ScriptFullPath;
++        if (ContentUriUtils.isContentUri(scriptName)) {
++            scriptName = ContentUriUtils.getFilePathFromContentUri(Uri.parse(scriptName));
++            if (scriptName == null) {
++                // fallback to content uri name if fail
++                scriptName = ContentUriUtils.getDisplayName(Uri.parse(ScriptFullPath), context,
++                    MediaStore.MediaColumns.DISPLAY_NAME);
++            }
++        }
++
++        String message = context.getString(R.string.ask_to_install, scriptName);
++
++        AlertDialog.Builder builder = new AlertDialog.Builder(context);
++        builder.setMessage(message)
++            .setPositiveButton(context.getString(R.string.ok), dialogClickListener)
++            .setNegativeButton(context.getString(R.string.no), dialogClickListener)
++            .show();
++    }
++
++    public static List<ScriptInfo> getUserScriptItems() {
++        List<ScriptInfo> list = new ArrayList<>();
++        try {
++            String json = UserScriptsBridgeJni.get().getScriptsInfo();
++
++            JSONObject jsonObject = new JSONObject(json);
++
++            JSONArray scripts = jsonObject.names();
++            if (scripts != null) {
++                Log.i(TAG, "User Scripts Loaded: %s", json);
++                Log.i(TAG, "Totals scripts: %s", Integer.toString(scripts.length()));
++                for (int i = 0; i < scripts.length(); i++) {
++                    String key = (String) scripts.get(i);
++                    JSONObject script = jsonObject.getJSONObject(key);
++
++                    ScriptInfo si = new ScriptInfo();
++                    si.Key = key;
++                    list.add(si);
++
++                    if(script.has("name")) si.Name = script.getString("name");
++                    if(script.has("description")) si.Description = script.getString("description");
++                    if(script.has("version")) si.Version = script.getString("version");
++                    if(script.has("file_path")) si.FilePath = script.getString("file_path");
++                    if(script.has("url_source")) si.UrlSource = script.getString("url_source");
++                    if(script.has("parser_error")) si.ParserError = script.getString("parser_error");
++                    if(script.has("force_disabled")) si.ForceDisabled = script.getBoolean("force_disabled");;
++                    si.Enabled = script.getBoolean("enabled");
++                }
++            } else {
++                Log.i(TAG, "User Scripts list empty");
++            }
++        } catch (Exception e) {
++            Log.e(TAG, "User Scripts Load Error", e.toString());
++        }
++        return list;
++    }
++
++    public static void RegisterLoadCallback(ScriptListPreference caller) {
++        UserScriptsBridgeJni.get().registerLoadCallback();
++        observer = new WeakReference<ScriptListPreference>(caller);
++    }
++
++    @CalledByNative
++    private static void shouldRefreshUserScriptList() {
++        ScriptListPreference reference = observer.get();
++        if (reference != null) {
++            reference.NotifyScriptsChanged();
++        }
++    }
++
++    @CalledByNative
++    private static void onUserScriptLoaded(boolean result, String error) {
++        ScriptListPreference reference = observer.get();
++        if (reference != null) {
++            reference.OnUserScriptLoaded(result, error);
++        }
++    }
++
++    @NativeMethods
++    public interface Natives {
++        boolean isEnabled();
++        void setEnabled(boolean enabled);
++
++        String getScriptsInfo();
++
++        void removeScript(String scriptKey);
++        void setScriptEnabled(String scriptKey, boolean enabled);
++
++        void reload();
++        void selectAndAddScriptFromFile(WindowAndroid window);
++        void tryToInstall(String scriptFullPath);
++
++        void registerLoadCallback();
++    }
++
++}
+diff --git a/components/user_scripts/android/java/src/org/chromium/components/user_scripts/UserScriptsPreferences.java b/components/user_scripts/android/java/src/org/chromium/components/user_scripts/UserScriptsPreferences.java
+new file mode 100755
+--- /dev/null
++++ b/components/user_scripts/android/java/src/org/chromium/components/user_scripts/UserScriptsPreferences.java
+@@ -0,0 +1,122 @@
++/*
++    This file is part of Bromite.
++
++    Bromite is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Bromite is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Bromite. If not, see <https://www.gnu.org/licenses/>.
++*/
++
++package org.chromium.components.user_scripts;
++
++import android.app.Activity;
++import android.content.Context;
++import android.content.Intent;
++import android.os.Bundle;
++import android.provider.Browser;
++import android.net.Uri;
++import android.view.MenuItem;
++import android.view.View;
++
++import androidx.preference.Preference;
++import androidx.preference.PreferenceFragmentCompat;
++
++import org.chromium.base.Log;
++import org.chromium.ui.base.WindowAndroid;
++import org.chromium.ui.base.ActivityWindowAndroid;
++
++import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
++import org.chromium.components.browser_ui.settings.SettingsFragment;
++import org.chromium.components.browser_ui.settings.SettingsUtils;
++import org.chromium.components.browser_ui.settings.TextMessagePreference;
++
++import org.chromium.components.user_scripts.UserScriptsBridge;
++import org.chromium.components.user_scripts.FragmentWindowAndroid;
++
++public class UserScriptsPreferences
++        extends PreferenceFragmentCompat
++        implements SettingsUtils.ISupportHelpAndFeedback, SettingsFragment {
++
++    private static final String PREF_ENABLED_SWITCH = "enabled_switch";
++    private static final String PREF_SCRIPTLISTPREFERENCE = "script_list";
++
++    public static final String EXTRA_SCRIPT_FILE = "org.chromium.chrome.preferences.script_file";
++
++    private FragmentWindowAndroid mWindowAndroid;
++
++    @Override
++    public @AnimationType int getAnimationType() {
++        return AnimationType.PROPERTY;
++    }
++
++    @Override
++    public void onDestroy() {
++        if (mWindowAndroid != null) mWindowAndroid.destroy();
++        super.onDestroy();
++    }
++
++    @Override
++    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
++        getActivity().setTitle(R.string.prefs_userscripts_settings);
++        SettingsUtils.addPreferencesFromResource(this, R.xml.userscripts_preferences);
++
++        ChromeSwitchPreference enabledSwitch =
++                (ChromeSwitchPreference) findPreference(PREF_ENABLED_SWITCH);
++        ScriptListPreference listPreference =
++                (ScriptListPreference) findPreference(PREF_SCRIPTLISTPREFERENCE);
++
++        boolean enabled = UserScriptsBridge.isEnabled();
++        enabledSwitch.setChecked(enabled);
++        listPreference.setEnabled(enabled);
++        enabledSwitch.setOnPreferenceChangeListener((preference, newValue) -> {
++            UserScriptsBridge.setEnabled((boolean) newValue);
++            listPreference.setEnabled((boolean) newValue);
++            return true;
++        });
++
++        mWindowAndroid = new FragmentWindowAndroid(getContext(), this, /*InsetObserver*/ null);
++        listPreference.setWindowAndroid(mWindowAndroid);
++    }
++
++    @Override
++    public void onActivityResult(int requestCode, int resultCode, Intent data) {
++        // handle picker callback from SelectFileDialog
++        mWindowAndroid.getIntentRequestTracker().onActivityResult(requestCode, resultCode, data);
++    }
++
++    public void onHelpAndFeebackPressed() {
++        Context context = getContext();
++
++        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/bromite/bromite/wiki/UserScripts"));
++        // Let Chromium know that this intent is from Chromium, so that it does not close the app when
++        // the user presses 'back' button.
++        intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
++        intent.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
++        intent.setPackage(context.getPackageName());
++        context.startActivity(intent);
++    }
++
++    public static Bundle createFragmentArgsForInstall(String filePath) {
++        Bundle fragmentArgs = new Bundle();
++        fragmentArgs.putSerializable(EXTRA_SCRIPT_FILE, filePath);
++        return fragmentArgs;
++    }
++
++    @Override
++    public void onActivityCreated(Bundle savedInstanceState) {
++        super.onActivityCreated(savedInstanceState);
++
++        String scriptToInstall = (String)getArguments().getSerializable(EXTRA_SCRIPT_FILE);
++        if (scriptToInstall != null) {
++            UserScriptsBridge.TryToInstall(getContext(), scriptToInstall);
++        }
++    }
++}
+diff --git a/components/user_scripts/android/user_scripts_bridge.cc b/components/user_scripts/android/user_scripts_bridge.cc
+new file mode 100644
+--- /dev/null
++++ b/components/user_scripts/android/user_scripts_bridge.cc
+@@ -0,0 +1,174 @@
++/*
++    This file is part of Bromite.
++
++    Bromite is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Bromite is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Bromite. If not, see <https://www.gnu.org/licenses/>.
++*/
++
++#include <jni.h>
++#include <algorithm>
++#include <string>
++#include <vector>
++#include <sstream>
++#include <iterator>
++
++#include "base/android/callback_android.h"
++#include "base/android/jni_android.h"
++#include "base/android/jni_array.h"
++#include "base/android/jni_string.h"
++#include "base/android/scoped_java_ref.h"
++#include "ui/android/window_android.h"
++
++#include "components/user_scripts/android/user_scripts_jni_headers/UserScriptsBridge_jni.h"
++#include "../browser/userscripts_browser_client.h"
++#include "user_scripts_bridge.h"
++
++using base::android::AttachCurrentThread;
++using base::android::ConvertJavaStringToUTF8;
++using base::android::ConvertUTF16ToJavaString;
++using base::android::ConvertUTF8ToJavaString;
++using base::android::JavaRef;
++using base::android::ScopedJavaGlobalRef;
++using base::android::ScopedJavaLocalRef;
++using content::BrowserContext;
++
++namespace {
++
++user_scripts::UserScriptsBrowserClient* GetUserScriptsBrowserClient() {
++  return user_scripts::UserScriptsBrowserClient::GetInstance();
++}
++
++class CallbackObserver : public user_scripts::UserScriptLoader::Observer {
++  private:
++    void OnScriptsLoaded(user_scripts::UserScriptLoader* loader,
++                         content::BrowserContext* browser_context) override {
++        user_scripts::ShouldRefreshUserScriptList(base::android::AttachCurrentThread());
++    }
++
++    void OnUserScriptLoaded(user_scripts::UserScriptLoader* loader,
++                            bool result, const std::string& error) override {
++        user_scripts::OnUserScriptLoaded(base::android::AttachCurrentThread(),
++          result, error);
++    }
++
++    void OnUserScriptLoaderDestroyed(user_scripts::UserScriptLoader* loader) override {}
++};
++
++CallbackObserver* g_userscripts_loader_observer = NULL;
++
++}
++
++namespace user_scripts {
++
++static jboolean JNI_UserScriptsBridge_IsEnabled(
++                    JNIEnv* env) {
++  user_scripts::UserScriptsBrowserClient* client = GetUserScriptsBrowserClient();
++  if (client == NULL) return false;
++  return client->GetPrefs()->IsEnabled();
++}
++
++static void JNI_UserScriptsBridge_SetEnabled(
++                    JNIEnv* env,
++                    jboolean is_enabled) {
++  user_scripts::UserScriptsBrowserClient* client = GetUserScriptsBrowserClient();
++  if (client == NULL) return;
++  client->GetPrefs()->SetEnabled(is_enabled);
++  client->GetLoader()->StartLoad();
++}
++
++static base::android::ScopedJavaLocalRef<jstring> JNI_UserScriptsBridge_GetScriptsInfo(
++                    JNIEnv* env) {
++  user_scripts::UserScriptsBrowserClient* client = GetUserScriptsBrowserClient();
++  if (client == NULL) return ConvertUTF8ToJavaString(env, {});
++
++  std::string json = client->GetPrefs()->GetScriptsInfo();
++  return ConvertUTF8ToJavaString(env, json);
++}
++
++static void JNI_UserScriptsBridge_RemoveScript(
++                    JNIEnv* env,
++                    const JavaRef<jstring>& jscript_key) {
++  user_scripts::UserScriptsBrowserClient* client = GetUserScriptsBrowserClient();
++  if (client == NULL) return;
++
++  std::string script_key = base::android::ConvertJavaStringToUTF8(jscript_key);
++  client->GetLoader()->RemoveScript(script_key);
++}
++
++static void JNI_UserScriptsBridge_SetScriptEnabled(
++                    JNIEnv* env,
++                    const JavaRef<jstring>& jscript_key,
++                    jboolean is_enabled) {
++  user_scripts::UserScriptsBrowserClient* client = GetUserScriptsBrowserClient();
++  if (client == NULL) return;
++
++  std::string script_key = base::android::ConvertJavaStringToUTF8(jscript_key);
++  client->GetLoader()->SetScriptEnabled(script_key, is_enabled);
++}
++
++static void JNI_UserScriptsBridge_Reload(
++                    JNIEnv* env) {
++  user_scripts::UserScriptsBrowserClient* client = GetUserScriptsBrowserClient();
++  if (client == NULL) return;
++
++  client->GetLoader()->StartLoad();
++  user_scripts::ShouldRefreshUserScriptList(env);
++}
++
++static void JNI_UserScriptsBridge_SelectAndAddScriptFromFile(
++                    JNIEnv* env,
++                    const JavaRef<jobject>& jwindow_android) {
++  user_scripts::UserScriptsBrowserClient* client = GetUserScriptsBrowserClient();
++  if (client == NULL) return;
++
++  client->GetLoader()->SelectAndAddScriptFromFile(
++                    ui::WindowAndroid::FromJavaWindowAndroid(jwindow_android));
++}
++
++static void JNI_UserScriptsBridge_TryToInstall(JNIEnv* env,
++                         const JavaRef<jstring>& jscript_path) {
++  user_scripts::UserScriptsBrowserClient* client = GetUserScriptsBrowserClient();
++  if (client == NULL) return;
++
++  std::string script_path = base::android::ConvertJavaStringToUTF8(jscript_path);
++  base::FilePath path(script_path);
++
++  client->GetLoader()->TryToInstall(path);
++}
++
++static void JNI_UserScriptsBridge_RegisterLoadCallback(
++                    JNIEnv* env) {
++  user_scripts::UserScriptsBrowserClient* client = GetUserScriptsBrowserClient();
++  if (client == NULL) return;
++
++  if (g_userscripts_loader_observer == NULL) {
++    g_userscripts_loader_observer = new CallbackObserver();
++    client->GetLoader()->AddObserver(g_userscripts_loader_observer);
++  }
++}
++
++static void ShouldRefreshUserScriptList(JNIEnv* env) {
++  Java_UserScriptsBridge_shouldRefreshUserScriptList(env);
++}
++
++static void OnUserScriptLoaded(JNIEnv* env,
++              bool result, const std::string& error) {
++  base::android::ScopedJavaLocalRef<jstring> j_error =
++    base::android::ConvertUTF8ToJavaString(env, error);
++
++  Java_UserScriptsBridge_onUserScriptLoaded(env, result, j_error);
++}
++
++DEFINE_JNI(UserScriptsBridge)
++
++}
+diff --git a/components/user_scripts/android/user_scripts_bridge.h b/components/user_scripts/android/user_scripts_bridge.h
+new file mode 100644
+--- /dev/null
++++ b/components/user_scripts/android/user_scripts_bridge.h
+@@ -0,0 +1,31 @@
++/*
++    This file is part of Bromite.
++
++    Bromite is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Bromite is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Bromite. If not, see <https://www.gnu.org/licenses/>.
++*/
++
++#ifndef COMPONENTS_USERSCRIPS_HELPER_ANDROID_H_
++#define COMPONENTS_USERSCRIPS_HELPER_ANDROID_H_
++
++#include <jni.h>
++
++namespace user_scripts {
++
++static void ShouldRefreshUserScriptList(JNIEnv* env);
++static void OnUserScriptLoaded(JNIEnv* env,
++              bool result, const std::string& error);
++
++}  // namespace user_scripts
++
++#endif
+\ No newline at end of file
 --

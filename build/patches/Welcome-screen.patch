@@ -6,35 +6,31 @@ Allow toggling automatic updates
 
 License: GPL-3.0-only - https://spdx.org/licenses/GPL-3.0-only.html
 ---
- chrome/android/chrome_java_resources.gni      |   1 +
- chrome/android/chrome_java_sources.gni        |   2 +
- .../android/java/res/layout/fre_tosanduma.xml | 160 +++++++++
- chrome/android/java/res/values/dimens.xml     |  11 +
- chrome/android/java/res/values/styles.xml     |  24 ++
- .../DefaultSearchEngineFirstRunFragment.java  |   3 -
- .../browser/firstrun/FirstRunActivity.java    |  47 +--
- .../firstrun/FirstRunFlowSequencer.java       |  61 +---
- .../browser/firstrun/FirstRunFragment.java    |   3 +
- .../browser/firstrun/FirstRunUtils.java       |   1 +
- .../firstrun/ToSAndUMAFirstRunFragment.java   | 321 +++++++++++++++++
- .../firstrun/TosAndUmaFragmentView.java       | 336 ++++++++++++++++++
- .../signin/AppRestrictionSupplier.java        |   4 +
- .../signin/ChildAccountStatusSupplier.java    |   4 +
- ...creenSigninAndHistorySyncActivityBase.java |   6 +-
- .../browser/locale/LocaleManagerDelegate.java |   5 +-
- .../Welcome-screen.grdp                       |  27 ++
+ chrome/android/chrome_java_resources.gni           |    1 
+ chrome/android/chrome_java_sources.gni             |    2 
+ .../Welcome-screen.grdp                            |   27 ++
+ chrome/android/java/res/layout/fre_tosanduma.xml   |  160 ++++++++++
+ chrome/android/java/res/values/dimens.xml          |   11 +
+ chrome/android/java/res/values/styles.xml          |   24 +
+ .../DefaultSearchEngineFirstRunFragment.java       |    3 
+ .../chrome/browser/firstrun/FirstRunActivity.java  |   47 +--
+ .../browser/firstrun/FirstRunFlowSequencer.java    |   61 +---
+ .../chrome/browser/firstrun/FirstRunFragment.java  |    3 
+ .../chrome/browser/firstrun/FirstRunUtils.java     |    1 
+ .../firstrun/ToSAndUMAFirstRunFragment.java        |  321 +++++++++++++++++++
+ .../browser/firstrun/TosAndUmaFragmentView.java    |  336 ++++++++++++++++++++
+ .../browser/signin/AppRestrictionSupplier.java     |    4 
+ .../browser/signin/ChildAccountStatusSupplier.java |    4 
+ ...FullscreenSigninAndHistorySyncActivityBase.java |    6 
+ .../browser/locale/LocaleManagerDelegate.java      |    5 
  17 files changed, 926 insertions(+), 90 deletions(-)
- create mode 100644 chrome/android/java/res/layout/fre_tosanduma.xml
- create mode 100644 chrome/android/java/src/org/chromium/chrome/browser/firstrun/ToSAndUMAFirstRunFragment.java
- create mode 100644 chrome/android/java/src/org/chromium/chrome/browser/firstrun/TosAndUmaFragmentView.java
- create mode 100644 chrome/browser/ui/android/strings/cromite_android_chrome_strings_grd/Welcome-screen.grdp
 
 diff --git a/chrome/android/chrome_java_resources.gni b/chrome/android/chrome_java_resources.gni
 --- a/chrome/android/chrome_java_resources.gni
 +++ b/chrome/android/chrome_java_resources.gni
-@@ -539,6 +539,7 @@ chrome_java_resources = [
+@@ -534,6 +534,7 @@ chrome_java_resources = [
+   "java/res/layout/finds_opt_in_bottom_sheet.xml",
    "java/res/layout/finds_opt_in_bottom_sheet_content.xml",
-   "java/res/layout/finds_promo_view_history_page.xml",
    "java/res/layout/fre_tos_privacy_disclaimer.xml",
 +  "java/res/layout/fre_tosanduma.xml",
    "java/res/layout/gesture_user_education_iph_layout.xml",
@@ -43,8 +39,8 @@ diff --git a/chrome/android/chrome_java_resources.gni b/chrome/android/chrome_ja
 diff --git a/chrome/android/chrome_java_sources.gni b/chrome/android/chrome_java_sources.gni
 --- a/chrome/android/chrome_java_sources.gni
 +++ b/chrome/android/chrome_java_sources.gni
-@@ -719,6 +719,8 @@ chrome_java_sources = [
-   "java/src/org/chromium/chrome/browser/firstrun/SafetyPromoFirstRunFragment.java",
+@@ -713,6 +713,8 @@ chrome_java_sources = [
+   "java/src/org/chromium/chrome/browser/firstrun/SafetyPromoFirstRunState.java",
    "java/src/org/chromium/chrome/browser/firstrun/SkipTosDialogPolicyListener.java",
    "java/src/org/chromium/chrome/browser/firstrun/TosDialogBehaviorSharedPrefInvalidator.java",
 +  "java/src/org/chromium/chrome/browser/firstrun/ToSAndUMAFirstRunFragment.java",
@@ -52,6 +48,39 @@ diff --git a/chrome/android/chrome_java_sources.gni b/chrome/android/chrome_java
    "java/src/org/chromium/chrome/browser/flags/BadFlagsSnackbarManager.java",
    "java/src/org/chromium/chrome/browser/fonts/FontPreloader.java",
    "java/src/org/chromium/chrome/browser/fullscreen/BrowserControlsManager.java",
+diff --git a/chrome/browser/ui/android/strings/cromite_android_chrome_strings_grd/Welcome-screen.grdp b/chrome/browser/ui/android/strings/cromite_android_chrome_strings_grd/Welcome-screen.grdp
+new file mode 100644
+--- /dev/null
++++ b/chrome/browser/ui/android/strings/cromite_android_chrome_strings_grd/Welcome-screen.grdp
+@@ -0,0 +1,27 @@
++<?xml version="1.0" encoding="utf-8"?>
++<grit-part>
++    <message name="IDS_FRE_CONTINUE" desc="Text for first page accept and continue button [CHAR_LIMIT=20]">
++        Continue
++    </message>
++    <message name="IDS_AUTO_UPDATER_CHECK" desc="Message for the checkbox for automatic Bromite updates">
++        Automatic checks for Bromite app updates
++    </message>
++
++    <message name="IDS_BROMITE_FRE_FOOTER_PRIVACY_POLICY" desc="Message explaining the privacy policy of the file hosting service provider for adblock updates and Bromite app automatic updates">
++        <ph name="BEGIN_PRIVACY_LINK1">&lt;PRIVACY_LINK1&gt;</ph>Automatic ad block filters updates<ph name="END_PRIVACY_LINK1">&lt;/PRIVACY_LINK1&gt;</ph> are subject to the <ph name="BEGIN_PRIVACY_LINK2">&lt;PRIVACY_LINK2&gt;</ph>Cromite Privacy statement<ph name="END_PRIVACY_LINK2">&lt;/PRIVACY_LINK2&gt;</ph>.
++The following checkbox controls instead <ph name="BEGIN_PRIVACY_LINK3">&lt;PRIVACY_LINK3&gt;</ph>automatic app updates<ph name="END_PRIVACY_LINK3">&lt;/PRIVACY_LINK3&gt;</ph> which are subject to the <ph name="BEGIN_PRIVACY_LINK4">&lt;PRIVACY_LINK4&gt;</ph>GitHub Privacy statement<ph name="END_PRIVACY_LINK4">&lt;/PRIVACY_LINK4&gt;</ph>.
++    </message>
++
++    <message name="IDS_PRIVACY_LINK1" desc="URL for Bromite wiki page about ad blocking" translateable="false">
++        https://github.com/uazo/cromite/blob/master/docs/ADBLOCKING.md
++    </message>
++    <message name="IDS_PRIVACY_LINK2" desc="URL for privacy policy for the ad block updater" translateable="false">
++        https://github.com/uazo/cromite/blob/master/docs/PRIVACY_POLICY.md
++    </message>
++    <message name="IDS_PRIVACY_LINK3" desc="URL for Bromite wiki page about automatic updates" translateable="false">
++        https://github.com/uazo/cromite/blob/master/docs/AUTOMATIC_UPDATES.md
++    </message>
++    <message name="IDS_PRIVACY_LINK4" desc="URL for privacy policy for the Bromite auto updater" translateable="false">
++        https://docs.github.com/en/github/site-policy/github-privacy-statement#github-pages
++    </message>
++</grit-part>
+
 diff --git a/chrome/android/java/res/layout/fre_tosanduma.xml b/chrome/android/java/res/layout/fre_tosanduma.xml
 new file mode 100644
 --- /dev/null
@@ -1274,36 +1303,4 @@ diff --git a/chrome/browser/locale/java/src/org/chromium/chrome/browser/locale/L
      }
  
      /** @see LocaleManager#onUserSearchEngineChoice */
-diff --git a/chrome/browser/ui/android/strings/cromite_android_chrome_strings_grd/Welcome-screen.grdp b/chrome/browser/ui/android/strings/cromite_android_chrome_strings_grd/Welcome-screen.grdp
-new file mode 100644
---- /dev/null
-+++ b/chrome/browser/ui/android/strings/cromite_android_chrome_strings_grd/Welcome-screen.grdp
-@@ -0,0 +1,27 @@
-+<?xml version="1.0" encoding="utf-8"?>
-+<grit-part>
-+    <message name="IDS_FRE_CONTINUE" desc="Text for first page accept and continue button [CHAR_LIMIT=20]">
-+        Continue
-+    </message>
-+    <message name="IDS_AUTO_UPDATER_CHECK" desc="Message for the checkbox for automatic Bromite updates">
-+        Automatic checks for Bromite app updates
-+    </message>
-+
-+    <message name="IDS_BROMITE_FRE_FOOTER_PRIVACY_POLICY" desc="Message explaining the privacy policy of the file hosting service provider for adblock updates and Bromite app automatic updates">
-+        <ph name="BEGIN_PRIVACY_LINK1">&lt;PRIVACY_LINK1&gt;</ph>Automatic ad block filters updates<ph name="END_PRIVACY_LINK1">&lt;/PRIVACY_LINK1&gt;</ph> are subject to the <ph name="BEGIN_PRIVACY_LINK2">&lt;PRIVACY_LINK2&gt;</ph>Cromite Privacy statement<ph name="END_PRIVACY_LINK2">&lt;/PRIVACY_LINK2&gt;</ph>.
-+The following checkbox controls instead <ph name="BEGIN_PRIVACY_LINK3">&lt;PRIVACY_LINK3&gt;</ph>automatic app updates<ph name="END_PRIVACY_LINK3">&lt;/PRIVACY_LINK3&gt;</ph> which are subject to the <ph name="BEGIN_PRIVACY_LINK4">&lt;PRIVACY_LINK4&gt;</ph>GitHub Privacy statement<ph name="END_PRIVACY_LINK4">&lt;/PRIVACY_LINK4&gt;</ph>.
-+    </message>
-+
-+    <message name="IDS_PRIVACY_LINK1" desc="URL for Bromite wiki page about ad blocking" translateable="false">
-+        https://github.com/uazo/cromite/blob/master/docs/ADBLOCKING.md
-+    </message>
-+    <message name="IDS_PRIVACY_LINK2" desc="URL for privacy policy for the ad block updater" translateable="false">
-+        https://github.com/uazo/cromite/blob/master/docs/PRIVACY_POLICY.md
-+    </message>
-+    <message name="IDS_PRIVACY_LINK3" desc="URL for Bromite wiki page about automatic updates" translateable="false">
-+        https://github.com/uazo/cromite/blob/master/docs/AUTOMATIC_UPDATES.md
-+    </message>
-+    <message name="IDS_PRIVACY_LINK4" desc="URL for privacy policy for the Bromite auto updater" translateable="false">
-+        https://docs.github.com/en/github/site-policy/github-privacy-statement#github-pages
-+    </message>
-+</grit-part>
 --

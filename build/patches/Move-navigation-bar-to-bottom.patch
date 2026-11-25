@@ -13,110 +13,108 @@ Need: bromite-build-utils.patch
 Original License: GPL-2.0-or-later - https://spdx.org/licenses/GPL-2.0-or-later.html
 License: GPL-3.0-only - https://spdx.org/licenses/GPL-3.0-only.html
 ---
- cc/base/features.cc                           |   8 ++
- cc/base/features.h                            |   2 +
- cc/input/browser_controls_offset_manager.cc   |   8 ++
- cc/trees/layer_tree_host_impl.cc              |   5 +-
- .../tab_management/TabGroupUiCoordinator.java |   8 +-
- .../tab_management/TabGroupUiMediator.java    |  57 +++++++-
- .../tab_management/TabGroupUiProperties.java  |   5 +
- .../tab_management/TabGroupUiToolbarView.java |  16 +++
- .../tab_management/TabGroupUiViewBinder.java  |   3 +
- .../TabListContainerViewBinder.java           |   2 +-
- .../tab_management/TabListCoordinator.java    | 131 +++++++++++++++++-
- .../TabListEmptyCoordinator.java              |  17 ++-
- .../tab_management/TabSwitcherPaneBase.java   |   9 ++
- .../browser/feed/FeedSurfaceCoordinator.java  |   4 +
- .../java/res/layout/search_activity.xml       |   1 -
- .../android/java/res/xml/main_preferences.xml |   3 +-
- .../chrome/browser/ChromeTabbedActivity.java  |   1 +
- .../ChromeAccessibilitySettingsDelegate.java  |  70 ++++++++++
- .../HeadlessBrowserControlsStateProvider.java |   5 +
- .../BottomBarContainerCoordinator.java        |   7 +-
- .../compositor/CompositorViewHolder.java      |   8 ++
- .../layouts/LayoutManagerChrome.java          |  12 +-
- .../layouts/LayoutManagerChromeTablet.java    |   3 +
- .../layouts/ToolbarSwipeLayout.java           |  14 +-
- .../layouts/phone/NewTabAnimationLayout.java  |   4 +
- .../overlays/strip/ScrollDelegate.java        |   2 +-
- .../strip/StripLayoutHelperManager.java       |  39 +++++-
- .../scene_layer/StaticTabSceneLayer.java      |   7 +-
- .../scene_layer/TabStripSceneLayer.java       |  20 ++-
- .../browser/findinpage/FindToolbarTablet.java |  13 +-
- .../fullscreen/BrowserControlsManager.java    |  20 ++-
- .../messages/MessageContainerCoordinator.java |  21 ++-
- .../modaldialog/ChromeTabModalPresenter.java  |   2 +-
- .../chrome/browser/ntp/NewTabPage.java        |  14 +-
- .../chrome/browser/ntp/NewTabPageLayout.java  |  10 +-
- .../browser/ntp/RecentTabsCoordinator.java    |  27 ++--
- .../chrome/browser/ntp/RecentTabsPage.java    |  16 ++-
- .../browser/page_info/ChromePageInfo.java     |   2 +
- .../browser/searchwidget/SearchActivity.java  |  13 ++
- .../settings/FragmentDependencyProvider.java  |   5 +
- .../StatusIndicatorCoordinator.java           |   9 ++
- .../StatusIndicatorSceneLayer.java            |   6 +-
- .../TabbedNavigationBarColorController.java   |   2 +-
- .../browser/toolbar/ToolbarManager.java       |  35 ++++-
- .../chrome/browser/ui/BottomContainer.java    |  18 +++
- .../chrome/browser/ui/BottomSheetManager.java |  12 ++
- .../ui/system/StatusBarColorController.java   |  13 ++
- .../android/compositor/layer/toolbar_layer.cc |   6 +-
- .../scene_layer/tab_strip_scene_layer.cc      |  16 ++-
- .../BottomControlsStacker.java                |   2 +-
- .../BrowserControlsMarginAdapter.java         |   5 +
- .../BrowserControlsStateProvider.java         |   6 +
- .../BrowserControlsUtils.java                 |   2 +-
- .../browser_controls/TopControlsStacker.java  |   6 +-
- .../browser/feed/FeedListContentManager.java  |   6 +-
- .../flags/android/chrome_feature_list.cc      |   2 +
- .../browser/flags/ChromeFeatureList.java      |  10 +-
- chrome/browser/hub/internal/BUILD.gn          |   5 +
- .../chrome/browser/hub/HubCoordinator.java    |   9 ++
- .../chrome/browser/hub/HubManagerImpl.java    |  12 +-
- .../browser/hub/ReversedLinearLayout.java     |  42 ++++++
- .../android/res/layout/hub_layout.xml         |   9 +-
- .../android/res/layout/hub_toolbar_layout.xml |   4 +-
- chrome/browser/prefs/browser_prefs.cc         |   2 +-
- .../chrome/browser/ui/appmenu/AppMenu.java    |  24 +++-
- .../ui/appmenu/AppMenuHandlerImpl.java        |  10 ++
- .../EdgeToEdgeControllerImpl.java             |   1 +
- .../ui/edge_to_edge/EdgeToEdgeUtils.java      |   2 +
- ...rredIMEWindowInsetApplicationCallback.java |   7 +
- .../omnibox/LocationBarCoordinator.java       |   1 +
- .../omnibox/LocationBarFocusScrimHandler.java |   4 +
- ...mniboxSuggestionsDropdownEmbedderImpl.java |  35 +++++
- .../suggestions/AutocompleteMediator.java     |   6 +-
- .../OmniboxSuggestionsContainer.java          |   7 +
- .../OmniboxSuggestionsDropdown.java           |   7 +
- .../OmniboxSuggestionsDropdownEmbedder.java   |   7 +
- .../base/BaseSuggestionViewBinder.java        |   4 +
- .../strings/android_chrome_strings.grd        |   6 +
- .../theme/BottomUiThemeColorProvider.java     |   3 +-
- chrome/browser/ui/android/toolbar/BUILD.gn    |   1 +
- .../toolbar/ToolbarLongPressMenuHandler.java  |   8 --
- .../bottom/BottomControlsContentDelegate.java |   8 +-
- .../bottom/BottomControlsCoordinator.java     |   7 +-
- .../bottom/BottomControlsMediator.java        |  23 +++
- .../bottom/BottomControlsProperties.java      |   4 +
- .../bottom/BottomControlsViewBinder.java      |   2 +
- .../bottom/ScrollingBottomViewSceneLayer.java |  19 ++-
- .../settings/AddressBarPreference.java        |   1 +
- .../toolbar/top/ToolbarControlContainer.java  |   9 ++
- .../toolbar/top/TopToolbarCoordinator.java    |   2 +-
- .../top/TopToolbarOverlayCoordinator.java     |  17 ++-
- .../top/TopToolbarOverlayProperties.java      |   8 +-
- .../toolbar/top/TopToolbarSceneLayer.java     |  14 +-
- .../res/xml/accessibility_preferences.xml     |   8 ++
- .../accessibility/AccessibilitySettings.java  |  27 ++++
- .../AccessibilitySettingsDelegate.java        |   7 +
- .../components/page_info/PageInfoDialog.java  | 120 ++++++++++++++++
- components/viz/common/features.cc             |   1 +
- .../render_widget_host_view_android.cc        |   3 +
- .../Move-navigation-bar-to-bottom.inc         |  17 +++
- .../renderer/core/frame/viewport_data.cc      |   1 +
- 101 files changed, 1185 insertions(+), 99 deletions(-)
- create mode 100644 chrome/browser/hub/internal/android/java/src/org/chromium/chrome/browser/hub/ReversedLinearLayout.java
- create mode 100644 cromite_flags/chrome/browser/about_flags_cc/Move-navigation-bar-to-bottom.inc
+ cc/base/features.cc                                |    8 +
+ cc/base/features.h                                 |    2 
+ cc/input/browser_controls_offset_manager.cc        |    9 +
+ cc/trees/layer_tree_host_impl.cc                   |    1 
+ chrome/browser/hub/internal/BUILD.gn               |    5 +
+ chrome/browser/prefs/browser_prefs.cc              |    2 
+ .../ui/android/strings/android_chrome_strings.grd  |    6 +
+ chrome/browser/ui/android/toolbar/BUILD.gn         |    1 
+ components/viz/common/features.cc                  |    1 
+ .../render_widget_host_view_android.cc             |    5 +
+ .../Move-navigation-bar-to-bottom.inc              |   17 +++
+ .../blink/renderer/core/frame/viewport_data.cc     |    1 
+ .../tab_management/TabGroupUiCoordinator.java      |    8 +
+ .../tasks/tab_management/TabGroupUiMediator.java   |   57 +++++++++
+ .../tasks/tab_management/TabGroupUiProperties.java |    5 +
+ .../tab_management/TabGroupUiToolbarView.java      |   16 ++
+ .../tasks/tab_management/TabGroupUiViewBinder.java |    3 
+ .../tab_management/TabListContainerViewBinder.java |    2 
+ .../tasks/tab_management/TabListCoordinator.java   |  131 ++++++++++++++++++++
+ .../tab_management/TabListEmptyCoordinator.java    |   17 ++-
+ .../tasks/tab_management/TabSwitcherPaneBase.java  |    9 +
+ .../browser/feed/FeedSurfaceCoordinator.java       |    4 +
+ chrome/android/java/res/layout/search_activity.xml |    1 
+ chrome/android/java/res/xml/main_preferences.xml   |    3 
+ .../chrome/browser/ChromeTabbedActivity.java       |    1 
+ .../ChromeAccessibilitySettingsDelegate.java       |   70 +++++++++++
+ .../HeadlessBrowserControlsStateProvider.java      |    5 +
+ .../bottombar/BottomBarContainerCoordinator.java   |    7 +
+ .../browser/compositor/CompositorViewHolder.java   |    8 +
+ .../compositor/layouts/LayoutManagerChrome.java    |   12 +-
+ .../layouts/LayoutManagerChromeTablet.java         |    3 
+ .../compositor/layouts/ToolbarSwipeLayout.java     |   14 ++
+ .../layouts/phone/NewTabAnimationLayout.java       |    4 +
+ .../compositor/overlays/strip/ScrollDelegate.java  |    2 
+ .../overlays/strip/StripLayoutHelperManager.java   |   39 +++++-
+ .../scene_layer/StaticTabSceneLayer.java           |    7 +
+ .../compositor/scene_layer/TabStripSceneLayer.java |   20 +++
+ .../browser/findinpage/FindToolbarTablet.java      |   13 +-
+ .../browser/fullscreen/BrowserControlsManager.java |   20 +++
+ .../messages/MessageContainerCoordinator.java      |   21 +++
+ .../modaldialog/ChromeTabModalPresenter.java       |    2 
+ .../chromium/chrome/browser/ntp/NewTabPage.java    |   14 +-
+ .../chrome/browser/ntp/NewTabPageLayout.java       |   10 +-
+ .../chrome/browser/ntp/RecentTabsCoordinator.java  |   27 +++-
+ .../chrome/browser/ntp/RecentTabsPage.java         |   16 ++
+ .../chrome/browser/page_info/ChromePageInfo.java   |    2 
+ .../browser/searchwidget/SearchActivity.java       |   13 ++
+ .../settings/FragmentDependencyProvider.java       |    5 +
+ .../StatusIndicatorCoordinator.java                |    9 +
+ .../StatusIndicatorSceneLayer.java                 |    6 +
+ .../TabbedNavigationBarColorController.java        |    2 
+ .../chrome/browser/toolbar/ToolbarManager.java     |   35 +++++
+ .../chrome/browser/ui/BottomContainer.java         |   18 +++
+ .../chrome/browser/ui/BottomSheetManager.java      |   12 ++
+ .../ui/system/StatusBarColorController.java        |   13 ++
+ .../android/compositor/layer/toolbar_layer.cc      |    6 +
+ .../scene_layer/tab_strip_scene_layer.cc           |   16 ++
+ .../browser_controls/BottomControlsStacker.java    |    2 
+ .../BrowserControlsMarginAdapter.java              |    5 +
+ .../BrowserControlsStateProvider.java              |    6 +
+ .../browser_controls/BrowserControlsUtils.java     |    2 
+ .../browser_controls/TopControlsStacker.java       |    6 -
+ .../browser/feed/FeedListContentManager.java       |    6 +
+ .../browser/flags/android/chrome_feature_list.cc   |    2 
+ .../chrome/browser/flags/ChromeFeatureList.java    |   10 +-
+ .../chrome/browser/hub/HubCoordinator.java         |    9 +
+ .../chrome/browser/hub/HubManagerImpl.java         |   12 ++
+ .../chrome/browser/hub/ReversedLinearLayout.java   |   42 ++++++
+ .../hub/internal/android/res/layout/hub_layout.xml |    9 +
+ .../android/res/layout/hub_toolbar_layout.xml      |    4 -
+ .../chrome/browser/ui/appmenu/AppMenu.java         |   24 ++++
+ .../browser/ui/appmenu/AppMenuHandlerImpl.java     |   10 ++
+ .../ui/edge_to_edge/EdgeToEdgeControllerImpl.java  |    1 
+ .../browser/ui/edge_to_edge/EdgeToEdgeUtils.java   |    2 
+ .../DeferredIMEWindowInsetApplicationCallback.java |    7 +
+ .../browser/omnibox/LocationBarCoordinator.java    |    1 
+ .../omnibox/LocationBarFocusScrimHandler.java      |    4 +
+ .../OmniboxSuggestionsDropdownEmbedderImpl.java    |   35 +++++
+ .../omnibox/suggestions/AutocompleteMediator.java  |    6 +
+ .../suggestions/OmniboxSuggestionsContainer.java   |    7 +
+ .../suggestions/OmniboxSuggestionsDropdown.java    |    7 +
+ .../OmniboxSuggestionsDropdownEmbedder.java        |    7 +
+ .../suggestions/base/BaseSuggestionViewBinder.java |    4 +
+ .../browser/theme/BottomUiThemeColorProvider.java  |    3 
+ .../toolbar/ToolbarLongPressMenuHandler.java       |    8 -
+ .../bottom/BottomControlsContentDelegate.java      |    8 +
+ .../toolbar/bottom/BottomControlsCoordinator.java  |    7 +
+ .../toolbar/bottom/BottomControlsMediator.java     |   23 ++++
+ .../toolbar/bottom/BottomControlsProperties.java   |    4 +
+ .../toolbar/bottom/BottomControlsViewBinder.java   |    2 
+ .../bottom/ScrollingBottomViewSceneLayer.java      |   19 +++
+ .../toolbar/settings/AddressBarPreference.java     |    1 
+ .../toolbar/top/ToolbarControlContainer.java       |    9 +
+ .../browser/toolbar/top/TopToolbarCoordinator.java |    2 
+ .../toolbar/top/TopToolbarOverlayCoordinator.java  |   17 ++-
+ .../toolbar/top/TopToolbarOverlayProperties.java   |    8 +
+ .../browser/toolbar/top/TopToolbarSceneLayer.java  |   14 ++
+ .../java/res/xml/accessibility_preferences.xml     |    8 +
+ .../accessibility/AccessibilitySettings.java       |   27 ++++
+ .../AccessibilitySettingsDelegate.java             |    7 +
+ .../components/page_info/PageInfoDialog.java       |  120 ++++++++++++++++++
+ 101 files changed, 1185 insertions(+), 98 deletions(-)
 
 diff --git a/cc/base/features.cc b/cc/base/features.cc
 --- a/cc/base/features.cc
@@ -147,11 +145,11 @@ diff --git a/cc/base/features.h b/cc/base/features.h
 +CC_BASE_EXPORT BASE_DECLARE_FEATURE(kDisableToolbarSwipeUp);
  CC_BASE_EXPORT BASE_DECLARE_FEATURE(kSizeOopifEffectSurfacesAtExternalScale);
  
- // When enabled, the scheduler will allow deferring impl invalidation frames
+ // Optimizes removal of empty and orphan render passes by combining reference
 diff --git a/cc/input/browser_controls_offset_manager.cc b/cc/input/browser_controls_offset_manager.cc
 --- a/cc/input/browser_controls_offset_manager.cc
 +++ b/cc/input/browser_controls_offset_manager.cc
-@@ -27,6 +27,7 @@
+@@ -29,6 +29,7 @@
  #include "ui/gfx/animation/tween.h"
  #include "ui/gfx/geometry/transform.h"
  #include "ui/gfx/geometry/vector2d_f.h"
@@ -159,16 +157,17 @@ diff --git a/cc/input/browser_controls_offset_manager.cc b/cc/input/browser_cont
  
  namespace cc {
  namespace {
-@@ -104,6 +105,8 @@ BrowserControlsOffsetManager::BrowserControlsOffsetManager(
- BrowserControlsOffsetManager::~BrowserControlsOffsetManager() = default;
+@@ -92,6 +93,9 @@ BrowserControlsOffsetManager::~BrowserControlsOffsetManager() = default;
  
- float BrowserControlsOffsetManager::ControlsTopOffset() const {
-+  if (base::FeatureList::IsEnabled(::features::kMoveTopToolbarToBottom))
-+    return 0;
-   return ContentTopOffset() - TopControlsHeight();
- }
+ std::vector<viz::OffsetTagValue>
+ BrowserControlsOffsetManager::GetOffsetTagValues() const {
++  if (base::FeatureList::IsEnabled(::features::kMoveTopToolbarToBottom)) {
++    return {};
++  }
+   std::vector<viz::OffsetTagValue> offset_tag_values;
  
-@@ -749,6 +752,11 @@ gfx::Vector2dF BrowserControlsOffsetManager::ScrollByPrecise(
+   if (TopControlsHeight() > 0) {
+@@ -570,6 +574,11 @@ gfx::Vector2dF BrowserControlsOffsetManager::ScrollByPrecise(
    // content. If the top controls have no height, the content should scroll
    // immediately.
    gfx::Vector2dF applied_delta(0.0f, old_top_offset - ContentTopOffset());
@@ -183,25 +182,7 @@ diff --git a/cc/input/browser_controls_offset_manager.cc b/cc/input/browser_cont
 diff --git a/cc/trees/layer_tree_host_impl.cc b/cc/trees/layer_tree_host_impl.cc
 --- a/cc/trees/layer_tree_host_impl.cc
 +++ b/cc/trees/layer_tree_host_impl.cc
-@@ -2552,7 +2552,7 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata(
-         browser_controls_offset_manager_->TopControlsShownRatio();
-     metadata.top_controls_visible_height.emplace(visible_height);
- 
--#if BUILDFLAG(IS_ANDROID)
-+#if BUILDFLAG(IS_ANDROID) && false
-     const viz::OffsetTag& top_controls_offset_tag =
-         browser_controls_offset_manager_->TopControlsOffsetTag();
-     const viz::OffsetTag& content_offset_tag =
-@@ -2590,7 +2590,7 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata(
- #endif
-   }
- 
--#if BUILDFLAG(IS_ANDROID)
-+#if BUILDFLAG(IS_ANDROID) && false
-   if (browser_controls_offset_manager_->BottomControlsHeight() > 0) {
-     const viz::OffsetTag& bottom_controls_offset_tag =
-         browser_controls_offset_manager_->BottomControlsOffsetTag();
-@@ -5292,6 +5292,7 @@ bool LayerTreeHostImpl::AnimateBrowserControls(base::TimeTicks time) {
+@@ -5195,6 +5195,7 @@ bool LayerTreeHostImpl::AnimateBrowserControls(base::TimeTicks time) {
      return false;
    }
  
@@ -209,6 +190,134 @@ diff --git a/cc/trees/layer_tree_host_impl.cc b/cc/trees/layer_tree_host_impl.cc
    // This counter-scrolls the page to keep the appearance of the page content
    // being fixed while the browser controls animate.
    viewport().ScrollBy(scroll_delta,
+diff --git a/chrome/browser/hub/internal/BUILD.gn b/chrome/browser/hub/internal/BUILD.gn
+--- a/chrome/browser/hub/internal/BUILD.gn
++++ b/chrome/browser/hub/internal/BUILD.gn
+@@ -18,6 +18,7 @@ android_library("java") {
+     "//chrome/test/android:chrome_java_transit",
+   ]
+   sources = [
++    "android/java/src/org/chromium/chrome/browser/hub/ReversedLinearLayout.java",
+     "android/java/src/org/chromium/chrome/browser/hub/ApplyButtonData.java",
+     "android/java/src/org/chromium/chrome/browser/hub/BottomBarHubColorMixerAdapter.java",
+     "android/java/src/org/chromium/chrome/browser/hub/EmptyHubBottomToolbarDelegate.java",
+@@ -114,6 +115,10 @@ android_library("java") {
+     "//ui/edge_to_edge:java",
+     "//url:url_java",
+   ]
++  deps += [
++    "//base:base_cached_flags_java",
++    "//chrome/browser/flags:java",
++  ]
+ }
+ 
+ android_resources("java_resources") {
+diff --git a/chrome/browser/prefs/browser_prefs.cc b/chrome/browser/prefs/browser_prefs.cc
+--- a/chrome/browser/prefs/browser_prefs.cc
++++ b/chrome/browser/prefs/browser_prefs.cc
+@@ -2619,7 +2619,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
+       prefs::kAppRatingPromptShown, false,
+       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+   registry->RegisterBooleanPref(prefs::kVirtualKeyboardResizesLayoutByDefault,
+-                                false);
++                                true);
+ #endif
+ 
+ #if BUILDFLAG(ENTERPRISE_DATA_CONTROLS)
+diff --git a/chrome/browser/ui/android/strings/android_chrome_strings.grd b/chrome/browser/ui/android/strings/android_chrome_strings.grd
+--- a/chrome/browser/ui/android/strings/android_chrome_strings.grd
++++ b/chrome/browser/ui/android/strings/android_chrome_strings.grd
+@@ -1668,6 +1668,12 @@ Your Google account may have other forms of browsing history like searches and a
+       <message name="IDS_FORCE_TABLET_UI_TITLE" desc="Title of the preference that allows the user to update force tablet UI settings.">
+         Force Tablet Mode
+       </message>
++      <message name="IDS_MOVE_TOOLBAR_BOTTOM_TITLE" desc="Title of the preference that allows the user to move toolbar on bottom.">
++        Move toolbar to bottom
++      </message>
++      <message name="IDS_DISABLE_TOOLBAR_SWIPE_UP" desc="Summary of the preference that allows the user to disable toolbar swipeup.">
++        Disable toolbar swipe up
++      </message>
+ 
+       <!-- Safety check -->
+       <message name="IDS_PREFS_SAFETY_CHECK" desc="Title of the Safety check element in settings, allowing the user to check multiple areas of browser safety. [CHAR_LIMIT=32]">
+diff --git a/chrome/browser/ui/android/toolbar/BUILD.gn b/chrome/browser/ui/android/toolbar/BUILD.gn
+--- a/chrome/browser/ui/android/toolbar/BUILD.gn
++++ b/chrome/browser/ui/android/toolbar/BUILD.gn
+@@ -341,6 +341,7 @@ android_library("core_java") {
+     "//google_apis/gaia/android:java",
+     "//third_party/android_deps:material_design_java",
+     "//third_party/androidx:androidx_annotation_annotation_experimental_java",
++    "//third_party/androidx:androidx_coordinatorlayout_coordinatorlayout_java",
+     "//third_party/androidx:androidx_annotation_annotation_java",
+     "//third_party/androidx:androidx_appcompat_appcompat_java",
+     "//third_party/androidx:androidx_appcompat_appcompat_resources_java",
+diff --git a/components/viz/common/features.cc b/components/viz/common/features.cc
+--- a/components/viz/common/features.cc
++++ b/components/viz/common/features.cc
+@@ -31,6 +31,7 @@
+ namespace features {
+ 
+ #if BUILDFLAG(IS_ANDROID)
++
+ // If this flag is enabled, a DumpWithoutCrashing() is captured when a bad
+ // state is detected when moving the composited UI. For example, this could
+ // mean scrolling without a resource, or OffsetTagValues trying to position
+diff --git a/content/browser/renderer_host/render_widget_host_view_android.cc b/content/browser/renderer_host/render_widget_host_view_android.cc
+--- a/content/browser/renderer_host/render_widget_host_view_android.cc
++++ b/content/browser/renderer_host/render_widget_host_view_android.cc
+@@ -36,6 +36,7 @@
+ #include "base/task/thread_pool.h"
+ #include "base/threading/scoped_blocking_call.h"
+ #include "base/trace_event/trace_event.h"
++#include "cc/base/features.h"
+ #include "cc/base/math_util.h"
+ #include "cc/slim/layer.h"
+ #include "components/input/cursor_manager.h"
+@@ -980,7 +981,9 @@ void RenderWidgetHostViewAndroid::OnRenderFrameMetadataChangedBeforeActivation(
+   // factor. Thus, |top_content_offset| in CSS pixels is also in DIPs.
+   const ClampedBrowserControls controls =
+       ClampBrowserControls(metadata.browser_controls_metadata);
+-  const float top_content_offset = controls.top_content_offset;
++  const float top_content_offset =
++      base::FeatureList::IsEnabled(::features::kMoveTopToolbarToBottom)
++          ? 0.f : controls.top_content_offset;
+ 
+   if (ime_adapter_android_) {
+     ime_adapter_android_->UpdateFrameInfo(metadata.selection.start, dip_scale,
+diff --git a/cromite_flags/chrome/browser/about_flags_cc/Move-navigation-bar-to-bottom.inc b/cromite_flags/chrome/browser/about_flags_cc/Move-navigation-bar-to-bottom.inc
+new file mode 100644
+--- /dev/null
++++ b/cromite_flags/chrome/browser/about_flags_cc/Move-navigation-bar-to-bottom.inc
+@@ -0,0 +1,17 @@
++#if BUILDFLAG(IS_ANDROID)
++
++#ifdef FLAG_SECTION
++
++    {"move-top-toolbar-to-bottom",
++     "Move top toolbar to bottom",
++     "Move the top toolbar to the bottom.", kOsAndroid,
++     FEATURE_VALUE_TYPE(features::kMoveTopToolbarToBottom)},
++
++    {"disable-toolbar-swipe-up",
++     "Disable toolbar swipe up",
++     "Disable toolbar swipe up.", kOsAndroid,
++     FEATURE_VALUE_TYPE(features::kDisableToolbarSwipeUp)},
++
++#endif
++
++#endif
+diff --git a/third_party/blink/renderer/core/frame/viewport_data.cc b/third_party/blink/renderer/core/frame/viewport_data.cc
+--- a/third_party/blink/renderer/core/frame/viewport_data.cc
++++ b/third_party/blink/renderer/core/frame/viewport_data.cc
+@@ -175,6 +175,7 @@ void ViewportData::SetExpandIntoDisplayCutout(bool expand) {
+ }
+ 
+ void ViewportData::SetVirtualKeyboardOverlaysContent(bool overlays_content) {
++  overlays_content = false;
+   if (virtual_keyboard_overlays_content_ == overlays_content)
+     return;
+ 
+
 diff --git a/chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/tab_management/TabGroupUiCoordinator.java b/chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/tab_management/TabGroupUiCoordinator.java
 --- a/chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/tab_management/TabGroupUiCoordinator.java
 +++ b/chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/tab_management/TabGroupUiCoordinator.java
@@ -2232,28 +2341,6 @@ diff --git a/chrome/browser/flags/android/java/src/org/chromium/chrome/browser/f
                      sMultiInstanceSharedPrefsMigration,
                      sNewTabPageCustomizationThemeSync,
                      sNewTabPageCustomizationV2,
-diff --git a/chrome/browser/hub/internal/BUILD.gn b/chrome/browser/hub/internal/BUILD.gn
---- a/chrome/browser/hub/internal/BUILD.gn
-+++ b/chrome/browser/hub/internal/BUILD.gn
-@@ -18,6 +18,7 @@ android_library("java") {
-     "//chrome/test/android:chrome_java_transit",
-   ]
-   sources = [
-+    "android/java/src/org/chromium/chrome/browser/hub/ReversedLinearLayout.java",
-     "android/java/src/org/chromium/chrome/browser/hub/ApplyButtonData.java",
-     "android/java/src/org/chromium/chrome/browser/hub/BottomBarHubColorMixerAdapter.java",
-     "android/java/src/org/chromium/chrome/browser/hub/EmptyHubBottomToolbarDelegate.java",
-@@ -111,6 +112,10 @@ android_library("java") {
-     "//ui/edge_to_edge:java",
-     "//url:url_java",
-   ]
-+  deps += [
-+    "//base:base_cached_flags_java",
-+    "//chrome/browser/flags:java",
-+  ]
- }
- 
- android_resources("java_resources") {
 diff --git a/chrome/browser/hub/internal/android/java/src/org/chromium/chrome/browser/hub/HubCoordinator.java b/chrome/browser/hub/internal/android/java/src/org/chromium/chrome/browser/hub/HubCoordinator.java
 --- a/chrome/browser/hub/internal/android/java/src/org/chromium/chrome/browser/hub/HubCoordinator.java
 +++ b/chrome/browser/hub/internal/android/java/src/org/chromium/chrome/browser/hub/HubCoordinator.java
@@ -2428,18 +2515,6 @@ diff --git a/chrome/browser/hub/internal/android/res/layout/hub_toolbar_layout.x
      android:orientation="vertical">
  
      <FrameLayout
-diff --git a/chrome/browser/prefs/browser_prefs.cc b/chrome/browser/prefs/browser_prefs.cc
---- a/chrome/browser/prefs/browser_prefs.cc
-+++ b/chrome/browser/prefs/browser_prefs.cc
-@@ -2291,7 +2291,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
-       prefs::kAppRatingPromptShown, false,
-       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-   registry->RegisterBooleanPref(prefs::kVirtualKeyboardResizesLayoutByDefault,
--                                false);
-+                                true);
- #endif
- 
- #if BUILDFLAG(ENTERPRISE_DATA_CONTROLS)
 diff --git a/chrome/browser/ui/android/appmenu/internal/java/src/org/chromium/chrome/browser/ui/appmenu/AppMenu.java b/chrome/browser/ui/android/appmenu/internal/java/src/org/chromium/chrome/browser/ui/appmenu/AppMenu.java
 --- a/chrome/browser/ui/android/appmenu/internal/java/src/org/chromium/chrome/browser/ui/appmenu/AppMenu.java
 +++ b/chrome/browser/ui/android/appmenu/internal/java/src/org/chromium/chrome/browser/ui/appmenu/AppMenu.java
@@ -2864,22 +2939,6 @@ diff --git a/chrome/browser/ui/android/omnibox/java/src/org/chromium/chrome/brow
          view.setRoundingEdges(roundTopEdge, roundBottomEdge);
      }
  
-diff --git a/chrome/browser/ui/android/strings/android_chrome_strings.grd b/chrome/browser/ui/android/strings/android_chrome_strings.grd
---- a/chrome/browser/ui/android/strings/android_chrome_strings.grd
-+++ b/chrome/browser/ui/android/strings/android_chrome_strings.grd
-@@ -1561,6 +1561,12 @@ Your Google account may have other forms of browsing history like searches and a
-       <message name="IDS_FORCE_TABLET_UI_TITLE" desc="Title of the preference that allows the user to update force tablet UI settings.">
-         Force Tablet Mode
-       </message>
-+      <message name="IDS_MOVE_TOOLBAR_BOTTOM_TITLE" desc="Title of the preference that allows the user to move toolbar on bottom.">
-+        Move toolbar to bottom
-+      </message>
-+      <message name="IDS_DISABLE_TOOLBAR_SWIPE_UP" desc="Summary of the preference that allows the user to disable toolbar swipeup.">
-+        Disable toolbar swipe up
-+      </message>
- 
-       <!-- Safety check -->
-       <message name="IDS_PREFS_SAFETY_CHECK" desc="Title of the Safety check element in settings, allowing the user to check multiple areas of browser safety. [CHAR_LIMIT=32]">
 diff --git a/chrome/browser/ui/android/theme/java/src/org/chromium/chrome/browser/theme/BottomUiThemeColorProvider.java b/chrome/browser/ui/android/theme/java/src/org/chromium/chrome/browser/theme/BottomUiThemeColorProvider.java
 --- a/chrome/browser/ui/android/theme/java/src/org/chromium/chrome/browser/theme/BottomUiThemeColorProvider.java
 +++ b/chrome/browser/ui/android/theme/java/src/org/chromium/chrome/browser/theme/BottomUiThemeColorProvider.java
@@ -2900,17 +2959,6 @@ diff --git a/chrome/browser/ui/android/theme/java/src/org/chromium/chrome/browse
              updatePrimaryColor(getColorForTopAnchoredToolbar(), animate);
              ColorStateList tint = getTintForTopAnchoredToolbar();
              updateTint(tint, tint, getBrandedColorSchemeForTopAnchoredToolbar());
-diff --git a/chrome/browser/ui/android/toolbar/BUILD.gn b/chrome/browser/ui/android/toolbar/BUILD.gn
---- a/chrome/browser/ui/android/toolbar/BUILD.gn
-+++ b/chrome/browser/ui/android/toolbar/BUILD.gn
-@@ -333,6 +333,7 @@ android_library("core_java") {
-     "//google_apis/gaia/android:java",
-     "//third_party/android_deps:material_design_java",
-     "//third_party/androidx:androidx_annotation_annotation_experimental_java",
-+    "//third_party/androidx:androidx_coordinatorlayout_coordinatorlayout_java",
-     "//third_party/androidx:androidx_annotation_annotation_java",
-     "//third_party/androidx:androidx_appcompat_appcompat_java",
-     "//third_party/androidx:androidx_appcompat_appcompat_resources_java",
 diff --git a/chrome/browser/ui/android/toolbar/java/src/org/chromium/chrome/browser/toolbar/ToolbarLongPressMenuHandler.java b/chrome/browser/ui/android/toolbar/java/src/org/chromium/chrome/browser/toolbar/ToolbarLongPressMenuHandler.java
 --- a/chrome/browser/ui/android/toolbar/java/src/org/chromium/chrome/browser/toolbar/ToolbarLongPressMenuHandler.java
 +++ b/chrome/browser/ui/android/toolbar/java/src/org/chromium/chrome/browser/toolbar/ToolbarLongPressMenuHandler.java
@@ -3534,68 +3582,4 @@ diff --git a/components/page_info/android/java/src/org/chromium/components/page_
                      private void superDismiss() {
                          super.dismiss();
                      }
-diff --git a/components/viz/common/features.cc b/components/viz/common/features.cc
---- a/components/viz/common/features.cc
-+++ b/components/viz/common/features.cc
-@@ -34,6 +34,7 @@
- namespace features {
- 
- #if BUILDFLAG(IS_ANDROID)
-+
- // If this flag is enabled, a DumpWithoutCrashing() is captured when a bad
- // state is detected when moving the composited UI. For example, this could
- // mean scrolling without a resource, or OffsetTagValues trying to position
-diff --git a/content/browser/renderer_host/render_widget_host_view_android.cc b/content/browser/renderer_host/render_widget_host_view_android.cc
---- a/content/browser/renderer_host/render_widget_host_view_android.cc
-+++ b/content/browser/renderer_host/render_widget_host_view_android.cc
-@@ -36,6 +36,7 @@
- #include "base/task/thread_pool.h"
- #include "base/threading/scoped_blocking_call.h"
- #include "base/trace_event/trace_event.h"
-+#include "cc/base/features.h"
- #include "cc/base/math_util.h"
- #include "cc/slim/layer.h"
- #include "components/input/cursor_manager.h"
-@@ -963,6 +964,8 @@ void RenderWidgetHostViewAndroid::OnRenderFrameMetadataChangedBeforeActivation(
-   // factor. Thus, |top_content_offset| in CSS pixels is also in DIPs.
-   float top_content_offset =
-       metadata.top_controls_height * metadata.top_controls_shown_ratio;
-+  if (base::FeatureList::IsEnabled(::features::kMoveTopToolbarToBottom))
-+    top_content_offset = 0;
-   float top_shown_pix = top_content_offset;
- 
-   if (ime_adapter_android_) {
-diff --git a/cromite_flags/chrome/browser/about_flags_cc/Move-navigation-bar-to-bottom.inc b/cromite_flags/chrome/browser/about_flags_cc/Move-navigation-bar-to-bottom.inc
-new file mode 100644
---- /dev/null
-+++ b/cromite_flags/chrome/browser/about_flags_cc/Move-navigation-bar-to-bottom.inc
-@@ -0,0 +1,17 @@
-+#if BUILDFLAG(IS_ANDROID)
-+
-+#ifdef FLAG_SECTION
-+
-+    {"move-top-toolbar-to-bottom",
-+     "Move top toolbar to bottom",
-+     "Move the top toolbar to the bottom.", kOsAndroid,
-+     FEATURE_VALUE_TYPE(features::kMoveTopToolbarToBottom)},
-+
-+    {"disable-toolbar-swipe-up",
-+     "Disable toolbar swipe up",
-+     "Disable toolbar swipe up.", kOsAndroid,
-+     FEATURE_VALUE_TYPE(features::kDisableToolbarSwipeUp)},
-+
-+#endif
-+
-+#endif
-diff --git a/third_party/blink/renderer/core/frame/viewport_data.cc b/third_party/blink/renderer/core/frame/viewport_data.cc
---- a/third_party/blink/renderer/core/frame/viewport_data.cc
-+++ b/third_party/blink/renderer/core/frame/viewport_data.cc
-@@ -175,6 +175,7 @@ void ViewportData::SetExpandIntoDisplayCutout(bool expand) {
- }
- 
- void ViewportData::SetVirtualKeyboardOverlaysContent(bool overlays_content) {
-+  overlays_content = false;
-   if (virtual_keyboard_overlays_content_ == overlays_content)
-     return;
- 
 --

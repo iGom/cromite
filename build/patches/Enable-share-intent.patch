@@ -10,50 +10,101 @@ See also: https://github.com/bromite/bromite/issues/1062
 Original License: GPL-2.0-or-later - https://spdx.org/licenses/GPL-2.0-or-later.html
 License: GPL-3.0-only - https://spdx.org/licenses/GPL-3.0-only.html
 ---
- chrome/android/chrome_java_resources.gni      |   1 +
- chrome/android/chrome_java_sources.gni        |   1 +
- chrome/android/java/AndroidManifest.xml       |  28 ++-
- .../res/layout/sharing_intent_content.xml     |  88 ++++++++++
- .../chrome/browser/IntentHandler.java         |  16 +-
- .../browser/LaunchIntentDispatcher.java       |   2 +-
- .../document/ChromeLauncherActivity.java      |  13 +-
- .../init/ProcessInitializationHandler.java    |   2 +
- .../SharedIntentShareActivity.java            | 159 ++++++++++++++++++
- .../flags/android/chrome_feature_list.cc      |   1 +
- .../browser/flags/ChromeFeatureList.java      |   1 +
- .../strings/android_chrome_strings.grd        |  14 ++
- .../about_flags_cc/Enable-share-intent.inc    |  12 ++
- .../Enable-share-intent.inc                   |   3 +
- .../Enable-share-intent.inc                   |   1 +
+ chrome/android/chrome_java_resources.gni           |    1 
+ chrome/android/chrome_java_sources.gni             |    1 
+ .../ui/android/strings/android_chrome_strings.grd  |   14 ++
+ .../browser/about_flags_cc/Enable-share-intent.inc |   12 ++
+ .../chrome_feature_list_cc/Enable-share-intent.inc |    3 
+ .../chrome_feature_list_h/Enable-share-intent.inc  |    1 
+ chrome/android/java/AndroidManifest.xml            |   28 +++-
+ .../java/res/layout/sharing_intent_content.xml     |   88 +++++++++++
+ .../org/chromium/chrome/browser/IntentHandler.java |   16 ++
+ .../chrome/browser/LaunchIntentDispatcher.java     |    2 
+ .../browser/document/ChromeLauncherActivity.java   |   13 ++
+ .../browser/init/ProcessInitializationHandler.java |    2 
+ .../shared_intent/SharedIntentShareActivity.java   |  159 ++++++++++++++++++++
+ .../browser/flags/android/chrome_feature_list.cc   |    1 
+ .../chrome/browser/flags/ChromeFeatureList.java    |    1 
  15 files changed, 333 insertions(+), 9 deletions(-)
- create mode 100644 chrome/android/java/res/layout/sharing_intent_content.xml
- create mode 100644 chrome/android/java/src/org/chromium/chrome/browser/sharing/shared_intent/SharedIntentShareActivity.java
- create mode 100644 cromite_flags/chrome/browser/about_flags_cc/Enable-share-intent.inc
- create mode 100644 cromite_flags/chrome/browser/flags/android/chrome_feature_list_cc/Enable-share-intent.inc
- create mode 100644 cromite_flags/chrome/browser/flags/android/chrome_feature_list_h/Enable-share-intent.inc
 
 diff --git a/chrome/android/chrome_java_resources.gni b/chrome/android/chrome_java_resources.gni
 --- a/chrome/android/chrome_java_resources.gni
 +++ b/chrome/android/chrome_java_resources.gni
-@@ -616,6 +616,7 @@ chrome_java_resources = [
-   "java/res/layout/shopping_accessory_view_layout.xml",
+@@ -613,6 +613,7 @@ chrome_java_resources = [
+   "java/res/layout/startup_page_item.xml",
    "java/res/layout/status_indicator_container.xml",
    "java/res/layout/suggestions_tile_view_condensed.xml",
 +  "java/res/layout/sharing_intent_content.xml",
    "java/res/layout/suspended_tab.xml",
+   "java/res/layout/suspicious_site_dialog_view.xml",
    "java/res/layout/sync_custom_passphrase.xml",
-   "java/res/layout/sync_enter_passphrase.xml",
 diff --git a/chrome/android/chrome_java_sources.gni b/chrome/android/chrome_java_sources.gni
 --- a/chrome/android/chrome_java_sources.gni
 +++ b/chrome/android/chrome_java_sources.gni
-@@ -1140,6 +1140,7 @@ chrome_java_sources = [
+@@ -1146,6 +1146,7 @@ chrome_java_sources = [
+   "java/src/org/chromium/chrome/browser/signin/SigninAndHistorySyncActivityLauncherImpl.java",
    "java/src/org/chromium/chrome/browser/signin/SigninBridge.java",
-   "java/src/org/chromium/chrome/browser/signin/SigninCheckerProvider.java",
    "java/src/org/chromium/chrome/browser/signin/SigninFirstRunFragment.java",
 +  "java/src/org/chromium/chrome/browser/sharing/shared_intent/SharedIntentShareActivity.java",
    "java/src/org/chromium/chrome/browser/signin/WebSigninRedirectCoordinator.java",
    "java/src/org/chromium/chrome/browser/signin/WebSigninRedirectCoordinatorSupplier.java",
    "java/src/org/chromium/chrome/browser/site_settings/ChromeSiteSettingsDelegate.java",
+diff --git a/chrome/browser/ui/android/strings/android_chrome_strings.grd b/chrome/browser/ui/android/strings/android_chrome_strings.grd
+--- a/chrome/browser/ui/android/strings/android_chrome_strings.grd
++++ b/chrome/browser/ui/android/strings/android_chrome_strings.grd
+@@ -6949,6 +6949,20 @@ To change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>delete the Chrome d
+       <message name="IDS_SHARING_HUB_SHEET_CLOSED" desc="Accessibility string read when the sharing hub is closed.">
+         List of sharing options is closed.
+       </message>
++
++      <message name="IDS_SHARED_INTENT_SHARE_ACTIVITY_TITLE" desc="Text that will appear in the Android share dialog to open an URL with Bromite.">
++        Open URL with Bromite
++      </message>
++      <message name="IDS_SHARED_INTENT_SHARE_ACTIVITY_TEXT" desc="Text to show for opening with Bromite.">
++        Will open <ph name="URL">%1$s</ph> with Bromite
++      </message>
++      <message name="IDS_SHARED_INTENT_SHARE_ACTIVITY_OPEN_TEXT" desc="Text to show in the button for opening with Bromite.">
++        Open with Bromite
++      </message>
++      <message name="IDS_SHARED_INTENT_SHARE_ACTIVITY_OPENINCOGNITO_TEXT" desc="Text to show in the button for opening with Bromite in incognito.">
++        Open with Bromite Incognito
++      </message>
++
+       <!-- Sms Fetcher -->
+       <message name="IDS_SMS_FETCHER_NOTIFICATION_TITLE" desc="Title text shown when the Android Chrome receives a ONE_TIME_CODE from an incoming SMS and ask users for permission to submit the code to their linked Desktop Chrome">
+         Submit <ph name="ONE_TIME_CODE">%1$s<ex>123</ex></ph> on <ph name="CLIENT_NAME">%2$s<ex>Zoe's Macbook</ex></ph>?
+diff --git a/cromite_flags/chrome/browser/about_flags_cc/Enable-share-intent.inc b/cromite_flags/chrome/browser/about_flags_cc/Enable-share-intent.inc
+new file mode 100644
+--- /dev/null
++++ b/cromite_flags/chrome/browser/about_flags_cc/Enable-share-intent.inc
+@@ -0,0 +1,12 @@
++#if BUILDFLAG(IS_ANDROID)
++
++#ifdef FLAG_SECTION
++
++    {"share-intent-ui",
++     "Enable share feature",
++     "Enables share feature", kOsAndroid,
++     FEATURE_VALUE_TYPE(chrome::android::kSharedIntentUI)},
++
++#endif
++
++#endif
+diff --git a/cromite_flags/chrome/browser/flags/android/chrome_feature_list_cc/Enable-share-intent.inc b/cromite_flags/chrome/browser/flags/android/chrome_feature_list_cc/Enable-share-intent.inc
+new file mode 100644
+--- /dev/null
++++ b/cromite_flags/chrome/browser/flags/android/chrome_feature_list_cc/Enable-share-intent.inc
+@@ -0,0 +1,3 @@
++CROMITE_FEATURE(kSharedIntentUI,
++                "SharedIntentUI",
++                base::FEATURE_ENABLED_BY_DEFAULT);
+diff --git a/cromite_flags/chrome/browser/flags/android/chrome_feature_list_h/Enable-share-intent.inc b/cromite_flags/chrome/browser/flags/android/chrome_feature_list_h/Enable-share-intent.inc
+new file mode 100644
+--- /dev/null
++++ b/cromite_flags/chrome/browser/flags/android/chrome_feature_list_h/Enable-share-intent.inc
+@@ -0,0 +1 @@
++BASE_DECLARE_FEATURE(kSharedIntentUI);
+
 diff --git a/chrome/android/java/AndroidManifest.xml b/chrome/android/java/AndroidManifest.xml
 --- a/chrome/android/java/AndroidManifest.xml
 +++ b/chrome/android/java/AndroidManifest.xml
@@ -492,59 +543,4 @@ diff --git a/chrome/browser/flags/android/java/src/org/chromium/chrome/browser/f
      public static final String SHOW_BLOCKED_SENSITIVE_DOWNLOAD = "ShowBlockedSensitiveDownload";
      public static final String SHOW_DOWNLOAD_SCANNING_STATE = "ShowDownloadScanningState";
      public static final String SHOW_TAB_LIST_ANIMATIONS = "ShowTabListAnimations";
-diff --git a/chrome/browser/ui/android/strings/android_chrome_strings.grd b/chrome/browser/ui/android/strings/android_chrome_strings.grd
---- a/chrome/browser/ui/android/strings/android_chrome_strings.grd
-+++ b/chrome/browser/ui/android/strings/android_chrome_strings.grd
-@@ -6758,6 +6758,20 @@ To change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>delete the Chrome d
-       <message name="IDS_SHARING_HUB_SHEET_CLOSED" desc="Accessibility string read when the sharing hub is closed.">
-         List of sharing options is closed.
-       </message>
-+
-+      <message name="IDS_SHARED_INTENT_SHARE_ACTIVITY_TITLE" desc="Text that will appear in the Android share dialog to open an URL with Bromite.">
-+        Open URL with Bromite
-+      </message>
-+      <message name="IDS_SHARED_INTENT_SHARE_ACTIVITY_TEXT" desc="Text to show for opening with Bromite.">
-+        Will open <ph name="URL">%1$s</ph> with Bromite
-+      </message>
-+      <message name="IDS_SHARED_INTENT_SHARE_ACTIVITY_OPEN_TEXT" desc="Text to show in the button for opening with Bromite.">
-+        Open with Bromite
-+      </message>
-+      <message name="IDS_SHARED_INTENT_SHARE_ACTIVITY_OPENINCOGNITO_TEXT" desc="Text to show in the button for opening with Bromite in incognito.">
-+        Open with Bromite Incognito
-+      </message>
-+
-       <!-- Sms Fetcher -->
-       <message name="IDS_SMS_FETCHER_NOTIFICATION_TITLE" desc="Title text shown when the Android Chrome receives a ONE_TIME_CODE from an incoming SMS and ask users for permission to submit the code to their linked Desktop Chrome">
-         Submit <ph name="ONE_TIME_CODE">%1$s<ex>123</ex></ph> on <ph name="CLIENT_NAME">%2$s<ex>Zoe's Macbook</ex></ph>?
-diff --git a/cromite_flags/chrome/browser/about_flags_cc/Enable-share-intent.inc b/cromite_flags/chrome/browser/about_flags_cc/Enable-share-intent.inc
-new file mode 100644
---- /dev/null
-+++ b/cromite_flags/chrome/browser/about_flags_cc/Enable-share-intent.inc
-@@ -0,0 +1,12 @@
-+#if BUILDFLAG(IS_ANDROID)
-+
-+#ifdef FLAG_SECTION
-+
-+    {"share-intent-ui",
-+     "Enable share feature",
-+     "Enables share feature", kOsAndroid,
-+     FEATURE_VALUE_TYPE(chrome::android::kSharedIntentUI)},
-+
-+#endif
-+
-+#endif
-diff --git a/cromite_flags/chrome/browser/flags/android/chrome_feature_list_cc/Enable-share-intent.inc b/cromite_flags/chrome/browser/flags/android/chrome_feature_list_cc/Enable-share-intent.inc
-new file mode 100644
---- /dev/null
-+++ b/cromite_flags/chrome/browser/flags/android/chrome_feature_list_cc/Enable-share-intent.inc
-@@ -0,0 +1,3 @@
-+CROMITE_FEATURE(kSharedIntentUI,
-+                "SharedIntentUI",
-+                base::FEATURE_ENABLED_BY_DEFAULT);
-diff --git a/cromite_flags/chrome/browser/flags/android/chrome_feature_list_h/Enable-share-intent.inc b/cromite_flags/chrome/browser/flags/android/chrome_feature_list_h/Enable-share-intent.inc
-new file mode 100644
---- /dev/null
-+++ b/cromite_flags/chrome/browser/flags/android/chrome_feature_list_h/Enable-share-intent.inc
-@@ -0,0 +1 @@
-+BASE_DECLARE_FEATURE(kSharedIntentUI);
 --
