@@ -7,26 +7,12 @@ granted by user
 
 License: GPL-2.0-or-later - https://spdx.org/licenses/GPL-2.0-or-later.html
 ---
- .../renderer_host/render_frame_host_impl.cc   |  3 +-
- .../core/frame/cached_permission_status.cc    |  6 ++--
- .../core/frame/cached_permission_status.h     |  1 +
- .../blink/renderer/core/frame/screen.cc       | 35 +++++++++++++++++--
- .../blink/renderer/core/frame/screen.h        | 17 ++++++++-
- 5 files changed, 55 insertions(+), 7 deletions(-)
+ .../core/frame/cached_permission_status.cc         |    6 ++-
+ .../renderer/core/frame/cached_permission_status.h |    1 +
+ third_party/blink/renderer/core/frame/screen.cc    |   35 +++++++++++++++++++-
+ third_party/blink/renderer/core/frame/screen.h     |   17 +++++++++-
+ 4 files changed, 53 insertions(+), 6 deletions(-)
 
-diff --git a/content/browser/renderer_host/render_frame_host_impl.cc b/content/browser/renderer_host/render_frame_host_impl.cc
---- a/content/browser/renderer_host/render_frame_host_impl.cc
-+++ b/content/browser/renderer_host/render_frame_host_impl.cc
-@@ -20551,7 +20551,8 @@ RenderFrameHostImpl::GetCachedPermissionStatuses() {
-            {PermissionName::WEB_APP_INSTALLATION,
-             PermissionType::WEB_APP_INSTALLATION},
- #endif
--           {PermissionName::GEOLOCATION, PermissionType::GEOLOCATION}});
-+           {PermissionName::GEOLOCATION, PermissionType::GEOLOCATION},
-+           {PermissionName::WINDOW_MANAGEMENT, PermissionType::WINDOW_MANAGEMENT}});
- 
-   base::flat_map<PermissionName, PermissionStatus> permission_map;
-   for (const auto& permission : kPermissions) {
 diff --git a/third_party/blink/renderer/core/frame/cached_permission_status.cc b/third_party/blink/renderer/core/frame/cached_permission_status.cc
 --- a/third_party/blink/renderer/core/frame/cached_permission_status.cc
 +++ b/third_party/blink/renderer/core/frame/cached_permission_status.cc
@@ -159,4 +145,5 @@ diff --git a/third_party/blink/renderer/core/frame/screen.h b/third_party/blink/
  };
  
  }  // namespace blink
+
 --

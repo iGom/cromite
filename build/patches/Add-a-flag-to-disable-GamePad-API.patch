@@ -5,25 +5,24 @@ Subject: Add a flag to disable GamePad API
 Adds restrict-gamepad-access flag (default active) to disable GamePad API.
 License: GPL-2.0-or-later - https://spdx.org/licenses/GPL-2.0-or-later.html
 ---
- content/child/runtime_features.cc                         | 2 ++
- .../about_flags_cc/Add-a-flag-to-disable-GamePad-API.inc  | 7 +++++++
- device/gamepad/public/cpp/gamepad_features.cc             | 8 ++++++++
- device/gamepad/public/cpp/gamepad_features.h              | 2 ++
- .../blink/renderer/modules/gamepad/navigator_gamepad.cc   | 6 ++++++
+ content/child/runtime_features.cc                  |    2 ++
+ .../Add-a-flag-to-disable-GamePad-API.inc          |    7 +++++++
+ device/gamepad/public/cpp/gamepad_features.cc      |    8 ++++++++
+ device/gamepad/public/cpp/gamepad_features.h       |    2 ++
+ .../renderer/modules/gamepad/navigator_gamepad.cc  |    6 ++++++
  5 files changed, 25 insertions(+)
- create mode 100644 cromite_flags/chrome/browser/about_flags_cc/Add-a-flag-to-disable-GamePad-API.inc
 
 diff --git a/content/child/runtime_features.cc b/content/child/runtime_features.cc
 --- a/content/child/runtime_features.cc
 +++ b/content/child/runtime_features.cc
-@@ -203,6 +203,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
-           {wf::EnablePaymentApp, raw_ref(features::kServiceWorkerPaymentApps)},
-           {wf::EnablePeriodicBackgroundSync,
-            raw_ref(features::kPeriodicBackgroundSync)},
+@@ -189,6 +189,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
+            media::kMediaEngagementBypassAutoplayPolicies},
+           {wf::EnablePaymentApp, features::kServiceWorkerPaymentApps},
+           {wf::EnablePeriodicBackgroundSync, features::kPeriodicBackgroundSync},
 +          {wf::EnableRestrictGamepadAccess,
 +           raw_ref(features::kRestrictGamepadAccess)},
            {wf::EnableSecurePaymentConfirmation,
-            raw_ref(features::kSecurePaymentConfirmation)},
+            features::kSecurePaymentConfirmation},
            {wf::EnableSecurePaymentConfirmationDebug,
 diff --git a/cromite_flags/chrome/browser/about_flags_cc/Add-a-flag-to-disable-GamePad-API.inc b/cromite_flags/chrome/browser/about_flags_cc/Add-a-flag-to-disable-GamePad-API.inc
 new file mode 100644
@@ -40,7 +39,7 @@ new file mode 100644
 diff --git a/device/gamepad/public/cpp/gamepad_features.cc b/device/gamepad/public/cpp/gamepad_features.cc
 --- a/device/gamepad/public/cpp/gamepad_features.cc
 +++ b/device/gamepad/public/cpp/gamepad_features.cc
-@@ -64,4 +64,12 @@ bool IsGamepadMultitouchEnabled() {
+@@ -71,4 +71,12 @@ bool IsGamepadMultitouchEnabled() {
    return false;
  }
  
@@ -62,9 +61,9 @@ diff --git a/device/gamepad/public/cpp/gamepad_features.h b/device/gamepad/publi
      kClaimDuplicateGamepadsProductIdentifier);
 +GAMEPAD_FEATURES_EXPORT BASE_DECLARE_FEATURE(kRestrictGamepadAccess);
  
- #if BUILDFLAG(IS_WIN)
- GAMEPAD_FEATURES_EXPORT BASE_DECLARE_FEATURE(kIgnorePS5GamepadsInWgi);
-@@ -39,6 +40,7 @@ GAMEPAD_FEATURES_EXPORT BASE_DECLARE_FEATURE(
+ #if BUILDFLAG(IS_ANDROID)
+ GAMEPAD_FEATURES_EXPORT BASE_DECLARE_FEATURE(kAndroidUnknownGamepadExtraAxes);
+@@ -43,6 +44,7 @@ GAMEPAD_FEATURES_EXPORT BASE_DECLARE_FEATURE(
  #endif  // BUILDFLAG(IS_WIN)
  
  GAMEPAD_FEATURES_EXPORT bool IsGamepadMultitouchEnabled();
@@ -83,7 +82,7 @@ diff --git a/third_party/blink/renderer/modules/gamepad/navigator_gamepad.cc b/t
  #include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-blink.h"
  #include "third_party/blink/public/platform/task_type.h"
  #include "third_party/blink/renderer/bindings/modules/v8/v8_gamepad_mapping_type.h"
-@@ -89,6 +90,9 @@ NavigatorGamepad& NavigatorGamepad::From(Navigator& navigator) {
+@@ -90,6 +91,9 @@ NavigatorGamepad& NavigatorGamepad::From(Navigator& navigator) {
  HeapVector<Member<Gamepad>> NavigatorGamepad::getGamepads(
      Navigator& navigator,
      ExceptionState& exception_state) {
@@ -93,7 +92,7 @@ diff --git a/third_party/blink/renderer/modules/gamepad/navigator_gamepad.cc b/t
    if (!navigator.DomWindow()) {
      // Using an existing NavigatorGamepad if one exists, but don't create one
      // for a detached window, as its subclasses depend on a non-null window.
-@@ -440,6 +444,8 @@ void NavigatorGamepad::MaybeDispatchGamepadEvents(
+@@ -446,6 +450,8 @@ void NavigatorGamepad::MaybeDispatchGamepadEvents(
  void NavigatorGamepad::DispatchGamepadConnectionChangedEvent(
      const AtomicString& event_name,
      Gamepad* gamepad) {
@@ -102,4 +101,5 @@ diff --git a/third_party/blink/renderer/modules/gamepad/navigator_gamepad.cc b/t
    // Ensure that we're blocking re-entrancy.
    DCHECK(processing_events_);
    DCHECK(has_connection_event_listener_);
+
 --

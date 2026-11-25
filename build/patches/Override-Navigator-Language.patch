@@ -8,9 +8,39 @@ and fix the selection in the UI for the browser language
 Original License: GPL-2.0-or-later - https://spdx.org/licenses/GPL-2.0-or-later.html
 License: GPL-3.0-only - https://spdx.org/licenses/GPL-3.0-only.html
 ---
- .../browser/language/AppLocaleUtils.java      | 22 ++++++++++++++++++-
- .../renderer_host/render_process_host_impl.cc |  6 ++++-
- 2 files changed, 26 insertions(+), 2 deletions(-)
+ .../renderer_host/render_process_host_impl.cc      |   12 ++++++++---
+ .../chrome/browser/language/AppLocaleUtils.java    |   22 +++++++++++++++++++-
+ 2 files changed, 30 insertions(+), 4 deletions(-)
+
+diff --git a/content/browser/renderer_host/render_process_host_impl.cc b/content/browser/renderer_host/render_process_host_impl.cc
+--- a/content/browser/renderer_host/render_process_host_impl.cc
++++ b/content/browser/renderer_host/render_process_host_impl.cc
+@@ -78,6 +78,7 @@
+ #include "components/input/features.h"
+ #include "components/input/utils.h"
+ #include "components/metrics/histogram_controller.h"
++#include "components/language/core/browser/language_prefs.h"
+ #include "components/metrics/single_sample_metrics.h"
+ #include "components/services/storage/privileged/mojom/indexed_db_control.mojom.h"
+ #include "components/services/storage/public/cpp/buckets/bucket_id.h"
+@@ -3865,9 +3866,14 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
+   PropagateBrowserCommandLineToRenderer(browser_command_line, command_line);
+ 
+   // Pass on the browser locale.
+-  const base::i18n::LanguageTag locale =
+-      GetContentClient()->browser()->GetApplicationLocale();
+-  command_line->AppendSwitchASCII(switches::kLang, locale.tag_string());
++  const std::string preferred_language = language::GetFirstLanguage(
++      GetContentClient()->browser()->GetAcceptLangs(browser_context_));
++  if (preferred_language.empty()) {
++    const auto locale = GetContentClient()->browser()->GetApplicationLocale();
++    command_line->AppendSwitchASCII(switches::kLang, locale.tag_string());
++  } else {
++    command_line->AppendSwitchASCII(switches::kLang, preferred_language);
++  }
+ 
+   // A non-empty RendererCmdPrefix implies that Zygote is disabled.
+   if (!base::CommandLine::ForCurrentProcess()
 
 diff --git a/chrome/browser/language/android/java/src/org/chromium/chrome/browser/language/AppLocaleUtils.java b/chrome/browser/language/android/java/src/org/chromium/chrome/browser/language/AppLocaleUtils.java
 --- a/chrome/browser/language/android/java/src/org/chromium/chrome/browser/language/AppLocaleUtils.java
@@ -58,28 +88,4 @@ diff --git a/chrome/browser/language/android/java/src/org/chromium/chrome/browse
      }
  
      /**
-diff --git a/content/browser/renderer_host/render_process_host_impl.cc b/content/browser/renderer_host/render_process_host_impl.cc
---- a/content/browser/renderer_host/render_process_host_impl.cc
-+++ b/content/browser/renderer_host/render_process_host_impl.cc
-@@ -76,6 +76,7 @@
- #include "components/input/features.h"
- #include "components/input/utils.h"
- #include "components/metrics/histogram_controller.h"
-+#include "components/language/core/browser/language_prefs.h"
- #include "components/metrics/single_sample_metrics.h"
- #include "components/services/storage/privileged/mojom/indexed_db_control.mojom.h"
- #include "components/services/storage/public/cpp/buckets/bucket_id.h"
-@@ -3794,8 +3795,11 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
-   PropagateBrowserCommandLineToRenderer(browser_command_line, command_line);
- 
-   // Pass on the browser locale.
--  const std::string locale =
-+  std::string locale =
-       GetContentClient()->browser()->GetApplicationLocale();
-+  const std::string accept_langs = GetContentClient()->browser()->GetAcceptLangs(browser_context_);
-+  if (!accept_langs.empty())
-+    locale = language::GetFirstLanguage(accept_langs);
-   command_line->AppendSwitchASCII(switches::kLang, locale);
- 
-   // A non-empty RendererCmdPrefix implies that Zygote is disabled.
 --

@@ -4,45 +4,47 @@ Subject: Add browser policy
 
 License: GPL-2.0-or-later - https://spdx.org/licenses/GPL-2.0-or-later.html
 ---
- base/win/win_util.cc                          |  71 +--------
- chrome/android/java/AndroidManifest.xml       |   4 -
- .../privacy_preferences_manager_impl.cc       |   5 +
- .../metrics/chrome_feature_list_creator.cc    |  15 ++
- .../search_engine_preconnector.cc             |   3 +
- .../policy/chrome_browser_policy_connector.cc |   3 -
- ...nfiguration_policy_handler_list_factory.cc |   6 +-
- .../account_consistency_mode_manager.cc       |   7 +-
- ...ccount_consistency_mode_manager_factory.cc |   2 +-
- .../throttled_gaia_auth_fetcher.cc            |   5 +
- chrome/browser/signin/chrome_signin_client.cc |   7 +-
- .../browser/signin/dice_response_handler.cc   |   2 +-
- .../ui/webui/policy/policy_ui_handler.cc      | 104 ++++++++++++-
- .../ui/webui/policy/policy_ui_handler.h       |   2 +
- .../strings/android/browser_ui_strings.grd    |   2 +-
- .../commerce/core/commerce_feature_list.cc    |  61 +-------
- .../core/browser/browser_policy_connector.cc  |   3 +
- .../common/command_line_policy_provider.cc    |   3 +
- .../core/common/policy_loader_command_line.cc | 138 ++++++++++++++++--
- .../policy/core/common/policy_pref_names.h    |   3 +
- .../policy/core/common/policy_service_impl.cc |   3 +
- .../policy/core/common/policy_switches.cc     |   2 +
- .../policy/core/common/policy_switches.h      |   1 +
- .../ExtensionManifestV2Availability.yaml      |   5 +-
- .../Miscellaneous/SyncDisabled.yaml           |   2 +-
- .../policy/resources/webui/policy_row.html.ts |   3 +
- .../policy/resources/webui/policy_row.ts      |   9 ++
- components/policy_strings.grdp                |   4 +-
- components/search/ntp_features.cc             |   1 +
- components/signin/features.gni                |   2 +-
- .../gaia_cookie_manager_service.cc            |   4 +
- google_apis/gaia/gaia_auth_fetcher.cc         |   1 +
- net/socket/ssl_client_socket_impl.cc          |   1 +
- 33 files changed, 320 insertions(+), 164 deletions(-)
+ base/win/win_util.cc                               |   71 ----------
+ .../browser/metrics/chrome_feature_list_creator.cc |   15 ++
+ .../search_engine_preconnector.cc                  |    3 
+ .../policy/chrome_browser_policy_connector.cc      |    3 
+ .../configuration_policy_handler_list_factory.cc   |    6 -
+ .../signin/account_consistency_mode_manager.cc     |    7 +
+ .../account_consistency_mode_manager_factory.cc    |    2 
+ .../throttled_gaia_auth_fetcher.cc                 |    5 +
+ chrome/browser/signin/chrome_signin_client.cc      |    7 +
+ chrome/browser/signin/dice_response_handler.cc     |    2 
+ .../browser/ui/webui/policy/policy_ui_handler.cc   |  121 +++++++++++++++++-
+ chrome/browser/ui/webui/policy/policy_ui_handler.h |    3 
+ .../strings/android/browser_ui_strings.grd         |    2 
+ components/commerce/core/commerce_feature_list.cc  |   55 +-------
+ .../core/browser/browser_policy_connector.cc       |    3 
+ .../core/common/command_line_policy_provider.cc    |    3 
+ .../core/common/policy_loader_command_line.cc      |  138 ++++++++++++++++++--
+ components/policy/core/common/policy_pref_names.h  |    3 
+ .../policy/core/common/policy_service_impl.cc      |    3 
+ components/policy/core/common/policy_switches.cc   |    2 
+ components/policy/core/common/policy_switches.h    |    1 
+ .../ExtensionManifestV2Availability.yaml           |    5 -
+ .../Miscellaneous/SyncDisabled.yaml                |    2 
+ components/policy/resources/webui/browser_proxy.ts |    8 +
+ .../policy/resources/webui/mojom/policy.mojom      |    5 +
+ .../policy/resources/webui/policy_row.html.ts      |    3 
+ components/policy/resources/webui/policy_row.ts    |    9 +
+ components/policy_strings.grdp                     |    4 -
+ components/search/ntp_features.cc                  |    1 
+ components/signin/features.gni                     |    2 
+ .../gaia_cookie_manager_service.cc                 |    4 +
+ google_apis/gaia/gaia_auth_fetcher.cc              |    1 
+ net/socket/ssl_client_socket_impl.cc               |    1 
+ chrome/android/java/AndroidManifest.xml            |    4 -
+ .../privacy_preferences_manager_impl.cc            |    5 +
+ 35 files changed, 350 insertions(+), 159 deletions(-)
 
 diff --git a/base/win/win_util.cc b/base/win/win_util.cc
 --- a/base/win/win_util.cc
 +++ b/base/win/win_util.cc
-@@ -167,82 +167,17 @@ bool EnablePerMonitorV2() {
+@@ -168,82 +168,17 @@ bool EnablePerMonitorV2() {
  }
  
  bool* GetDomainEnrollmentStateStorage() {
@@ -128,63 +130,19 @@ diff --git a/base/win/win_util.cc b/base/win/win_util.cc
    return state;
  }
  
-diff --git a/chrome/android/java/AndroidManifest.xml b/chrome/android/java/AndroidManifest.xml
---- a/chrome/android/java/AndroidManifest.xml
-+++ b/chrome/android/java/AndroidManifest.xml
-@@ -81,9 +81,7 @@ by a child template that "extends" this file.
-     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" tools:ignore="SystemPermissionTypo" />
-     <uses-permission android:name="android.permission.RUN_USER_INITIATED_JOBS" />
- 
--    <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
-     <uses-permission android:name="android.permission.INTERNET"/>
--    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS"/>
-     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
-     <uses-permission android:name="android.permission.NFC"/>
-     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-@@ -103,7 +101,6 @@ by a child template that "extends" this file.
-       resizeTo, moveBy}|).
-     -->
-     <uses-permission android:name="android.permission.REPOSITION_SELF_WINDOWS"/>
--    <uses-permission android:name="android.permission.USE_CREDENTIALS"/>
-     <uses-permission-sdk-23 android:name="android.permission.USE_BIOMETRIC"/>
-     <uses-permission-sdk-23 android:name="android.permission.USE_FINGERPRINT"/>
-     <uses-permission android:name="android.permission.VIBRATE"/>
-@@ -165,7 +162,6 @@ by a child template that "extends" this file.
-     <uses-permission android:name="com.chrome.permission.DEVICE_EXTRAS" />
-     <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT"/>
- 
--    <uses-permission android:name="com.google.android.apps.now.CURRENT_ACCOUNT_ACCESS" />
- 
-     <!-- Permission for using pinned windowing layer for document picture-in-picture. -->
-     <uses-permission android:name="android.permission.USE_PINNED_WINDOWING_LAYER" />
-diff --git a/chrome/browser/android/preferences/privacy_preferences_manager_impl.cc b/chrome/browser/android/preferences/privacy_preferences_manager_impl.cc
---- a/chrome/browser/android/preferences/privacy_preferences_manager_impl.cc
-+++ b/chrome/browser/android/preferences/privacy_preferences_manager_impl.cc
-@@ -48,6 +48,11 @@ static void JNI_PrivacyPreferencesManagerImpl_SetMetricsReportingEnabled(
- static bool
- JNI_PrivacyPreferencesManagerImpl_IsMetricsReportingDisabledByPolicy() {
-   const PrefService* local_state = g_browser_process->local_state();
-+  // this point (policy with 'future') gave me false, false
-+  // LOG(INFO) << "---IsMetricsReportingDisabledByPolicy "
-+  //           << local_state->IsManagedPreference(metrics::prefs::kMetricsReportingEnabled)
-+  //           << " "
-+  //           << local_state->GetBoolean(metrics::prefs::kMetricsReportingEnabled);
-   return metrics::MetricsReportingChoiceService::
-       IsMetricsReportingDisabledByPolicy(local_state);
- }
 diff --git a/chrome/browser/metrics/chrome_feature_list_creator.cc b/chrome/browser/metrics/chrome_feature_list_creator.cc
 --- a/chrome/browser/metrics/chrome_feature_list_creator.cc
 +++ b/chrome/browser/metrics/chrome_feature_list_creator.cc
-@@ -40,6 +40,8 @@
+@@ -42,6 +42,8 @@
  #include "services/network/public/cpp/network_switches.h"
  #include "services/network/public/cpp/shared_url_loader_factory.h"
  #include "ui/base/resource/resource_bundle.h"
 +#include "components/policy/core/common/policy_pref_names.h"
 +#include "components/policy/core/common/policy_switches.h"
  
- #if BUILDFLAG(IS_WIN)
- #include "chrome/installer/util/google_update_settings.h"
-@@ -146,6 +148,19 @@ void ChromeFeatureListCreator::CreatePrefService() {
+ #if BUILDFLAG(IS_ANDROID)
+ #include "components/variations/android/variations_seed_bridge.h"
+@@ -164,6 +166,19 @@ void ChromeFeatureListCreator::CreatePrefService() {
        read_error != JsonPrefStore::PREF_READ_ERROR_NO_FILE);
  
    if (read_error == JsonPrefStore::PREF_READ_ERROR_NONE) {
@@ -207,7 +165,7 @@ diff --git a/chrome/browser/metrics/chrome_feature_list_creator.cc b/chrome/brow
 diff --git a/chrome/browser/navigation_predictor/search_engine_preconnector.cc b/chrome/browser/navigation_predictor/search_engine_preconnector.cc
 --- a/chrome/browser/navigation_predictor/search_engine_preconnector.cc
 +++ b/chrome/browser/navigation_predictor/search_engine_preconnector.cc
-@@ -86,6 +86,9 @@ namespace features {
+@@ -149,6 +149,9 @@ namespace features {
  BASE_FEATURE(kPreconnectFromKeyedService, base::FEATURE_ENABLED_BY_DEFAULT);
  BASE_FEATURE(kPreconnectToSearch, base::FEATURE_ENABLED_BY_DEFAULT);
  
@@ -220,7 +178,7 @@ diff --git a/chrome/browser/navigation_predictor/search_engine_preconnector.cc b
 diff --git a/chrome/browser/policy/chrome_browser_policy_connector.cc b/chrome/browser/policy/chrome_browser_policy_connector.cc
 --- a/chrome/browser/policy/chrome_browser_policy_connector.cc
 +++ b/chrome/browser/policy/chrome_browser_policy_connector.cc
-@@ -132,9 +132,6 @@ bool ChromeBrowserPolicyConnector::HasMachineLevelPolicies() {
+@@ -147,9 +147,6 @@ bool ChromeBrowserPolicyConnector::HasMachineLevelPolicies() {
      return true;
    }
  #endif  // !BUILDFLAG(IS_CHROMEOS)
@@ -245,11 +203,11 @@ diff --git a/chrome/browser/policy/configuration_policy_handler_list_factory.cc 
 +  return true;
  }
  
- }  // namespace
+ bool AreCloudOnlyPoliciesAllowed() {
 diff --git a/chrome/browser/signin/account_consistency_mode_manager.cc b/chrome/browser/signin/account_consistency_mode_manager.cc
 --- a/chrome/browser/signin/account_consistency_mode_manager.cc
 +++ b/chrome/browser/signin/account_consistency_mode_manager.cc
-@@ -93,7 +93,8 @@ signin::AccountConsistencyMethod ComputeAccountConsistencyMethod(
+@@ -94,7 +94,8 @@ signin::AccountConsistencyMethod ComputeAccountConsistencyMethod(
  #endif
  
  #if BUILDFLAG(ENABLE_MIRROR)
@@ -259,7 +217,7 @@ diff --git a/chrome/browser/signin/account_consistency_mode_manager.cc b/chrome/
  #elif BUILDFLAG(ENABLE_DICE_SUPPORT)
    if (!profile->GetPrefs()->GetBoolean(prefs::kSigninAllowed)) {
      VLOG(1) << "Desktop Identity Consistency disabled as sign-in to Chrome "
-@@ -101,7 +102,7 @@ signin::AccountConsistencyMethod ComputeAccountConsistencyMethod(
+@@ -102,7 +103,7 @@ signin::AccountConsistencyMethod ComputeAccountConsistencyMethod(
      return AccountConsistencyMethod::kDisabled;
    }
  
@@ -268,7 +226,7 @@ diff --git a/chrome/browser/signin/account_consistency_mode_manager.cc b/chrome/
  #else
    NOTREACHED();
  #endif
-@@ -195,7 +196,7 @@ void AccountConsistencyModeManager::SetIgnoreMissingOAuthClientForTesting() {
+@@ -197,7 +198,7 @@ void AccountConsistencyModeManager::SetIgnoreMissingOAuthClientForTesting() {
  // static
  bool AccountConsistencyModeManager::ShouldBuildServiceForProfile(
      Profile* profile) {
@@ -331,7 +289,7 @@ diff --git a/chrome/browser/signin/bound_session_credentials/throttled_gaia_auth
 diff --git a/chrome/browser/signin/chrome_signin_client.cc b/chrome/browser/signin/chrome_signin_client.cc
 --- a/chrome/browser/signin/chrome_signin_client.cc
 +++ b/chrome/browser/signin/chrome_signin_client.cc
-@@ -308,7 +308,9 @@ void ChromeSigninClient::DoFinalInit() {
+@@ -325,7 +325,9 @@ void ChromeSigninClient::DoFinalInit() {
  bool ChromeSigninClient::ProfileAllowsSigninCookies(Profile* profile) {
    scoped_refptr<content_settings::CookieSettings> cookie_settings =
        CookieSettingsFactory::GetForProfile(profile);
@@ -342,7 +300,7 @@ diff --git a/chrome/browser/signin/chrome_signin_client.cc b/chrome/browser/sign
  }
  
  PrefService* ChromeSigninClient::GetPrefs() {
-@@ -426,6 +428,9 @@ bool ChromeSigninClient::AreNetworkCallsDelayed() {
+@@ -442,6 +444,9 @@ bool ChromeSigninClient::AreNetworkCallsDelayed() {
  }
  
  void ChromeSigninClient::DelayNetworkCall(base::OnceClosure callback) {
@@ -375,7 +333,7 @@ diff --git a/chrome/browser/ui/webui/policy/policy_ui_handler.cc b/chrome/browse
  #include "base/strings/utf_string_conversions.h"
  #include "base/task/task_traits.h"
  #include "base/task/thread_pool.h"
-@@ -72,6 +73,7 @@
+@@ -73,6 +74,7 @@
  #include "components/policy/core/common/policy_details.h"
  #include "components/policy/core/common/policy_logger.h"
  #include "components/policy/core/common/policy_pref_names.h"
@@ -383,7 +341,21 @@ diff --git a/chrome/browser/ui/webui/policy/policy_ui_handler.cc b/chrome/browse
  #include "components/policy/core/common/policy_scheduler.h"
  #include "components/policy/core/common/policy_types.h"
  #include "components/policy/core/common/policy_utils.h"
-@@ -274,6 +276,10 @@ void PolicyUIHandler::RegisterMessages() {
+@@ -122,6 +124,13 @@
+ 
+ namespace {
+ 
++std::vector<std::string> GetDisabledDefaultPolicies() {
++  return base::SplitString(
++      g_browser_process->local_state()->GetString(
++          policy::policy_prefs::kDisabledDefaultPoliciesList),
++      ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
++}
++
+ // Key under which extension policies are grouped in JSON policy exports.
+ constexpr char kExtensionsKey[] = "extensions";
+ 
+@@ -273,6 +282,10 @@ void PolicyUIHandler::RegisterMessages() {
        "getPoliciesJson",
        base::BindRepeating(&PolicyUIHandler::HandleGetPoliciesJson,
                            base::Unretained(this)));
@@ -394,15 +366,45 @@ diff --git a/chrome/browser/ui/webui/policy/policy_ui_handler.cc b/chrome/browse
  #if !BUILDFLAG(IS_CHROMEOS)
    web_ui()->RegisterMessageCallback(
        "uploadReport", base::BindRepeating(&PolicyUIHandler::HandleUploadReport,
-@@ -531,8 +537,102 @@ void PolicyUIHandler::SendPolicies() {
-       "policies-updated",
-       base::Value(
-           policy_value_and_status_aggregator_->GetAggregatedPolicyNames()),
--      base::Value(
--          policy_value_and_status_aggregator_->GetAggregatedPolicyValues()));
-+      base::Value(GetPolicyValues()));
-+}
-+
+@@ -556,9 +569,27 @@ void PolicyUIHandler::UploadReportImpl(base::OnceClosure on_report_uploaded) {
+ 
+ void PolicyUIHandler::SendPolicies() {
+   if (IsMojoMigrationEnabled()) {
++    auto values = policy_value_and_status_aggregator_->GetAggregatedPolicyValuesMojo();
++    auto chrome_group = values->policy_groups.find(policy::kChromePoliciesId);
++    if (chrome_group != values->policy_groups.end()) {
++      auto& policies = chrome_group->second->policies;
++      for (const auto& name : GetDisabledDefaultPolicies()) {
++        if (policies.contains(name)) {
++          continue;
++        }
++        auto entry = policy::mojom::Policy::New();
++        entry->name = name;
++        entry->disabled = true;
++        entry->level = policy::mojom::PolicyLevel::kMandatory;
++        entry->scope = policy::mojom::PolicyScope::kMachine;
++        entry->source = "sourceDefault";
++        entry->value = base::Value(false);
++        policies.emplace(name, std::move(entry));
++      }
++    }
+     client_->PoliciesUpdated(
+         policy_value_and_status_aggregator_->GetAggregatedPolicyNamesMojo(),
+-        policy_value_and_status_aggregator_->GetAggregatedPolicyValuesMojo());
++        std::move(values));
+   } else {
+     if (!IsJavascriptAllowed()) {
+       return;
+@@ -567,11 +598,95 @@ void PolicyUIHandler::SendPolicies() {
+         "policies-updated",
+         base::Value(
+             policy_value_and_status_aggregator_->GetAggregatedPolicyNames()),
+-        base::Value(
+-            policy_value_and_status_aggregator_->GetAggregatedPolicyValues()));
++        base::Value(GetPolicyValues()));
+   }
+ }
+ 
 +base::DictValue PolicyUIHandler::GetPolicyValues() {
 +  base::DictValue policy =
 +    policy_value_and_status_aggregator_->GetAggregatedPolicyValues();
@@ -410,15 +412,8 @@ diff --git a/chrome/browser/ui/webui/policy/policy_ui_handler.cc b/chrome/browse
 +    policy.FindDict(policy::kPolicyValuesKey);
 +  DCHECK(policy_values);
 +
-+  PrefService* local_state = g_browser_process->local_state();
-+  DCHECK(local_state);
 +
-+  // get user disabled list from local state
-+  std::string disabled_policies_pref =
-+      local_state->GetString(policy::policy_prefs::kDisabledDefaultPoliciesList);
-+  std::vector<std::string> disabled_policies =
-+      base::SplitString(disabled_policies_pref, ",",
-+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
++  auto disabled_policies = GetDisabledDefaultPolicies();
 +
 +  auto* root = policy_values->FindDict(policy::kChromePoliciesId);
 +  if (root) {
@@ -451,9 +446,11 @@ diff --git a/chrome/browser/ui/webui/policy/policy_ui_handler.cc b/chrome/browse
 +void PolicyUIHandler::HandleSetEnabledPolicy(
 +    const base::ListValue& args) {
 +  CHECK_EQ(2u, args.size());
-+  const std::string policy_name = args[0].GetString();
-+  bool enabled = args[1].GetBool();
++  SetEnabledPolicy(args[0].GetString(), args[1].GetBool());
++}
 +
++void PolicyUIHandler::SetEnabledPolicy(const std::string& policy_name,
++                                       bool enabled) {
 +  // Check if policy exists
 +  base::DictValue policy =
 +    policy_value_and_status_aggregator_->GetAggregatedPolicyValues();
@@ -478,12 +475,7 @@ diff --git a/chrome/browser/ui/webui/policy/policy_ui_handler.cc b/chrome/browse
 +  PrefService* local_state = g_browser_process->local_state();
 +  DCHECK(local_state);
 +
-+  // get user disabled list from local state
-+  std::string disabled_policies_pref =
-+      local_state->GetString(policy::policy_prefs::kDisabledDefaultPoliciesList);
-+  std::vector<std::string> disabled_policies =
-+      base::SplitString(disabled_policies_pref, ",",
-+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
++  auto disabled_policies = GetDisabledDefaultPolicies();
 +
 +  // remove policy
 +  std::erase_if(disabled_policies,
@@ -496,21 +488,31 @@ diff --git a/chrome/browser/ui/webui/policy/policy_ui_handler.cc b/chrome/browse
 +  // save current user disabled policy in local state
 +  local_state->SetString(policy::policy_prefs::kDisabledDefaultPoliciesList,
 +                         base::JoinString(disabled_policies, ","));
- }
- 
++}
++
  void PolicyUIHandler::SendStatus() {
+   if (IsMojoMigrationEnabled()) {
+     client_->StatusUpdated(
 diff --git a/chrome/browser/ui/webui/policy/policy_ui_handler.h b/chrome/browser/ui/webui/policy/policy_ui_handler.h
 --- a/chrome/browser/ui/webui/policy/policy_ui_handler.h
 +++ b/chrome/browser/ui/webui/policy/policy_ui_handler.h
-@@ -94,6 +94,8 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
-                        GetPoliciesJsonCallback callback) override;
+@@ -87,6 +87,7 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
+       SetLocalTestPoliciesCallback callback) override;
+   void GetPolicyLogs(GetPolicyLogsCallback callback) override;
+   void ReloadPolicies() override;
++  void SetEnabledPolicy(const std::string& policy_name, bool enabled) override;
+ #if !BUILDFLAG(IS_CHROMEOS)
+   void UploadReport(UploadReportCallback callback) override;
+ #endif
+@@ -102,6 +103,8 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
+   void SendInitialState(const base::ListValue& args = base::ListValue());
  
   private:
 +  void HandleSetEnabledPolicy(const base::ListValue& args);
 +  base::DictValue GetPolicyValues();
-   void HandleListenPoliciesUpdates(const base::ListValue& args);
    void HandleReloadPolicies(const base::ListValue& args);
    void HandleSetLocalTestPolicies(const base::ListValue& args);
+   void HandleRevertLocalTestPolicies(const base::ListValue& args);
 diff --git a/components/browser_ui/strings/android/browser_ui_strings.grd b/components/browser_ui/strings/android/browser_ui_strings.grd
 --- a/components/browser_ui/strings/android/browser_ui_strings.grd
 +++ b/components/browser_ui/strings/android/browser_ui_strings.grd
@@ -526,7 +528,7 @@ diff --git a/components/browser_ui/strings/android/browser_ui_strings.grd b/comp
 diff --git a/components/commerce/core/commerce_feature_list.cc b/components/commerce/core/commerce_feature_list.cc
 --- a/components/commerce/core/commerce_feature_list.cc
 +++ b/components/commerce/core/commerce_feature_list.cc
-@@ -71,56 +71,6 @@ const CountryLocaleMap& GetAllowedCountryToLocaleMap() {
+@@ -70,50 +70,6 @@ const CountryLocaleMap& GetAllowedCountryToLocaleMap() {
    return *allowed_map;
  }
  
@@ -547,8 +549,6 @@ diff --git a/components/commerce/core/commerce_feature_list.cc b/components/comm
 -          .GetRuleDiscountPartnerMerchantPattern();
 -  if (pattern_from_component && kRulePartnerMerchantPattern.Get() ==
 -                                    kRulePartnerMerchantPattern.default_value) {
--    CommerceHeuristicsDataMetricsHelper::RecordPartnerMerchantPatternSource(
--        CommerceHeuristicsDataMetricsHelper::HeuristicsSource::FROM_COMPONENT);
 -    return *pattern_from_component;
 -  }
 -#endif  // !BUILDFLAG(IS_ANDROID)
@@ -556,9 +556,6 @@ diff --git a/components/commerce/core/commerce_feature_list.cc b/components/comm
 -  options.set_case_sensitive(false);
 -  static base::NoDestructor<re2::RE2> instance(
 -      kRulePartnerMerchantPattern.Get(), options);
--  CommerceHeuristicsDataMetricsHelper::RecordPartnerMerchantPatternSource(
--      CommerceHeuristicsDataMetricsHelper::HeuristicsSource::
--          FROM_FEATURE_PARAMETER);
 -  return *instance;
 -}
 -
@@ -579,11 +576,10 @@ diff --git a/components/commerce/core/commerce_feature_list.cc b/components/comm
 -      kCouponPartnerMerchantPattern.Get(), options);
 -  return *instance;
 -}
--
+ 
  }  // namespace
  
- BASE_FEATURE(kCommerceAllowLocalImages, base::FEATURE_DISABLED_BY_DEFAULT);
-@@ -239,16 +189,15 @@ const base::FeatureParam<bool> kRevertIconOnFailure{
+@@ -228,16 +184,15 @@ const base::FeatureParam<bool> kRevertIconOnFailure{
      &kShoppingList, kRevertIconOnFailureParam, false};
  
  bool IsPartnerMerchant(const GURL& url) {
@@ -603,7 +599,7 @@ diff --git a/components/commerce/core/commerce_feature_list.cc b/components/comm
  }
  
  bool IsCartDiscountFeatureEnabled() {
-@@ -300,6 +249,7 @@ bool IsEnabledForCountryAndLocale(const base::Feature& feature,
+@@ -289,6 +244,7 @@ bool IsEnabledForCountryAndLocale(const base::Feature& feature,
  bool IsRegionLockedFeatureEnabled(const base::Feature& feature,
                                    const std::string& country_code,
                                    const std::string& locale) {
@@ -611,7 +607,7 @@ diff --git a/components/commerce/core/commerce_feature_list.cc b/components/comm
    auto* feature_list = base::FeatureList::GetInstance();
  
    // If the feature has a server-side config, this check will ensure that
-@@ -332,6 +282,7 @@ base::TimeDelta GetDiscountFetchDelay() {
+@@ -321,6 +277,7 @@ base::TimeDelta GetDiscountFetchDelay() {
  }
  
  bool IsNoDiscountMerchant(const GURL& url) {
@@ -619,7 +615,7 @@ diff --git a/components/commerce/core/commerce_feature_list.cc b/components/comm
    auto* pattern_from_component =
        commerce_heuristics::CommerceHeuristicsData::GetInstance()
            .GetNoDiscountMerchantPattern();
-@@ -343,4 +294,6 @@ bool IsNoDiscountMerchant(const GURL& url) {
+@@ -332,4 +289,6 @@ bool IsNoDiscountMerchant(const GURL& url) {
    return RE2::PartialMatch(url.host(), *pattern_from_component);
  }
  #endif
@@ -629,7 +625,7 @@ diff --git a/components/commerce/core/commerce_feature_list.cc b/components/comm
 diff --git a/components/policy/core/browser/browser_policy_connector.cc b/components/policy/core/browser/browser_policy_connector.cc
 --- a/components/policy/core/browser/browser_policy_connector.cc
 +++ b/components/policy/core/browser/browser_policy_connector.cc
-@@ -155,6 +155,9 @@ void BrowserPolicyConnector::RegisterPrefs(PrefRegistrySimple* registry) {
+@@ -170,6 +170,9 @@ void BrowserPolicyConnector::RegisterPrefs(PrefRegistrySimple* registry) {
        CloudPolicyRefreshScheduler::kDefaultRefreshDelayMs);
    registry->RegisterBooleanPref(
        policy_prefs::kCloudManagementEnrollmentMandatory, false);
@@ -826,16 +822,16 @@ diff --git a/components/policy/core/common/policy_pref_names.h b/components/poli
 diff --git a/components/policy/core/common/policy_service_impl.cc b/components/policy/core/common/policy_service_impl.cc
 --- a/components/policy/core/common/policy_service_impl.cc
 +++ b/components/policy/core/common/policy_service_impl.cc
-@@ -55,6 +55,9 @@ namespace {
+@@ -56,6 +56,9 @@ namespace {
  // Metrics should not be enforced so if this policy is set as mandatory
  // downgrade it to a recommended level policy.
  void DowngradeMetricsReportingToRecommendedPolicy(PolicyMap* policies) {
 +  // skip the change to 'Recommended' if the MetricsReportingEnabled
 +  // policy is 'Mandatory'.
 +  if ((true)) return;
-   // Capture both the Chrome-only and device-level policies on Chrome OS.
-   const std::vector<const char*> metrics_keys = {
- #if BUILDFLAG(IS_CHROMEOS)
+   PolicyMap::Entry* policy =
+       policies->GetMutable(policy::key::kMetricsReportingEnabled);
+   if (policy && policy->level != POLICY_LEVEL_RECOMMENDED &&
 diff --git a/components/policy/core/common/policy_switches.cc b/components/policy/core/common/policy_switches.cc
 --- a/components/policy/core/common/policy_switches.cc
 +++ b/components/policy/core/common/policy_switches.cc
@@ -893,6 +889,46 @@ diff --git a/components/policy/resources/templates/policy_definitions/Miscellane
  tags:
  - filtering
  - google-sharing
+diff --git a/components/policy/resources/webui/browser_proxy.ts b/components/policy/resources/webui/browser_proxy.ts
+--- a/components/policy/resources/webui/browser_proxy.ts
++++ b/components/policy/resources/webui/browser_proxy.ts
+@@ -138,6 +138,14 @@ export class BrowserProxy {
+ 
+   // Triggers a policy refresh. The refreshed policies are delivered through
+   // `listenForPoliciesUpdated()`.
++  static setEnabledPolicy(name: string, enabled: boolean) {
++    if (policyPageMojoMigrationEnabled) {
++      this.getInstance().handler.setEnabledPolicy(name, enabled);
++    } else {
++      chrome.send('setEnabledPolicy', [name, enabled]);
++    }
++  }
++
+   static reloadPolicies() {
+     if (policyPageMojoMigrationEnabled) {
+       this.getInstance().handler.reloadPolicies();
+diff --git a/components/policy/resources/webui/mojom/policy.mojom b/components/policy/resources/webui/mojom/policy.mojom
+--- a/components/policy/resources/webui/mojom/policy.mojom
++++ b/components/policy/resources/webui/mojom/policy.mojom
+@@ -99,6 +99,9 @@ struct Conflict {
+ 
+ // Represents an individual policy and its associated metadata.
+ struct Policy {
++  // True for an inactive built-in Cromite default listed by chrome://policy.
++  bool disabled;
++
+   // True if the policy was ignored by Chrome.
+   bool ignored;
+ 
+@@ -232,6 +235,8 @@ interface PolicyPageHandler {
+   // fetches pending device and user remote commands.
+   ReloadPolicies();
+ 
++  SetEnabledPolicy(string policy_name, bool enabled);
++
+   // Triggers an upload of the enterprise browser and profile reports, as well
+   // as any pending SaaS usage reports. The callback is invoked once the
+   // browser and profile reports have been uploaded, successfully or not.
 diff --git a/components/policy/resources/webui/policy_row.html.ts b/components/policy/resources/webui/policy_row.html.ts
 --- a/components/policy/resources/webui/policy_row.html.ts
 +++ b/components/policy/resources/webui/policy_row.html.ts
@@ -909,15 +945,15 @@ diff --git a/components/policy/resources/webui/policy_row.html.ts b/components/p
 diff --git a/components/policy/resources/webui/policy_row.ts b/components/policy/resources/webui/policy_row.ts
 --- a/components/policy/resources/webui/policy_row.ts
 +++ b/components/policy/resources/webui/policy_row.ts
-@@ -20,6 +20,7 @@ import {getHtml} from './policy_row.html.js';
- // Policy type definition in policy.mojom should only contain fields set by C++.
- // This interface definition is for additional fields set by the frontend.
- export interface PolicyUiModel extends Policy {
-+  disabled: boolean;
-   link?: string;
-   isExtension?: boolean;
-   status?: string;
-@@ -86,6 +87,14 @@ export class PolicyRowElement extends CrLitElement {
+@@ -12,6 +12,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
+ import {CrLitElement} from 'chrome://resources/lit/v3_0/lit.rollup.js';
+ import type {PropertyValues} from 'chrome://resources/lit/v3_0/lit.rollup.js';
+ 
++import {BrowserProxy} from './browser_proxy.js';
+ import {PolicyLevel, PolicyScope} from './policy.mojom-webui.js';
+ import type {Conflict, Policy} from './policy.mojom-webui.js';
+ import {copyValue, stringifyPolicyValue} from './policy_conflict.js';
+@@ -87,6 +88,14 @@ export class PolicyRowElement extends CrLitElement {
      }
    }
  
@@ -926,7 +962,7 @@ diff --git a/components/policy/resources/webui/policy_row.ts b/components/policy
 +      return;
 +    }
 +    const target = e.currentTarget as HTMLInputElement;
-+    chrome.send('setEnabledPolicy', [this.policy.name, target.checked]);
++    BrowserProxy.setEnabledPolicy(this.policy.name, target.checked);
 +  }
 +
    protected getShowMoreLessLabel(): string {
@@ -935,7 +971,7 @@ diff --git a/components/policy/resources/webui/policy_row.ts b/components/policy
 diff --git a/components/policy_strings.grdp b/components/policy_strings.grdp
 --- a/components/policy_strings.grdp
 +++ b/components/policy_strings.grdp
-@@ -708,8 +708,8 @@ Additional details:
+@@ -729,8 +729,8 @@ Additional details:
    <message name="IDS_POLICY_SOURCE_DEFAULT" desc="Indicates that a policy is set by default and can be overridden.">
      Default
    </message>
@@ -949,14 +985,14 @@ diff --git a/components/policy_strings.grdp b/components/policy_strings.grdp
 diff --git a/components/search/ntp_features.cc b/components/search/ntp_features.cc
 --- a/components/search/ntp_features.cc
 +++ b/components/search/ntp_features.cc
-@@ -97,6 +97,7 @@ BASE_FEATURE(kNtpChromeCartModule,
+@@ -95,6 +95,7 @@ BASE_FEATURE(kNtpChromeCartModule,
  #else
               base::FEATURE_ENABLED_BY_DEFAULT);
  #endif
 +SET_CROMITE_FEATURE_DISABLED(kNtpChromeCartModule);
  
- // If enabled, customization of Chrome will be promoted on the NTP.
- BASE_FEATURE(kNtpCustomizeChromeAutoOpen, base::FEATURE_ENABLED_BY_DEFAULT);
+ // If enabled, loads the experimental NTP component extension, which overrides
+ // chrome://newtab.
 diff --git a/components/signin/features.gni b/components/signin/features.gni
 --- a/components/signin/features.gni
 +++ b/components/signin/features.gni
@@ -972,7 +1008,7 @@ diff --git a/components/signin/features.gni b/components/signin/features.gni
 diff --git a/components/signin/internal/identity_manager/gaia_cookie_manager_service.cc b/components/signin/internal/identity_manager/gaia_cookie_manager_service.cc
 --- a/components/signin/internal/identity_manager/gaia_cookie_manager_service.cc
 +++ b/components/signin/internal/identity_manager/gaia_cookie_manager_service.cc
-@@ -464,6 +464,8 @@ void GaiaCookieManagerService::RegisterPrefs(PrefRegistrySimple* registry) {
+@@ -466,6 +466,8 @@ void GaiaCookieManagerService::RegisterPrefs(PrefRegistrySimple* registry) {
  }
  
  void GaiaCookieManagerService::InitCookieListener() {
@@ -981,7 +1017,7 @@ diff --git a/components/signin/internal/identity_manager/gaia_cookie_manager_ser
    DCHECK(!cookie_listener_receiver_.is_bound());
  
    network::mojom::CookieManager* cookie_manager =
-@@ -902,6 +904,8 @@ void GaiaCookieManagerService::OnSetAccountsFinished(
+@@ -956,6 +958,8 @@ void GaiaCookieManagerService::OnSetAccountsFinished(
  }
  
  void GaiaCookieManagerService::HandleNextRequest() {
@@ -1004,7 +1040,7 @@ diff --git a/google_apis/gaia/gaia_auth_fetcher.cc b/google_apis/gaia/gaia_auth_
 diff --git a/net/socket/ssl_client_socket_impl.cc b/net/socket/ssl_client_socket_impl.cc
 --- a/net/socket/ssl_client_socket_impl.cc
 +++ b/net/socket/ssl_client_socket_impl.cc
-@@ -828,6 +828,7 @@ int SSLClientSocketImpl::Init() {
+@@ -825,6 +825,7 @@ int SSLClientSocketImpl::Init() {
      return ERR_UNEXPECTED;
    }
  
@@ -1012,4 +1048,49 @@ diff --git a/net/socket/ssl_client_socket_impl.cc b/net/socket/ssl_client_socket
    // Disable SHA-1 server signatures.
    // TODO(crbug.com/boringssl/699): Once the default is flipped in BoringSSL, we
    // no longer need to override it.
+
+diff --git a/chrome/android/java/AndroidManifest.xml b/chrome/android/java/AndroidManifest.xml
+--- a/chrome/android/java/AndroidManifest.xml
++++ b/chrome/android/java/AndroidManifest.xml
+@@ -81,9 +81,7 @@ by a child template that "extends" this file.
+     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" tools:ignore="SystemPermissionTypo" />
+     <uses-permission android:name="android.permission.RUN_USER_INITIATED_JOBS" />
+ 
+-    <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
+     <uses-permission android:name="android.permission.INTERNET"/>
+-    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS"/>
+     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
+     <uses-permission android:name="android.permission.NFC"/>
+     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+@@ -103,7 +101,6 @@ by a child template that "extends" this file.
+       resizeTo, moveBy}|).
+     -->
+     <uses-permission android:name="android.permission.REPOSITION_SELF_WINDOWS"/>
+-    <uses-permission android:name="android.permission.USE_CREDENTIALS"/>
+     <uses-permission-sdk-23 android:name="android.permission.USE_BIOMETRIC"/>
+     <uses-permission-sdk-23 android:name="android.permission.USE_FINGERPRINT"/>
+     <uses-permission android:name="android.permission.VIBRATE"/>
+@@ -165,7 +162,6 @@ by a child template that "extends" this file.
+     <uses-permission android:name="com.chrome.permission.DEVICE_EXTRAS" />
+     <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT"/>
+ 
+-    <uses-permission android:name="com.google.android.apps.now.CURRENT_ACCOUNT_ACCESS" />
+ 
+     <!-- Permission for using pinned windowing layer for document picture-in-picture. -->
+     <uses-permission android:name="android.permission.USE_PINNED_WINDOWING_LAYER" />
+diff --git a/chrome/browser/android/preferences/privacy_preferences_manager_impl.cc b/chrome/browser/android/preferences/privacy_preferences_manager_impl.cc
+--- a/chrome/browser/android/preferences/privacy_preferences_manager_impl.cc
++++ b/chrome/browser/android/preferences/privacy_preferences_manager_impl.cc
+@@ -48,6 +48,11 @@ static void JNI_PrivacyPreferencesManagerImpl_SetMetricsReportingEnabled(
+ static bool
+ JNI_PrivacyPreferencesManagerImpl_IsMetricsReportingDisabledByPolicy() {
+   const PrefService* local_state = g_browser_process->local_state();
++  // this point (policy with 'future') gave me false, false
++  // LOG(INFO) << "---IsMetricsReportingDisabledByPolicy "
++  //           << local_state->IsManagedPreference(metrics::prefs::kMetricsReportingEnabled)
++  //           << " "
++  //           << local_state->GetBoolean(metrics::prefs::kMetricsReportingEnabled);
+   return metrics::MetricsReportingChoiceService::
+       IsMetricsReportingDisabledByPolicy(local_state);
+ }
 --

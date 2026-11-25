@@ -8,33 +8,17 @@ keyboard events.
 
 License: GPL-2.0-or-later - https://spdx.org/licenses/GPL-2.0-or-later.html
 ---
- .../common/ProductionSupportedFlagList.java   |   5 +
- .../Keyboard-protection-flag.inc              |  10 ++
- .../renderer/core/events/keyboard_event.cc    | 136 ++++++++++++++++++
- .../renderer/core/events/keyboard_event.h     |   3 +
- ui/base/ui_base_features.cc                   |   8 ++
- ui/base/ui_base_features.h                    |   2 +
- .../dom/dom_keyboard_layout_map_win.cc        |  13 ++
- .../keycodes/keyboard_code_conversion.cc      |  10 +-
- ui/events/keycodes/keyboard_code_conversion.h |   2 +-
+ .../about_flags_cc/Keyboard-protection-flag.inc    |   10 +
+ .../blink/renderer/core/events/keyboard_event.cc   |  136 ++++++++++++++++++++
+ .../blink/renderer/core/events/keyboard_event.h    |    3 
+ ui/base/ui_base_features.cc                        |    8 +
+ ui/base/ui_base_features.h                         |    2 
+ .../keycodes/dom/dom_keyboard_layout_map_win.cc    |   13 ++
+ ui/events/keycodes/keyboard_code_conversion.cc     |   10 +
+ ui/events/keycodes/keyboard_code_conversion.h      |    2 
+ .../common/ProductionSupportedFlagList.java        |    5 +
  9 files changed, 186 insertions(+), 3 deletions(-)
- create mode 100644 cromite_flags/chrome/browser/about_flags_cc/Keyboard-protection-flag.inc
 
-diff --git a/android_webview/java/src/org/chromium/android_webview/common/ProductionSupportedFlagList.java b/android_webview/java/src/org/chromium/android_webview/common/ProductionSupportedFlagList.java
---- a/android_webview/java/src/org/chromium/android_webview/common/ProductionSupportedFlagList.java
-+++ b/android_webview/java/src/org/chromium/android_webview/common/ProductionSupportedFlagList.java
-@@ -1233,6 +1233,11 @@ public final class ProductionSupportedFlagList {
-                         + " through it to receive IPCs directly."),
- 
-         // Features for PerfCombined2025_WebView study
-+        Flag.baseFeature(
-+                "SystemKeyboardProtection",
-+                "Hides user preference on the system keyboard by setting the standard "
-+                        + "eng layout and removing the layout information from the "
-+                        + "javascript keyboard events."),
-         Flag.baseFeature("ReducePPMs"),
-         Flag.baseFeature("RemoveCancelledScriptedIdleTasks"),
-         Flag.baseFeature("MemoryCacheChangeStrongReferencePruneDelay"),
 diff --git a/cromite_flags/chrome/browser/about_flags_cc/Keyboard-protection-flag.inc b/cromite_flags/chrome/browser/about_flags_cc/Keyboard-protection-flag.inc
 new file mode 100644
 --- /dev/null
@@ -233,7 +217,7 @@ diff --git a/third_party/blink/renderer/core/events/keyboard_event.h b/third_par
 diff --git a/ui/base/ui_base_features.cc b/ui/base/ui_base_features.cc
 --- a/ui/base/ui_base_features.cc
 +++ b/ui/base/ui_base_features.cc
-@@ -175,6 +175,14 @@ bool ShouldUseCursorEventHook() {
+@@ -179,6 +179,14 @@ bool ShouldUseCursorEventHook() {
  // Allows system keyboard event capture via the keyboard lock API.
  BASE_FEATURE(kSystemKeyboardLock, base::FEATURE_ENABLED_BY_DEFAULT);
  
@@ -263,16 +247,16 @@ diff --git a/ui/base/ui_base_features.h b/ui/base/ui_base_features.h
 diff --git a/ui/events/keycodes/dom/dom_keyboard_layout_map_win.cc b/ui/events/keycodes/dom/dom_keyboard_layout_map_win.cc
 --- a/ui/events/keycodes/dom/dom_keyboard_layout_map_win.cc
 +++ b/ui/events/keycodes/dom/dom_keyboard_layout_map_win.cc
-@@ -13,6 +13,8 @@
- #include "base/check_op.h"
+@@ -14,6 +14,8 @@
  #include "base/containers/flat_map.h"
  #include "base/logging.h"
+ #include "base/memory/raw_ptr_exclusion.h"
 +#include "base/feature_list.h"
 +#include "ui/base/ui_base_features.h"
  #include "ui/events/keycodes/dom/dom_code.h"
  #include "ui/events/keycodes/dom/dom_key.h"
  #include "ui/events/keycodes/dom/dom_keyboard_layout_map_base.h"
-@@ -73,6 +75,17 @@ uint32_t DomKeyboardLayoutMapWin::GetKeyboardLayoutCount() {
+@@ -75,6 +77,17 @@ uint32_t DomKeyboardLayoutMapWin::GetKeyboardLayoutCount() {
        iter != keyboard_layout_handles_.end())
      std::iter_swap(keyboard_layout_handles_.begin(), iter);
  
@@ -330,4 +314,20 @@ diff --git a/ui/events/keycodes/keyboard_code_conversion.h b/ui/events/keycodes/
  
  }  // namespace ui
  
+
+diff --git a/android_webview/java/src/org/chromium/android_webview/common/ProductionSupportedFlagList.java b/android_webview/java/src/org/chromium/android_webview/common/ProductionSupportedFlagList.java
+--- a/android_webview/java/src/org/chromium/android_webview/common/ProductionSupportedFlagList.java
++++ b/android_webview/java/src/org/chromium/android_webview/common/ProductionSupportedFlagList.java
+@@ -1233,6 +1233,11 @@ public final class ProductionSupportedFlagList {
+                         + " through it to receive IPCs directly."),
+ 
+         // Features for PerfCombined2025_WebView study
++        Flag.baseFeature(
++                "SystemKeyboardProtection",
++                "Hides user preference on the system keyboard by setting the standard "
++                        + "eng layout and removing the layout information from the "
++                        + "javascript keyboard events."),
+         Flag.baseFeature("ReducePPMs"),
+         Flag.baseFeature("RemoveCancelledScriptedIdleTasks"),
+         Flag.baseFeature("MemoryCacheChangeStrongReferencePruneDelay"),
 --

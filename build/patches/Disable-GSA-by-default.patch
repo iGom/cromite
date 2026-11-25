@@ -4,15 +4,21 @@ Subject: Disable GSA by default
 
 License: GPL-2.0-or-later - https://spdx.org/licenses/GPL-2.0-or-later.html
 ---
- .../src/org/chromium/base/PackageUtils.java   |  1 +
- .../chrome/browser/IntentHandler.java         |  6 ---
- .../chrome/browser/share/LensUtils.java       | 13 +----
- .../chromium/chrome/browser/gsa/GSAUtils.java | 49 +++----------------
- .../GoogleBottomBarActionsHandler.java        | 19 +------
- .../chrome/browser/pdf/PdfCoordinator.java    |  2 +-
- .../Disable-GSA-by-default.inc                |  1 +
+ .../Disable-GSA-by-default.inc                     |    1 
+ .../java/src/org/chromium/base/PackageUtils.java   |    1 
+ .../org/chromium/chrome/browser/IntentHandler.java |    6 --
+ .../chromium/chrome/browser/share/LensUtils.java   |   13 +----
+ .../org/chromium/chrome/browser/gsa/GSAUtils.java  |   49 ++------------------
+ .../GoogleBottomBarActionsHandler.java             |   19 +-------
+ .../chrome/browser/pdf/PdfCoordinator.java         |    2 -
  7 files changed, 13 insertions(+), 78 deletions(-)
- create mode 100644 cromite_flags/chrome/browser/flags/android/chrome_feature_list_cc/Disable-GSA-by-default.inc
+
+diff --git a/cromite_flags/chrome/browser/flags/android/chrome_feature_list_cc/Disable-GSA-by-default.inc b/cromite_flags/chrome/browser/flags/android/chrome_feature_list_cc/Disable-GSA-by-default.inc
+new file mode 100644
+--- /dev/null
++++ b/cromite_flags/chrome/browser/flags/android/chrome_feature_list_cc/Disable-GSA-by-default.inc
+@@ -0,0 +1 @@
++SET_CROMITE_FEATURE_DISABLED(kExperimentsForAgsa);
 
 diff --git a/base/android/java/src/org/chromium/base/PackageUtils.java b/base/android/java/src/org/chromium/base/PackageUtils.java
 --- a/base/android/java/src/org/chromium/base/PackageUtils.java
@@ -265,10 +271,4 @@ diff --git a/chrome/browser/ui/android/pdf/internal/java/src/org/chromium/chrome
              return null;
          }
  
-diff --git a/cromite_flags/chrome/browser/flags/android/chrome_feature_list_cc/Disable-GSA-by-default.inc b/cromite_flags/chrome/browser/flags/android/chrome_feature_list_cc/Disable-GSA-by-default.inc
-new file mode 100644
---- /dev/null
-+++ b/cromite_flags/chrome/browser/flags/android/chrome_feature_list_cc/Disable-GSA-by-default.inc
-@@ -0,0 +1 @@
-+SET_CROMITE_FEATURE_DISABLED(kExperimentsForAgsa);
 --

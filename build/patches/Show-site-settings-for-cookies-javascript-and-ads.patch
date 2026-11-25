@@ -6,11 +6,20 @@ Avoid displaying info about intrusive ads
 
 License: GPL-3.0-only - https://spdx.org/licenses/GPL-3.0-only.html
 ---
- .../site_settings/SingleWebsiteSettings.java  | 50 ++++++++++++-------
- .../browser_ui/site_settings/Website.java     |  8 ++-
- .../bromite_content_settings/javascript.inc   |  4 ++
+ .../bromite_content_settings/javascript.inc        |    4 ++
+ .../site_settings/SingleWebsiteSettings.java       |   50 +++++++++++++-------
+ .../browser_ui/site_settings/Website.java          |    8 +++
  3 files changed, 43 insertions(+), 19 deletions(-)
- create mode 100644 components/content_settings/core/browser/bromite_content_settings/javascript.inc
+
+diff --git a/components/content_settings/core/browser/bromite_content_settings/javascript.inc b/components/content_settings/core/browser/bromite_content_settings/javascript.inc
+new file mode 100644
+--- /dev/null
++++ b/components/content_settings/core/browser/bromite_content_settings/javascript.inc
+@@ -0,0 +1,4 @@
++  content_settings::WebsiteSettingsRegistry::GetInstance()
++    ->GetMutable(ContentSettingsType::JAVASCRIPT)
++    ->set_show_into_info_page()
++    .set_is_renderer_content_setting();
 
 diff --git a/components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/SingleWebsiteSettings.java b/components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/SingleWebsiteSettings.java
 --- a/components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/SingleWebsiteSettings.java
@@ -120,13 +129,4 @@ diff --git a/components/browser_ui/site_settings/android/java/src/org/chromium/c
          } else if (type == ContentSettingsType.JAVASCRIPT) {
              // It is possible to set the permission without having an existing exception,
              // because we show the javascript permission in Site Settings if javascript
-diff --git a/components/content_settings/core/browser/bromite_content_settings/javascript.inc b/components/content_settings/core/browser/bromite_content_settings/javascript.inc
-new file mode 100644
---- /dev/null
-+++ b/components/content_settings/core/browser/bromite_content_settings/javascript.inc
-@@ -0,0 +1,4 @@
-+  content_settings::WebsiteSettingsRegistry::GetInstance()
-+    ->GetMutable(ContentSettingsType::JAVASCRIPT)
-+    ->set_show_into_info_page()
-+    .set_is_renderer_content_setting();
 --

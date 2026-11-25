@@ -7,13 +7,13 @@ without asking the native code
 
 License: GPL-2.0-or-later - https://spdx.org/licenses/GPL-2.0-or-later.html
 ---
- .../webview_shell/WebViewBrowserFragment.java | 57 -----------------
- .../browser/feedback/ConnectivityChecker.java | 36 +----------
- .../ConnectivityDetector.java                 | 63 -------------------
- .../chrome/browser/omaha/OmahaBase.java       |  3 +-
- .../util/HttpURLConnectionFactoryImpl.java    |  7 +--
- .../firstrun/VariationsSeedFetcher.java       | 26 +-------
- .../chromium/net/ChromiumNetworkAdapter.java  | 13 ----
+ .../webview_shell/WebViewBrowserFragment.java      |   57 ------------------
+ .../browser/feedback/ConnectivityChecker.java      |   36 -----------
+ .../connectivitydetector/ConnectivityDetector.java |   63 --------------------
+ .../chromium/chrome/browser/omaha/OmahaBase.java   |    3 -
+ .../util/HttpURLConnectionFactoryImpl.java         |    7 --
+ .../variations/firstrun/VariationsSeedFetcher.java |   26 --------
+ .../org/chromium/net/ChromiumNetworkAdapter.java   |   13 ----
  7 files changed, 4 insertions(+), 201 deletions(-)
 
 diff --git a/android_webview/tools/system_webview_shell/apk/src/org/chromium/webview_shell/WebViewBrowserFragment.java b/android_webview/tools/system_webview_shell/apk/src/org/chromium/webview_shell/WebViewBrowserFragment.java

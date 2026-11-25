@@ -9,69 +9,55 @@ in services/firewall/tools/rules.xml
 
 License: GPL-2.0-or-later - https://spdx.org/licenses/GPL-2.0-or-later.html
 ---
- chrome/browser/BUILD.gn                       |   1 +
- chrome/browser/about_flags.cc                 |   1 +
- .../download/android/download_controller.cc   |  31 +-
- .../downloads/offline_page_download_bridge.cc |  32 +-
- .../content/internal/context_menu_download.cc |  32 +-
- .../internal/common/download_job_factory.cc   |   1 +
- .../webapk/webapk_single_icon_hasher.cc       |  32 +-
- .../about_flags_cc/Internal-firewall.inc      |   8 +
- net/BUILD.gn                                  |   1 +
- .../network_traffic_annotation.h              |   4 -
- net/url_request/url_request_http_job.cc       |  15 +
- net/url_request/url_request_http_job.h        |   3 +
- services/firewall/public/BUILD.gn             |  74 +++
- services/firewall/public/firewall_features.cc |  28 +
- services/firewall/public/firewall_features.h  |  31 ++
- services/firewall/public/firewall_service.cc  |  46 ++
- services/firewall/public/firewall_service.h   |  57 ++
- services/firewall/tools/annotation_model.py   |  49 ++
- services/firewall/tools/annotations.xml       | 503 ++++++++++++++++++
- services/firewall/tools/builders_template.py  |  72 +++
- services/firewall/tools/codegen.py            |  82 +++
- services/firewall/tools/decode_template.py    |  85 +++
- services/firewall/tools/gen_builders.py       |  65 +++
- services/firewall/tools/rules.xml             |  99 ++++
- services/firewall/tools/rules_model.py        |  35 ++
- services/network/network_context.cc           |  73 +++
- .../network/public/cpp/simple_url_loader.cc   |  17 +
- .../network/public/cpp/simple_url_loader.h    |   3 +
- .../platform/loader/fetch/fetch_utils.cc      | 189 ++++++-
- .../loader/fetch/url_loader/url_loader.cc     |   4 +-
- .../scripts/auditor/auditor.py                |   1 +
- .../scripts/auditor/util.py                   |   1 +
+ chrome/browser/BUILD.gn                            |    1 
+ chrome/browser/about_flags.cc                      |    1 
+ .../content/internal/context_menu_download.cc      |   32 +
+ .../internal/common/download_job_factory.cc        |    1 
+ .../browser/about_flags_cc/Internal-firewall.inc   |    8 
+ net/BUILD.gn                                       |    1 
+ .../network_traffic_annotation.h                   |    4 
+ net/url_request/url_request_http_job.cc            |   15 +
+ net/url_request/url_request_http_job.h             |    3 
+ services/firewall/public/BUILD.gn                  |   74 +++
+ services/firewall/public/firewall_features.cc      |   28 +
+ services/firewall/public/firewall_features.h       |   31 +
+ services/firewall/public/firewall_service.cc       |   46 ++
+ services/firewall/public/firewall_service.h        |   57 ++
+ services/firewall/tools/annotation_model.py        |   49 ++
+ services/firewall/tools/annotations.xml            |  503 ++++++++++++++++++++
+ services/firewall/tools/builders_template.py       |   72 +++
+ services/firewall/tools/codegen.py                 |   82 +++
+ services/firewall/tools/decode_template.py         |   85 +++
+ services/firewall/tools/gen_builders.py            |   65 +++
+ services/firewall/tools/rules.xml                  |   99 ++++
+ services/firewall/tools/rules_model.py             |   35 +
+ services/network/network_context.cc                |   73 +++
+ services/network/public/cpp/simple_url_loader.cc   |   17 +
+ services/network/public/cpp/simple_url_loader.h    |    3 
+ .../renderer/platform/loader/fetch/fetch_utils.cc  |  189 +++++++-
+ .../platform/loader/fetch/url_loader/url_loader.cc |    4 
+ .../traffic_annotation/scripts/auditor/auditor.py  |    1 
+ tools/traffic_annotation/scripts/auditor/util.py   |    1 
+ .../download/android/download_controller.cc        |   31 +
+ .../downloads/offline_page_download_bridge.cc      |   32 +
+ .../android/webapk/webapk_single_icon_hasher.cc    |   32 +
  32 files changed, 1654 insertions(+), 21 deletions(-)
- create mode 100644 cromite_flags/chrome/browser/about_flags_cc/Internal-firewall.inc
- create mode 100644 services/firewall/public/BUILD.gn
- create mode 100644 services/firewall/public/firewall_features.cc
- create mode 100644 services/firewall/public/firewall_features.h
- create mode 100644 services/firewall/public/firewall_service.cc
- create mode 100644 services/firewall/public/firewall_service.h
- create mode 100644 services/firewall/tools/annotation_model.py
- create mode 100644 services/firewall/tools/annotations.xml
- create mode 100644 services/firewall/tools/builders_template.py
- create mode 100644 services/firewall/tools/codegen.py
- create mode 100644 services/firewall/tools/decode_template.py
- create mode 100644 services/firewall/tools/gen_builders.py
- create mode 100644 services/firewall/tools/rules.xml
- create mode 100644 services/firewall/tools/rules_model.py
 
 diff --git a/chrome/browser/BUILD.gn b/chrome/browser/BUILD.gn
 --- a/chrome/browser/BUILD.gn
 +++ b/chrome/browser/BUILD.gn
-@@ -2687,6 +2687,7 @@ source_set("browser") {
-       "//components/soda",
-       "//components/ukm/content",
+@@ -3338,6 +3338,7 @@ source_set("browser") {
+       "//components/storage_monitor",
+       "//components/ui_metrics",
        "//components/unexportable_keys",
 +      "//services/firewall/public:firewall_builders",
+       "//components/user_education/webui",
        "//components/web_modal",
        "//components/webapps/isolated_web_apps",
-       "//components/webauthn/content/browser",
 diff --git a/chrome/browser/about_flags.cc b/chrome/browser/about_flags.cc
 --- a/chrome/browser/about_flags.cc
 +++ b/chrome/browser/about_flags.cc
-@@ -261,6 +261,7 @@
+@@ -259,6 +259,7 @@
  #include "sandbox/policy/features.h"
  #include "sandbox/policy/switches.h"
  #include "services/device/public/cpp/device_features.h"
@@ -79,106 +65,10 @@ diff --git a/chrome/browser/about_flags.cc b/chrome/browser/about_flags.cc
  #include "services/media_session/public/cpp/features.h"
  #include "services/network/public/cpp/features.h"
  #include "services/network/public/cpp/network_switches.h"
-diff --git a/chrome/browser/download/android/download_controller.cc b/chrome/browser/download/android/download_controller.cc
---- a/chrome/browser/download/android/download_controller.cc
-+++ b/chrome/browser/download/android/download_controller.cc
-@@ -211,6 +211,35 @@ ui::WindowAndroid* GetCurrentWindow() {
-   return nullptr;
- }
- 
-+const net::NetworkTrafficAnnotationTag traffic_annotation =
-+    net::DefineNetworkTrafficAnnotation("download_via_toolbar_menu", R"(
-+        semantics {
-+          sender: "Cromite"
-+          description:
-+            "Download via toolbar menu"
-+          trigger: "Manual from user."
-+          data:
-+            "binary format"
-+          destination: LOCAL
-+          internal {
-+            contacts {
-+              email: "uazo@users.noreply.github.com"
-+            }
-+            contacts {
-+              email: "uazo@users.noreply.github.com"
-+            }
-+          }
-+          user_data {
-+            type: NONE
-+          }
-+          last_reviewed: "2024-08-06"
-+        }
-+        policy {
-+          cookies_allowed: NO
-+          setting:
-+            "No setting."
-+          policy_exception_justification: "Not implemented."
-+        })");
- }  // namespace
- 
- // static
-@@ -254,7 +283,7 @@ static void JNI_DownloadController_DownloadUrl(
-     std::unique_ptr<download::DownloadUrlParameters> dl_params =
-         content::DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
-             web_contents, GURL(url),
--            TRAFFIC_ANNOTATION_WITHOUT_PROTO("Download via toolbar menu"));
-+            traffic_annotation);
-     dl_params->set_content_initiated(false);
-     dl_params->set_download_source(download::DownloadSource::TOOLBAR_MENU);
-     download_manager->DownloadUrl(std::move(dl_params));
-diff --git a/chrome/browser/offline_pages/android/downloads/offline_page_download_bridge.cc b/chrome/browser/offline_pages/android/downloads/offline_page_download_bridge.cc
---- a/chrome/browser/offline_pages/android/downloads/offline_page_download_bridge.cc
-+++ b/chrome/browser/offline_pages/android/downloads/offline_page_download_bridge.cc
-@@ -242,13 +242,43 @@ void DuplicateCheckDone(const GURL& url,
-       base::BindOnce(&OnDuplicateDialogConfirmed, std::move(callback)));
- }
- 
-+const net::NetworkTrafficAnnotationTag traffic_annotation =
-+    net::DefineNetworkTrafficAnnotation("offline_pages_download_file", R"(
-+        semantics {
-+          sender: "Bromite"
-+          description:
-+            "Offline pages download file"
-+          trigger: "Manual from user."
-+          data:
-+            "binary format"
-+          destination: LOCAL
-+          internal {
-+            contacts {
-+              email: "uazo@users.noreply.github.com"
-+            }
-+            contacts {
-+              email: "uazo@users.noreply.github.com"
-+            }
-+          }
-+          user_data {
-+            type: NONE
-+          }
-+          last_reviewed: "2023-01-01"
-+        }
-+        policy {
-+          cookies_allowed: NO
-+          setting:
-+            "No setting."
-+          policy_exception_justification: "Not implemented."
-+        })");
-+
- void DownloadAsFile(content::WebContents* web_contents, const GURL& url) {
-   content::DownloadManager* dlm =
-       web_contents->GetBrowserContext()->GetDownloadManager();
-   std::unique_ptr<download::DownloadUrlParameters> dl_params(
-       content::DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
-           web_contents, url,
--          TRAFFIC_ANNOTATION_WITHOUT_PROTO("Offline pages download file")));
-+          traffic_annotation));
- 
-   content::NavigationEntry* entry =
-       web_contents->GetController().GetLastCommittedEntry();
 diff --git a/components/download/content/internal/context_menu_download.cc b/components/download/content/internal/context_menu_download.cc
 --- a/components/download/content/internal/context_menu_download.cc
 +++ b/components/download/content/internal/context_menu_download.cc
-@@ -18,6 +18,36 @@
+@@ -19,6 +19,36 @@
  
  namespace download {
  
@@ -215,7 +105,7 @@ diff --git a/components/download/content/internal/context_menu_download.cc b/com
  void CreateContextMenuDownload(const GURL& url,
                                 content::WebContents* web_contents,
                                 const content::ContextMenuParams& params,
-@@ -30,7 +60,7 @@ void CreateContextMenuDownload(const GURL& url,
+@@ -31,7 +61,7 @@ void CreateContextMenuDownload(const GURL& url,
    std::unique_ptr<download::DownloadUrlParameters> dl_params(
        content::DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
            web_contents, url,
@@ -235,55 +125,6 @@ diff --git a/components/download/internal/common/download_job_factory.cc b/compo
    if (download_item->GetDownloadFile() &&
        download_item->GetDownloadFile()->IsMemoryFile()) {
      return false;
-diff --git a/components/webapps/browser/android/webapk/webapk_single_icon_hasher.cc b/components/webapps/browser/android/webapk/webapk_single_icon_hasher.cc
---- a/components/webapps/browser/android/webapk/webapk_single_icon_hasher.cc
-+++ b/components/webapps/browser/android/webapk/webapk_single_icon_hasher.cc
-@@ -45,6 +45,36 @@ std::string ComputeMurmur2Hash(const std::string& raw_image_data) {
- 
- }  // anonymous namespace
- 
-+const net::NetworkTrafficAnnotationTag traffic_annotation =
-+    net::DefineNetworkTrafficAnnotation("webapk_icon_hasher", R"(
-+        semantics {
-+          sender: "webapk icon hasher"
-+          description:
-+            "webapk icon hasher"
-+          trigger: "Manual or automatic."
-+          data:
-+            " binary format"
-+          destination: WEBSITE
-+          internal {
-+            contacts {
-+              email: "uazo@users.noreply.github.com"
-+            }
-+            contacts {
-+              email: "uazo@users.noreply.github.com"
-+            }
-+          }
-+          user_data {
-+            type: NONE
-+          }
-+          last_reviewed: "2023-01-01"
-+        }
-+        policy {
-+          cookies_allowed: NO
-+          setting:
-+            "No setting."
-+          policy_exception_justification: "Not implemented."
-+        })");
-+
- WebApkSingleIconHasher::WebApkSingleIconHasher(
-     base::PassKey<WebApkIconsHasher> pass_key,
-     network::mojom::URLLoaderFactory* url_loader_factory,
-@@ -89,7 +119,7 @@ WebApkSingleIconHasher::WebApkSingleIconHasher(
-   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
-   simple_url_loader_ = network::SimpleURLLoader::Create(
-       std::move(resource_request),
--      TRAFFIC_ANNOTATION_WITHOUT_PROTO("webapk icon hasher"));
-+      traffic_annotation);
-   simple_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-       url_loader_factory,
-       base::BindOnce(&WebApkSingleIconHasher::OnSimpleLoaderComplete,
 diff --git a/cromite_flags/chrome/browser/about_flags_cc/Internal-firewall.inc b/cromite_flags/chrome/browser/about_flags_cc/Internal-firewall.inc
 new file mode 100644
 --- /dev/null
@@ -300,7 +141,7 @@ new file mode 100644
 diff --git a/net/BUILD.gn b/net/BUILD.gn
 --- a/net/BUILD.gn
 +++ b/net/BUILD.gn
-@@ -1225,6 +1225,7 @@ component("net") {
+@@ -1279,6 +1279,7 @@ component("net") {
      "//components/unexportable_keys",
      "//components/network_session_configurator/common",
      "//net/http:transport_security_state_generated_files",
@@ -311,7 +152,7 @@ diff --git a/net/BUILD.gn b/net/BUILD.gn
 diff --git a/net/traffic_annotation/network_traffic_annotation.h b/net/traffic_annotation/network_traffic_annotation.h
 --- a/net/traffic_annotation/network_traffic_annotation.h
 +++ b/net/traffic_annotation/network_traffic_annotation.h
-@@ -370,10 +370,6 @@ struct MutablePartialNetworkTrafficAnnotationTag {
+@@ -372,10 +372,6 @@ struct MutablePartialNetworkTrafficAnnotationTag {
  }  // namespace net
  
  // Placeholder for unannotated usages.
@@ -325,7 +166,7 @@ diff --git a/net/traffic_annotation/network_traffic_annotation.h b/net/traffic_a
 diff --git a/net/url_request/url_request_http_job.cc b/net/url_request/url_request_http_job.cc
 --- a/net/url_request/url_request_http_job.cc
 +++ b/net/url_request/url_request_http_job.cc
-@@ -436,6 +436,9 @@ URLRequestHttpJob::URLRequestHttpJob(
+@@ -426,6 +426,9 @@ URLRequestHttpJob::URLRequestHttpJob(
      : URLRequestJob(request),
        http_user_agent_settings_(http_user_agent_settings) {
    ResetTimer();
@@ -335,7 +176,7 @@ diff --git a/net/url_request/url_request_http_job.cc b/net/url_request/url_reque
  }
  
  URLRequestHttpJob::~URLRequestHttpJob() {
-@@ -713,6 +716,18 @@ void URLRequestHttpJob::MaybeStartTransactionInternal(int result) {
+@@ -685,6 +688,18 @@ void URLRequestHttpJob::MaybeStartTransactionInternal(int result) {
  void URLRequestHttpJob::StartTransactionInternal() {
    DCHECK(!override_response_headers_);
  
@@ -357,7 +198,7 @@ diff --git a/net/url_request/url_request_http_job.cc b/net/url_request/url_reque
 diff --git a/net/url_request/url_request_http_job.h b/net/url_request/url_request_http_job.h
 --- a/net/url_request/url_request_http_job.h
 +++ b/net/url_request/url_request_http_job.h
-@@ -31,6 +31,7 @@
+@@ -29,6 +29,7 @@
  #include "net/http/http_request_info.h"
  #include "net/socket/connection_attempts.h"
  #include "net/url_request/url_request_job.h"
@@ -365,7 +206,7 @@ diff --git a/net/url_request/url_request_http_job.h b/net/url_request/url_reques
  
  #if BUILDFLAG(ENABLE_DEVICE_BOUND_SESSIONS)
  #include "net/device_bound_sessions/session_service.h"
-@@ -98,6 +99,8 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
+@@ -82,6 +83,8 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
  
    RequestPriority priority() const { return priority_; }
  
@@ -1668,15 +1509,15 @@ new file mode 100644
 diff --git a/services/network/network_context.cc b/services/network/network_context.cc
 --- a/services/network/network_context.cc
 +++ b/services/network/network_context.cc
-@@ -115,6 +115,7 @@
- #include "net/url_request/url_request.h"
+@@ -127,6 +127,7 @@
  #include "net/url_request/url_request_context.h"
  #include "net/url_request/url_request_context_builder.h"
+ #include "net/url_request/url_request_http_transaction_factory_override.h"
 +#include "services/firewall/public/firewall_service.h"
  #include "services/network/brokered_client_socket_factory.h"
  #include "services/network/connection_change_observer.h"
  #include "services/network/cookie_manager.h"
-@@ -2028,6 +2029,9 @@ void NetworkContext::OnNewSCTAuditingReportSent() {
+@@ -2461,6 +2462,9 @@ void NetworkContext::OnNewSCTAuditingReportSent() {
  void NetworkContext::CreateUDPSocket(
      mojo::PendingReceiver<mojom::UDPSocket> receiver,
      mojo::PendingRemote<mojom::UDPSocketListener> listener) {
@@ -1686,7 +1527,7 @@ diff --git a/services/network/network_context.cc b/services/network/network_cont
    socket_factory_->CreateUDPSocket(std::move(receiver), std::move(listener));
  }
  
-@@ -2042,6 +2046,17 @@ void NetworkContext::CreateRestrictedUDPSocket(
+@@ -2475,6 +2479,17 @@ void NetworkContext::CreateRestrictedUDPSocket(
      bool allow_source_specific_multicast,
      CreateRestrictedUDPSocketCallback callback) {
    // SimpleHostResolver is transitively owned by |this|.
@@ -1704,7 +1545,7 @@ diff --git a/services/network/network_context.cc b/services/network/network_cont
    socket_factory_->CreateRestrictedUDPSocket(
        addr, mode, traffic_annotation, std::move(params), std::move(receiver),
        std::move(listener), SimpleHostResolver::Create(this), allow_multicast,
-@@ -2054,6 +2069,17 @@ void NetworkContext::CreateTCPServerSocket(
+@@ -2487,6 +2502,17 @@ void NetworkContext::CreateTCPServerSocket(
      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
      mojo::PendingReceiver<mojom::TCPServerSocket> receiver,
      CreateTCPServerSocketCallback callback) {
@@ -1722,7 +1563,7 @@ diff --git a/services/network/network_context.cc b/services/network/network_cont
    socket_factory_->CreateTCPServerSocket(
        local_addr, std::move(options),
        static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
-@@ -2068,6 +2094,21 @@ void NetworkContext::CreateTCPConnectedSocket(
+@@ -2501,6 +2527,21 @@ void NetworkContext::CreateTCPConnectedSocket(
      mojo::PendingReceiver<mojom::TCPConnectedSocket> receiver,
      mojo::PendingRemote<mojom::SocketObserver> observer,
      CreateTCPConnectedSocketCallback callback) {
@@ -1744,7 +1585,7 @@ diff --git a/services/network/network_context.cc b/services/network/network_cont
    socket_factory_->CreateTCPConnectedSocket(
        local_addr, remote_addr_list, std::move(tcp_connected_socket_options),
        traffic_annotation, std::move(receiver), std::move(observer),
-@@ -2079,6 +2120,20 @@ void NetworkContext::CreateTCPBoundSocket(
+@@ -2512,6 +2553,20 @@ void NetworkContext::CreateTCPBoundSocket(
      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
      mojo::PendingReceiver<mojom::TCPBoundSocket> receiver,
      CreateTCPBoundSocketCallback callback) {
@@ -1765,10 +1606,10 @@ diff --git a/services/network/network_context.cc b/services/network/network_cont
    socket_factory_->CreateTCPBoundSocket(
        local_addr,
        static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
-@@ -2147,6 +2202,24 @@ void NetworkContext::CreateWebSocket(
-     const std::optional<base::UnguessableToken>& throttling_profile_id,
+@@ -2603,6 +2658,24 @@ void NetworkContext::CreateWebSocket(
      const base::UnguessableToken& network_restrictions_id,
-     mojom::IPAddressSpace target_address_space) {
+     mojom::IPAddressSpace target_address_space,
+     std::optional<int64_t> target_network) {
 +  if (base::FeatureList::IsEnabled(firewall::features::kEnableFirewall)) {
 +    auto firewall_service = std::make_unique<firewall::FirewallService>(nullptr);
 +    if (!firewall_service->IsAllowed(traffic_annotation.unique_id_hash_code)) {
@@ -1793,7 +1634,7 @@ diff --git a/services/network/network_context.cc b/services/network/network_cont
 diff --git a/services/network/public/cpp/simple_url_loader.cc b/services/network/public/cpp/simple_url_loader.cc
 --- a/services/network/public/cpp/simple_url_loader.cc
 +++ b/services/network/public/cpp/simple_url_loader.cc
-@@ -1378,6 +1378,8 @@ SimpleURLLoaderImpl::SimpleURLLoaderImpl(
+@@ -1379,6 +1379,8 @@ SimpleURLLoaderImpl::SimpleURLLoaderImpl(
        timeout_timer_(timeout_tick_clock_) {
    // Allow creation and use on different threads.
    DETACH_FROM_SEQUENCE(sequence_checker_);
@@ -1802,7 +1643,7 @@ diff --git a/services/network/public/cpp/simple_url_loader.cc b/services/network
  #if DCHECK_IS_ON()
    if (resource_request_->request_body) {
      for (const DataElement& element :
-@@ -1916,6 +1918,21 @@ void SimpleURLLoaderImpl::StartRequest(
+@@ -1917,6 +1919,21 @@ void SimpleURLLoaderImpl::StartRequest(
      resource_request_->request_body->AppendDataPipe(
          string_upload_data_pipe_getter_->GetRemoteForNewUpload());
    }
@@ -2067,7 +1908,7 @@ diff --git a/third_party/blink/renderer/platform/loader/fetch/fetch_utils.cc b/t
 diff --git a/third_party/blink/renderer/platform/loader/fetch/url_loader/url_loader.cc b/third_party/blink/renderer/platform/loader/fetch/url_loader/url_loader.cc
 --- a/third_party/blink/renderer/platform/loader/fetch/url_loader/url_loader.cc
 +++ b/third_party/blink/renderer/platform/loader/fetch/url_loader/url_loader.cc
-@@ -281,7 +281,7 @@ void URLLoader::Context::Start(
+@@ -280,7 +280,7 @@ void URLLoader::Context::Start(
            download_to_blob_registry.InitWithNewPipeAndPassReceiver());
      }
      net::NetworkTrafficAnnotationTag tag =
@@ -2076,7 +1917,7 @@ diff --git a/third_party/blink/renderer/platform/loader/fetch/url_loader/url_loa
      resource_request_sender_->SendSync(
          std::move(request), tag, loader_options, sync_load_response,
          url_loader_factory_, std::move(throttles), timeout_interval,
-@@ -294,7 +294,7 @@ void URLLoader::Context::Start(
+@@ -293,7 +293,7 @@ void URLLoader::Context::Start(
    TRACE_EVENT("loading", "URLLoader::Context::Start",
                perfetto::Flow::FromPointer(this));
    net::NetworkTrafficAnnotationTag tag =
@@ -2088,7 +1929,7 @@ diff --git a/third_party/blink/renderer/platform/loader/fetch/url_loader/url_loa
 diff --git a/tools/traffic_annotation/scripts/auditor/auditor.py b/tools/traffic_annotation/scripts/auditor/auditor.py
 --- a/tools/traffic_annotation/scripts/auditor/auditor.py
 +++ b/tools/traffic_annotation/scripts/auditor/auditor.py
-@@ -1005,6 +1005,7 @@ class ArchivedAnnotation:
+@@ -1070,6 +1070,7 @@ class ArchivedAnnotation:
      "type",
      "second_id",
      "reserved",
@@ -2107,4 +1948,150 @@ diff --git a/tools/traffic_annotation/scripts/auditor/util.py b/tools/traffic_an
    return current_platform
  
  
+
+diff --git a/chrome/browser/download/android/download_controller.cc b/chrome/browser/download/android/download_controller.cc
+--- a/chrome/browser/download/android/download_controller.cc
++++ b/chrome/browser/download/android/download_controller.cc
+@@ -211,6 +211,35 @@ ui::WindowAndroid* GetCurrentWindow() {
+   return nullptr;
+ }
+ 
++const net::NetworkTrafficAnnotationTag traffic_annotation =
++    net::DefineNetworkTrafficAnnotation("download_via_toolbar_menu", R"(
++        semantics {
++          sender: "Cromite"
++          description:
++            "Download via toolbar menu"
++          trigger: "Manual from user."
++          data:
++            "binary format"
++          destination: LOCAL
++          internal {
++            contacts {
++              email: "uazo@users.noreply.github.com"
++            }
++            contacts {
++              email: "uazo@users.noreply.github.com"
++            }
++          }
++          user_data {
++            type: NONE
++          }
++          last_reviewed: "2024-08-06"
++        }
++        policy {
++          cookies_allowed: NO
++          setting:
++            "No setting."
++          policy_exception_justification: "Not implemented."
++        })");
+ }  // namespace
+ 
+ // static
+@@ -254,7 +283,7 @@ static void JNI_DownloadController_DownloadUrl(
+     std::unique_ptr<download::DownloadUrlParameters> dl_params =
+         content::DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
+             web_contents, GURL(url),
+-            TRAFFIC_ANNOTATION_WITHOUT_PROTO("Download via toolbar menu"));
++            traffic_annotation);
+     dl_params->set_content_initiated(false);
+     dl_params->set_download_source(download::DownloadSource::TOOLBAR_MENU);
+     download_manager->DownloadUrl(std::move(dl_params));
+diff --git a/chrome/browser/offline_pages/android/downloads/offline_page_download_bridge.cc b/chrome/browser/offline_pages/android/downloads/offline_page_download_bridge.cc
+--- a/chrome/browser/offline_pages/android/downloads/offline_page_download_bridge.cc
++++ b/chrome/browser/offline_pages/android/downloads/offline_page_download_bridge.cc
+@@ -242,13 +242,43 @@ void DuplicateCheckDone(const GURL& url,
+       base::BindOnce(&OnDuplicateDialogConfirmed, std::move(callback)));
+ }
+ 
++const net::NetworkTrafficAnnotationTag traffic_annotation =
++    net::DefineNetworkTrafficAnnotation("offline_pages_download_file", R"(
++        semantics {
++          sender: "Bromite"
++          description:
++            "Offline pages download file"
++          trigger: "Manual from user."
++          data:
++            "binary format"
++          destination: LOCAL
++          internal {
++            contacts {
++              email: "uazo@users.noreply.github.com"
++            }
++            contacts {
++              email: "uazo@users.noreply.github.com"
++            }
++          }
++          user_data {
++            type: NONE
++          }
++          last_reviewed: "2023-01-01"
++        }
++        policy {
++          cookies_allowed: NO
++          setting:
++            "No setting."
++          policy_exception_justification: "Not implemented."
++        })");
++
+ void DownloadAsFile(content::WebContents* web_contents, const GURL& url) {
+   content::DownloadManager* dlm =
+       web_contents->GetBrowserContext()->GetDownloadManager();
+   std::unique_ptr<download::DownloadUrlParameters> dl_params(
+       content::DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
+           web_contents, url,
+-          TRAFFIC_ANNOTATION_WITHOUT_PROTO("Offline pages download file")));
++          traffic_annotation));
+ 
+   content::NavigationEntry* entry =
+       web_contents->GetController().GetLastCommittedEntry();
+diff --git a/components/webapps/browser/android/webapk/webapk_single_icon_hasher.cc b/components/webapps/browser/android/webapk/webapk_single_icon_hasher.cc
+--- a/components/webapps/browser/android/webapk/webapk_single_icon_hasher.cc
++++ b/components/webapps/browser/android/webapk/webapk_single_icon_hasher.cc
+@@ -45,6 +45,36 @@ std::string ComputeMurmur2Hash(const std::string& raw_image_data) {
+ 
+ }  // anonymous namespace
+ 
++const net::NetworkTrafficAnnotationTag traffic_annotation =
++    net::DefineNetworkTrafficAnnotation("webapk_icon_hasher", R"(
++        semantics {
++          sender: "webapk icon hasher"
++          description:
++            "webapk icon hasher"
++          trigger: "Manual or automatic."
++          data:
++            " binary format"
++          destination: WEBSITE
++          internal {
++            contacts {
++              email: "uazo@users.noreply.github.com"
++            }
++            contacts {
++              email: "uazo@users.noreply.github.com"
++            }
++          }
++          user_data {
++            type: NONE
++          }
++          last_reviewed: "2023-01-01"
++        }
++        policy {
++          cookies_allowed: NO
++          setting:
++            "No setting."
++          policy_exception_justification: "Not implemented."
++        })");
++
+ WebApkSingleIconHasher::WebApkSingleIconHasher(
+     base::PassKey<WebApkIconsHasher> pass_key,
+     network::mojom::URLLoaderFactory* url_loader_factory,
+@@ -89,7 +119,7 @@ WebApkSingleIconHasher::WebApkSingleIconHasher(
+   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
+   simple_url_loader_ = network::SimpleURLLoader::Create(
+       std::move(resource_request),
+-      TRAFFIC_ANNOTATION_WITHOUT_PROTO("webapk icon hasher"));
++      traffic_annotation);
+   simple_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+       url_loader_factory,
+       base::BindOnce(&WebApkSingleIconHasher::OnSimpleLoaderComplete,
 --
