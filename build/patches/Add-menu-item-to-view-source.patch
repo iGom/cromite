@@ -4,19 +4,19 @@ Subject: Add menu item to view source
 
 License: GPL-3.0-only - https://spdx.org/licenses/GPL-3.0-only.html
 ---
- chrome/android/java/res/values/ids.xml        |  1 +
- .../chrome/browser/ChromeTabbedActivity.java  |  2 ++
- .../chrome/browser/app/ChromeActivity.java    |  5 ++++
- .../AppMenuPropertiesDelegateImpl.java        | 27 +++++++++++++++++++
- .../CustomTabAppMenuPropertiesDelegate.java   |  3 +++
- .../TabbedAppMenuPropertiesDelegate.java      |  6 +++++
- .../strings/android_chrome_strings.grd        |  4 +++
+ chrome/android/java/res/values/ids.xml             |  1 +
+ .../chrome/browser/ChromeTabbedActivity.java       |  2 ++
+ .../chrome/browser/app/ChromeActivity.java         |  5 ++++
+ .../app/appmenu/AppMenuPropertiesDelegateImpl.java | 27 ++++++++++++++++++++++
+ .../CustomTabAppMenuPropertiesDelegate.java        |  3 +++
+ .../TabbedAppMenuPropertiesDelegate.java           |  6 +++++
+ .../ui/android/strings/android_chrome_strings.grd  |  4 ++++
  7 files changed, 48 insertions(+)
 
 diff --git a/chrome/android/java/res/values/ids.xml b/chrome/android/java/res/values/ids.xml
 --- a/chrome/android/java/res/values/ids.xml
 +++ b/chrome/android/java/res/values/ids.xml
-@@ -290,6 +290,7 @@ found in the LICENSE file.
+@@ -325,6 +325,7 @@ found in the LICENSE file.
      <item type="id" name="unmute_site_menu_id" />
      <item type="id" name="unpin_tab_menu_id" />
      <item type="id" name="update_menu_id" />
@@ -27,7 +27,7 @@ diff --git a/chrome/android/java/res/values/ids.xml b/chrome/android/java/res/va
 diff --git a/chrome/android/java/src/org/chromium/chrome/browser/ChromeTabbedActivity.java b/chrome/android/java/src/org/chromium/chrome/browser/ChromeTabbedActivity.java
 --- a/chrome/android/java/src/org/chromium/chrome/browser/ChromeTabbedActivity.java
 +++ b/chrome/android/java/src/org/chromium/chrome/browser/ChromeTabbedActivity.java
-@@ -4723,6 +4723,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements PreAttachInt
+@@ -4922,6 +4922,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements PreAttachInt
                  NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_DOWNLOADS_MANAGER);
              }
              RecordUserAction.record("MobileMenuDownloadManager");
@@ -39,8 +39,8 @@ diff --git a/chrome/android/java/src/org/chromium/chrome/browser/ChromeTabbedAct
 diff --git a/chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActivity.java b/chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActivity.java
 --- a/chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActivity.java
 +++ b/chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActivity.java
-@@ -3214,6 +3214,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
-             return AppInstallMenuHandler.doOpenWebApk(this, currentTab);
+@@ -3472,6 +3472,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
+             return false;
          }
  
 +        if (id == R.id.view_source_id) {
@@ -50,12 +50,12 @@ diff --git a/chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActiv
 +
          if (id == R.id.request_desktop_site_id || id == R.id.request_desktop_site_check_id) {
              boolean usingDesktopUserAgent =
-                     currentTab.getWebContents().getNavigationController().getUseDesktopUserAgent();
+                     webContents.getNavigationController().getUseDesktopUserAgent();
 diff --git a/chrome/android/java/src/org/chromium/chrome/browser/app/appmenu/AppMenuPropertiesDelegateImpl.java b/chrome/android/java/src/org/chromium/chrome/browser/app/appmenu/AppMenuPropertiesDelegateImpl.java
 --- a/chrome/android/java/src/org/chromium/chrome/browser/app/appmenu/AppMenuPropertiesDelegateImpl.java
 +++ b/chrome/android/java/src/org/chromium/chrome/browser/app/appmenu/AppMenuPropertiesDelegateImpl.java
-@@ -923,6 +923,33 @@ public abstract class AppMenuPropertiesDelegateImpl implements AppMenuProperties
-         return false;
+@@ -953,6 +953,33 @@ public abstract class AppMenuPropertiesDelegateImpl implements AppMenuProperties
+         return !BottomBarConfigUtils.isNtp(mActivityTabProvider.get());
      }
  
 +    /**
@@ -91,7 +91,7 @@ diff --git a/chrome/android/java/src/org/chromium/chrome/browser/app/appmenu/App
 diff --git a/chrome/android/java/src/org/chromium/chrome/browser/customtabs/CustomTabAppMenuPropertiesDelegate.java b/chrome/android/java/src/org/chromium/chrome/browser/customtabs/CustomTabAppMenuPropertiesDelegate.java
 --- a/chrome/android/java/src/org/chromium/chrome/browser/customtabs/CustomTabAppMenuPropertiesDelegate.java
 +++ b/chrome/android/java/src/org/chromium/chrome/browser/customtabs/CustomTabAppMenuPropertiesDelegate.java
-@@ -428,6 +428,9 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
+@@ -395,6 +395,9 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
              modelList.add(buildOpenInAppItem());
          }
  
@@ -104,7 +104,7 @@ diff --git a/chrome/android/java/src/org/chromium/chrome/browser/customtabs/Cust
 diff --git a/chrome/android/java/src/org/chromium/chrome/browser/tabbed_mode/TabbedAppMenuPropertiesDelegate.java b/chrome/android/java/src/org/chromium/chrome/browser/tabbed_mode/TabbedAppMenuPropertiesDelegate.java
 --- a/chrome/android/java/src/org/chromium/chrome/browser/tabbed_mode/TabbedAppMenuPropertiesDelegate.java
 +++ b/chrome/android/java/src/org/chromium/chrome/browser/tabbed_mode/TabbedAppMenuPropertiesDelegate.java
-@@ -516,6 +516,9 @@ public class TabbedAppMenuPropertiesDelegate extends AppMenuPropertiesDelegateIm
+@@ -523,6 +523,9 @@ public class TabbedAppMenuPropertiesDelegate extends AppMenuPropertiesDelegateIm
              modelList.add(buildOpenInAppItem());
          }
  
@@ -114,7 +114,7 @@ diff --git a/chrome/android/java/src/org/chromium/chrome/browser/tabbed_mode/Tab
          // RDS
          ListItem rdsListItem =
                  maybeBuildRequestDesktopSiteListItem(
-@@ -727,6 +730,9 @@ public class TabbedAppMenuPropertiesDelegate extends AppMenuPropertiesDelegateIm
+@@ -738,6 +741,9 @@ public class TabbedAppMenuPropertiesDelegate extends AppMenuPropertiesDelegateIm
              modelList.add(buildOpenInAppItem());
          }
  
@@ -127,7 +127,7 @@ diff --git a/chrome/android/java/src/org/chromium/chrome/browser/tabbed_mode/Tab
 diff --git a/chrome/browser/ui/android/strings/android_chrome_strings.grd b/chrome/browser/ui/android/strings/android_chrome_strings.grd
 --- a/chrome/browser/ui/android/strings/android_chrome_strings.grd
 +++ b/chrome/browser/ui/android/strings/android_chrome_strings.grd
-@@ -350,6 +350,10 @@ CHAR_LIMIT guidelines:
+@@ -356,6 +356,10 @@ CHAR_LIMIT guidelines:
          Chrome finds
        </message>
  

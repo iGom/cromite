@@ -6,16 +6,13 @@ Decreases high timer resolution in Blink.
 
 License: GPL-2.0-or-later - https://spdx.org/licenses/GPL-2.0-or-later.html
 ---
- .../High-resolution-timing-mitigation.inc     |  8 ++++++++
- .../High-resolution-timing-mitigation.inc     |  3 +++
- .../High-resolution-timing-mitigation.inc     |  1 +
- .../renderer/core/timing/time_clamper.cc      | 19 +++++++++++++++----
- .../blink/renderer/core/timing/time_clamper.h |  5 +++--
- .../video_frame_callback_requester_impl.cc    | 17 +++++++----------
+ .../High-resolution-timing-mitigation.inc             |  8 ++++++++
+ .../features_cc/High-resolution-timing-mitigation.inc |  3 +++
+ .../features_h/High-resolution-timing-mitigation.inc  |  1 +
+ .../blink/renderer/core/timing/time_clamper.cc        | 19 +++++++++++++++----
+ third_party/blink/renderer/core/timing/time_clamper.h |  5 +++--
+ .../video_rvfc/video_frame_callback_requester_impl.cc | 17 +++++++----------
  6 files changed, 37 insertions(+), 16 deletions(-)
- create mode 100644 cromite_flags/chrome/browser/about_flags_cc/High-resolution-timing-mitigation.inc
- create mode 100644 cromite_flags/third_party/blink/common/features_cc/High-resolution-timing-mitigation.inc
- create mode 100644 cromite_flags/third_party/blink/common/features_h/High-resolution-timing-mitigation.inc
 
 diff --git a/cromite_flags/chrome/browser/about_flags_cc/High-resolution-timing-mitigation.inc b/cromite_flags/chrome/browser/about_flags_cc/High-resolution-timing-mitigation.inc
 new file mode 100644
@@ -47,17 +44,16 @@ new file mode 100644
 diff --git a/third_party/blink/renderer/core/timing/time_clamper.cc b/third_party/blink/renderer/core/timing/time_clamper.cc
 --- a/third_party/blink/renderer/core/timing/time_clamper.cc
 +++ b/third_party/blink/renderer/core/timing/time_clamper.cc
-@@ -7,6 +7,9 @@
+@@ -9,13 +9,19 @@
  #include "base/bit_cast.h"
  #include "base/rand_util.h"
  
 +#include "third_party/blink/public/common/features.h"
 +#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 +
- #include <cmath>
- 
  namespace blink {
-@@ -15,7 +18,10 @@ namespace {
+ 
+ namespace {
  const int64_t kTenLowerDigitsMod = 10000000000;
  }  // namespace
  

@@ -9,35 +9,32 @@ Disable search-ready omnibox by default
 
 License: GPL-3.0-only - https://spdx.org/licenses/GPL-3.0-only.html
 ---
- chrome/browser/flags/android/chrome_feature_list.cc |  1 +
- .../chrome/browser/flags/ChromeFeatureList.java     |  1 +
- .../DropdownItemViewInfoListBuilder.java            |  8 +++++++-
- .../restore-Search-Ready-Omnibox-flag.inc           | 13 +++++++++++++
- .../restore-Search-Ready-Omnibox-flag.inc           |  3 +++
- .../restore-Search-Ready-Omnibox-flag.inc           |  1 +
+ chrome/browser/flags/android/chrome_feature_list.cc         |  1 +
+ .../chromium/chrome/browser/flags/ChromeFeatureList.java    |  1 +
+ .../suggestions/DropdownItemViewInfoListBuilder.java        |  8 +++++++-
+ .../about_flags_cc/restore-Search-Ready-Omnibox-flag.inc    | 13 +++++++++++++
+ .../restore-Search-Ready-Omnibox-flag.inc                   |  3 +++
+ .../restore-Search-Ready-Omnibox-flag.inc                   |  1 +
  6 files changed, 26 insertions(+), 1 deletion(-)
- create mode 100644 cromite_flags/chrome/browser/about_flags_cc/restore-Search-Ready-Omnibox-flag.inc
- create mode 100644 cromite_flags/chrome/browser/flags/android/chrome_feature_list_cc/restore-Search-Ready-Omnibox-flag.inc
- create mode 100644 cromite_flags/chrome/browser/flags/android/chrome_feature_list_h/restore-Search-Ready-Omnibox-flag.inc
 
 diff --git a/chrome/browser/flags/android/chrome_feature_list.cc b/chrome/browser/flags/android/chrome_feature_list.cc
 --- a/chrome/browser/flags/android/chrome_feature_list.cc
 +++ b/chrome/browser/flags/android/chrome_feature_list.cc
-@@ -462,6 +462,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
+@@ -501,6 +501,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
+     &kReadAloudAudioOverviews,
      &kReadAloudIPHMenuButtonHighlightCCT,
-     &kRecordSuppressionMetrics,
      &kReengagementNotification,
 +    &kSearchReadyOmniboxFeature,
-     &kRelatedSearchesAllLanguage,
-     &kRelatedSearchesSwitch,
-     &kRemoveTabFocusOnShowingAndSelect,
+     &kRemoveExtraHeadersOnCrossOriginRedirect,
+     &kSafetyFrePromo,
+     &kScheduleWindowCleaning,
 diff --git a/chrome/browser/flags/android/java/src/org/chromium/chrome/browser/flags/ChromeFeatureList.java b/chrome/browser/flags/android/java/src/org/chromium/chrome/browser/flags/ChromeFeatureList.java
 --- a/chrome/browser/flags/android/java/src/org/chromium/chrome/browser/flags/ChromeFeatureList.java
 +++ b/chrome/browser/flags/android/java/src/org/chromium/chrome/browser/flags/ChromeFeatureList.java
-@@ -646,6 +646,7 @@ public abstract class ChromeFeatureList {
+@@ -740,6 +740,7 @@ public abstract class ChromeFeatureList {
+             "MediaCaptureNotificationRefreshMediaTypes";
      public static final String MIGRATE_MANAGEMENT_TO_WEBUI_ON_MOBILE =
              "MigrateManagementPageToWebUIOnMobile";
-     public static final String MOST_VISITED_TILES_CUSTOMIZATION = "MostVisitedTilesCustomization";
 +    public static final String SEARCH_READY_OMNIBOX = "SearchReadyOmnibox";
      public static final String MOST_VISITED_TILES_RESELECT = "MostVisitedTilesReselect";
      public static final String MOVE_TO_FRONT_IN_LAUNCH_INTENT_DISPATCHER =
@@ -53,7 +50,7 @@ diff --git a/chrome/browser/ui/android/omnibox/java/src/org/chromium/chrome/brow
  import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
  import org.chromium.chrome.browser.omnibox.styles.OmniboxImageSupplier;
  import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
-@@ -55,6 +56,7 @@ class DropdownItemViewInfoListBuilder {
+@@ -56,6 +57,7 @@ class DropdownItemViewInfoListBuilder {
      private @Nullable OmniboxImageSupplier mImageSupplier;
      private final BookmarkState mBookmarkState;
      private final MonotonicObservableSupplier<@ControlsPosition Integer> mToolbarPositionSupplier;
@@ -61,7 +58,7 @@ diff --git a/chrome/browser/ui/android/omnibox/java/src/org/chromium/chrome/brow
  
      DropdownItemViewInfoListBuilder(
              Supplier<@Nullable Tab> tabSupplier,
-@@ -118,10 +120,11 @@ class DropdownItemViewInfoListBuilder {
+@@ -119,10 +121,11 @@ class DropdownItemViewInfoListBuilder {
          AutocompleteUIContext uiContext =
                  createUIContext(context, host, textProvider, actionDelegate);
  
@@ -74,7 +71,7 @@ diff --git a/chrome/browser/ui/android/omnibox/java/src/org/chromium/chrome/brow
          registerSuggestionProcessor(new TailSuggestionProcessor(uiContext));
          registerSuggestionProcessor(new MostVisitedTilesProcessor(uiContext));
          registerSuggestionProcessor(new TabGroupSuggestionProcessor(uiContext));
-@@ -187,6 +190,9 @@ class DropdownItemViewInfoListBuilder {
+@@ -188,6 +191,9 @@ class DropdownItemViewInfoListBuilder {
              mImageSupplier.onNativeInitialized();
          }
  

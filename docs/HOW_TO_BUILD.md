@@ -45,7 +45,9 @@ cd chromium/src/
 
 please note that these commands are valid for the build of android and linux platforms.
 
-for the windows build you need to configure the cross build mode from linux.
+For a native Windows x64 build on this branch, follow the [Windows instructions](WINDOWS_BUILD.md).
+
+For the Linux-to-Windows cross build, configure cross build mode from Linux.
 You can use the [script](https://github.com/uazo/cromite/blob/master/tools/images/win-sdk/prepare.sh) to generate it. 
 
 all release builds are done via the [action available](https://github.com/uazo/cromite/blob/master/.github/workflows/build_cromite.yaml) from which you can see the mode I have adopted.
