@@ -9,6 +9,21 @@ import sys
 import tempfile
 
 
+# Git applies the first matching rule to each path. Build scripts, shared
+# resources and generated Cromite flag inputs can be consumed by Windows even
+# if they live under an Android directory.
+WINDOWS_PATHS = [
+    "--include=build/*", "--include=cromite_flags/*",
+    "--include=*.gn", "--include=*.gni", "--include=*.py",
+    "--include=*.grd", "--include=*.grdp", "--include=*.mojom",
+    "--exclude=*.java", "--exclude=*.kt", "--exclude=*.aidl",
+    "--exclude=android/*", "--exclude=android_webview/*", "--exclude=ios/*",
+    "--exclude=*/android/*", "--exclude=*/ios/*", "--exclude=*/javatests/*",
+    "--exclude=third_party/android_deps/*", "--exclude=third_party/androidx/*",
+    "--include=*",
+]
+
+
 def git(directory, *args, **kwargs):
     return subprocess.run(["git", "-C", str(directory), *args], check=True, **kwargs)
 
@@ -23,7 +38,7 @@ def copy_inputs(source, scratch, patches):
     series = b"".join(patch.read_bytes() + b"\n" for patch in patches)
     paths = set()
     for direction in ([], ["--reverse"]):
-        stats = git(scratch, "apply", "--numstat", "-z", *direction, "-",
+        stats = git(scratch, "apply", "--numstat", "-z", *WINDOWS_PATHS, *direction, "-",
                     input=series, stdout=subprocess.PIPE).stdout
         for record in stats.split(b"\0"):
             if record:
@@ -41,7 +56,12 @@ def copy_inputs(source, scratch, patches):
 
 def apply_one(directory, patch, reverse=False):
     options = ["--reverse"] if reverse else []
-    git(directory, "apply", "--binary", "--whitespace=nowarn", *options, str(patch))
+    try:
+        git(directory, "apply", "--binary", "--whitespace=nowarn", *WINDOWS_PATHS,
+            *options, str(patch))
+    except subprocess.CalledProcessError as error:
+        action = "reverse" if reverse else "apply"
+        raise RuntimeError(f"Could not {action} {patch.name}") from error
 
 
 def main():
@@ -65,6 +85,11 @@ def main():
     with tempfile.TemporaryDirectory(prefix="cromite-patches-") as temporary:
         scratch = Path(temporary)
         git(scratch, "init", "--quiet")
+        count = len(patches)
+        patches = [patch for patch in patches
+                   if git(scratch, "apply", "--numstat", "-z", *WINDOWS_PATHS,
+                          str(patch), stdout=subprocess.PIPE).stdout]
+        print(f"{len(patches)} Windows-relevant patches in {count} entries.", flush=True)
         copy_inputs(source, scratch, patches)
         for index, patch in enumerate(patches, 1):
             print(f"Checking {index}/{len(patches)}  {patch.name}", flush=True)
@@ -76,7 +101,7 @@ def main():
             for patch in patches:
                 apply_one(source, patch)
                 applied.append(patch)
-        except subprocess.CalledProcessError:
+        except (OSError, RuntimeError):
             for patch in reversed(applied):
                 apply_one(source, patch, reverse=True)
             raise
@@ -86,5 +111,5 @@ def main():
 if __name__ == "__main__":
     try:
         main()
-    except (OSError, ValueError, subprocess.CalledProcessError) as error:
+    except (OSError, ValueError, RuntimeError, subprocess.CalledProcessError) as error:
         sys.exit(str(error))

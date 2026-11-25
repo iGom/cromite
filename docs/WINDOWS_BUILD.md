@@ -47,7 +47,7 @@ cd /d C:\src\chromium\src
 call python3 C:\src\cromite\tools\apply-windows-patches.py check .
 ```
 
-The check replays the series on temporary copies of the affected files, including files in V8, Skia, DevTools and BoringSSL. An error names the patch to port. You can update the Cromite branch and repeat the check on the same Chromium checkout.
+The native check and apply commands use the same Windows file selection. They retain shared build files, resources and Cromite flags, and skip Android and iOS implementation files. The check replays every applicable patch on temporary copies, including affected files in V8, Skia, DevTools and BoringSSL. An error names the patch to port. You can update the Cromite branch and repeat the check on the same Chromium checkout.
 
 ## Compile after the check passes
 

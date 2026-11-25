@@ -11,24 +11,24 @@ Disable deeplinks
 
 License: GPL-3.0-only - https://spdx.org/licenses/GPL-3.0-only.html
 ---
- .../chrome_password_manager_client.cc         |  4 --
- .../ui/autofill/chrome_autofill_client.cc     |  9 ---
- .../ui/autofill/chrome_autofill_client.h      |  1 -
- .../browser/android_autofill_client.cc        | 11 ----
- .../browser/android_autofill_client.h         |  1 -
- .../autofill_crowdsourcing_manager.cc         | 63 ++-----------------
- .../autofill_crowdsourcing_manager.h          |  2 -
- .../browser/crowdsourcing/votes_uploader.cc   |  3 -
- .../browser/foundations/autofill_client.h     |  4 --
- .../browser/foundations/autofill_manager.cc   | 21 -------
- .../autofill/core/common/autofill_prefs.cc    |  8 +--
- .../password_generation_frame_helper.cc       |  5 --
- 12 files changed, 9 insertions(+), 123 deletions(-)
+ .../chrome_password_manager_client.cc              |    4 -
+ .../browser/ui/autofill/chrome_autofill_client.cc  |    9 ---
+ .../browser/ui/autofill/chrome_autofill_client.h   |    1 
+ .../browser/android_autofill_client.cc             |   11 ---
+ .../browser/android_autofill_client.h              |    1 
+ .../autofill_crowdsourcing_manager.cc              |   63 ++------------------
+ .../crowdsourcing/autofill_crowdsourcing_manager.h |    2 -
+ .../core/browser/crowdsourcing/votes_uploader.cc   |    3 -
+ .../core/browser/foundations/autofill_client.h     |    4 -
+ .../core/browser/foundations/autofill_manager.cc   |   28 ---------
+ components/autofill/core/common/autofill_prefs.cc  |    8 +--
+ .../browser/password_generation_frame_helper.cc    |    5 --
+ 12 files changed, 10 insertions(+), 129 deletions(-)
 
 diff --git a/chrome/browser/password_manager/chrome_password_manager_client.cc b/chrome/browser/password_manager/chrome_password_manager_client.cc
 --- a/chrome/browser/password_manager/chrome_password_manager_client.cc
 +++ b/chrome/browser/password_manager/chrome_password_manager_client.cc
-@@ -1160,10 +1160,6 @@ ChromePasswordManagerClient::GetHttpAuthManager() {
+@@ -1167,10 +1167,6 @@ ChromePasswordManagerClient::GetHttpAuthManager() {
  
  autofill::AutofillCrowdsourcingManager*
  ChromePasswordManagerClient::GetAutofillCrowdsourcingManager() {
@@ -42,7 +42,7 @@ diff --git a/chrome/browser/password_manager/chrome_password_manager_client.cc b
 diff --git a/chrome/browser/ui/autofill/chrome_autofill_client.cc b/chrome/browser/ui/autofill/chrome_autofill_client.cc
 --- a/chrome/browser/ui/autofill/chrome_autofill_client.cc
 +++ b/chrome/browser/ui/autofill/chrome_autofill_client.cc
-@@ -447,15 +447,6 @@ ChromeAutofillClient::GetURLLoaderFactory() {
+@@ -466,15 +466,6 @@ ChromeAutofillClient::GetURLLoaderFactory() {
        ->GetURLLoaderFactoryForBrowserProcess();
  }
  
@@ -61,7 +61,7 @@ diff --git a/chrome/browser/ui/autofill/chrome_autofill_client.cc b/chrome/brows
 diff --git a/chrome/browser/ui/autofill/chrome_autofill_client.h b/chrome/browser/ui/autofill/chrome_autofill_client.h
 --- a/chrome/browser/ui/autofill/chrome_autofill_client.h
 +++ b/chrome/browser/ui/autofill/chrome_autofill_client.h
-@@ -145,7 +145,6 @@ class ChromeAutofillClient : public ContentAutofillClient {
+@@ -154,7 +154,6 @@ class ChromeAutofillClient : public ContentAutofillClient {
    const subscription_eligibility::SubscriptionEligibilityService*
    GetSubscriptionEligibilityService() const final;
    scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() final;
@@ -72,7 +72,7 @@ diff --git a/chrome/browser/ui/autofill/chrome_autofill_client.h b/chrome/browse
 diff --git a/components/android_autofill/browser/android_autofill_client.cc b/components/android_autofill/browser/android_autofill_client.cc
 --- a/components/android_autofill/browser/android_autofill_client.cc
 +++ b/components/android_autofill/browser/android_autofill_client.cc
-@@ -101,17 +101,6 @@ AndroidAutofillClient::GetURLLoaderFactory() {
+@@ -103,17 +103,6 @@ AndroidAutofillClient::GetURLLoaderFactory() {
        ->GetURLLoaderFactoryForBrowserProcess();
  }
  
@@ -93,7 +93,7 @@ diff --git a/components/android_autofill/browser/android_autofill_client.cc b/co
 diff --git a/components/android_autofill/browser/android_autofill_client.h b/components/android_autofill/browser/android_autofill_client.h
 --- a/components/android_autofill/browser/android_autofill_client.h
 +++ b/components/android_autofill/browser/android_autofill_client.h
-@@ -95,7 +95,6 @@ class AndroidAutofillClient : public autofill::ContentAutofillClient,
+@@ -100,7 +100,6 @@ class AndroidAutofillClient : public autofill::ContentAutofillClient,
    const std::string& GetAppLocale() const final;
    bool IsOffTheRecord() const final;
    scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() final;
@@ -104,7 +104,7 @@ diff --git a/components/android_autofill/browser/android_autofill_client.h b/com
 diff --git a/components/autofill/core/browser/crowdsourcing/autofill_crowdsourcing_manager.cc b/components/autofill/core/browser/crowdsourcing/autofill_crowdsourcing_manager.cc
 --- a/components/autofill/core/browser/crowdsourcing/autofill_crowdsourcing_manager.cc
 +++ b/components/autofill/core/browser/crowdsourcing/autofill_crowdsourcing_manager.cc
-@@ -517,33 +517,6 @@ std::optional<std::string> GetUploadPayloadForApi(
+@@ -519,33 +519,6 @@ std::optional<std::string> GetUploadPayloadForApi(
    return std::move(payload);
  }
  
@@ -138,7 +138,7 @@ diff --git a/components/autofill/core/browser/crowdsourcing/autofill_crowdsourci
  // Gets HTTP body payload for API POST request.
  std::optional<std::string> GetAPIBodyPayload(std::string payload,
                                               CrowdsourcingRequestType type) {
-@@ -575,15 +548,7 @@ std::optional<std::string> GetAPIQueryPayload(
+@@ -577,15 +550,7 @@ std::optional<std::string> GetAPIQueryPayload(
  }
  
  std::string GetAPIKeyForUrl(version_info::Channel channel) {
@@ -155,7 +155,7 @@ diff --git a/components/autofill/core/browser/crowdsourcing/autofill_crowdsourci
  }
  
  std::optional<std::vector<variations::VariationID>>& GetActiveExperiments() {
-@@ -910,31 +875,13 @@ size_t AutofillCrowdsourcingManager::GetPayloadLength(
+@@ -911,31 +876,13 @@ size_t AutofillCrowdsourcingManager::GetPayloadLength(
  
  std::tuple<GURL, std::string> AutofillCrowdsourcingManager::GetRequestURLAndMethod(
      const FormRequestData& request_data) const {
@@ -206,7 +206,7 @@ diff --git a/components/autofill/core/browser/crowdsourcing/autofill_crowdsourci
 diff --git a/components/autofill/core/browser/crowdsourcing/votes_uploader.cc b/components/autofill/core/browser/crowdsourcing/votes_uploader.cc
 --- a/components/autofill/core/browser/crowdsourcing/votes_uploader.cc
 +++ b/components/autofill/core/browser/crowdsourcing/votes_uploader.cc
-@@ -543,9 +543,6 @@ void VotesUploader::UploadVote(
+@@ -460,9 +460,6 @@ void VotesUploader::UploadVote(
          client_->GetUkmRecorder(), ukm_source_id, *submitted_form,
          submission_timestamp);
    }
@@ -219,7 +219,7 @@ diff --git a/components/autofill/core/browser/crowdsourcing/votes_uploader.cc b/
 diff --git a/components/autofill/core/browser/foundations/autofill_client.h b/components/autofill/core/browser/foundations/autofill_client.h
 --- a/components/autofill/core/browser/foundations/autofill_client.h
 +++ b/components/autofill/core/browser/foundations/autofill_client.h
-@@ -400,10 +400,6 @@ class AutofillClient {
+@@ -412,10 +412,6 @@ class AutofillClient {
    // Returns the VotesUploader.
    virtual VotesUploader& GetVotesUploader() = 0;
  
@@ -233,41 +233,41 @@ diff --git a/components/autofill/core/browser/foundations/autofill_client.h b/co
 diff --git a/components/autofill/core/browser/foundations/autofill_manager.cc b/components/autofill/core/browser/foundations/autofill_manager.cc
 --- a/components/autofill/core/browser/foundations/autofill_manager.cc
 +++ b/components/autofill/core/browser/foundations/autofill_manager.cc
-@@ -356,12 +356,6 @@ void AutofillManager::QueryServerPredictions(
-   // StartQueryRequest() expects to include the queried forms. This would allow
-   // StartQueryRequest() to provide the queried forms to the callback
-   // automatically, instead of passing them in separately here.
+@@ -320,33 +320,7 @@ void AutofillManager::OnFormsSeen(std::vector<FormData> updated_forms,
+ void AutofillManager::QueryServerPredictions(
+     base::span<const FormData> forms,
+     base::TimeTicks form_seen_timestamp) {
+-  std::vector<FormData> queryable_forms;
+-  for (const FormData& form : forms) {
+-    if (GetFormParsingPermissions(
+-            form, /*ignore_small_forms=*/!client().IsTabInActorMode())
+-            .contains(FormParsingPermission::kServerQuery)) {
+-      queryable_forms.push_back(form);
+-    }
+-  }
+-
+-  if (queryable_forms.empty()) {
+-    return;
+-  }
+-
+-  std::vector<FormGlobalId> queryable_form_ids =
+-      base::ToVector(queryable_forms, &FormData::global_id);
+-  NotifyObservers(&Observer::OnBeforeLoadedServerPredictions,
+-                  queryable_form_ids);
+-  // TODO(crbug.com/40100455): Consider changing the type of callback that
+-  // StartQueryRequest() expects to include the queried forms. This would allow
+-  // StartQueryRequest() to provide the queried forms to the callback
+-  // automatically, instead of passing them in separately here.
 -  auto on_loaded =
 -      base::BindOnce(&AutofillManager::OnLoadedServerPredictions, GetWeakPtr(),
 -                     queryable_forms, form_seen_timestamp);
 -  client().GetCrowdsourcingManager().StartQueryRequest(
 -      std::move(queryable_forms), driver().GetIsolationInfo(),
 -      std::move(on_loaded));
++  // Cromite does not send form data to the Autofill crowdsourcing service.
  }
  
- void AutofillManager::OnFormsParsed(const std::vector<FormData>& forms,
-@@ -399,21 +393,6 @@ void AutofillManager::OnFormsParsed(const std::vector<FormData>& forms,
-     return;
-   }
- 
--  // Query the server if at least one of the forms was parsed.
--  if (!queryable_forms.empty()) {
--    std::vector<FormGlobalId> queryable_form_ids =
--        base::ToVector(queryable_forms, &FormData::global_id);
--    NotifyObservers(&Observer::OnBeforeLoadedServerPredictions,
--                    queryable_form_ids);
--    // If language detection is currently reparsing the form, wait until the
--    // server response is processed, to ensure server predictions are not lost.
--    auto on_loaded =
--        base::BindOnce(&AutofillManager::OnLoadedServerPredictions,
--                       GetWeakPtr(), queryable_forms, form_seen_timestamp);
--    client().GetCrowdsourcingManager().StartQueryRequest(
--        std::move(queryable_forms), driver().GetIsolationInfo(),
--        std::move(on_loaded));
--  }
- }
- 
- void AutofillManager::OnCaretMovedInFormField(const FormData& form,
+ void AutofillManager::OnFormsParsed(const std::vector<FormData>& forms) {
 diff --git a/components/autofill/core/common/autofill_prefs.cc b/components/autofill/core/common/autofill_prefs.cc
 --- a/components/autofill/core/common/autofill_prefs.cc
 +++ b/components/autofill/core/common/autofill_prefs.cc
@@ -293,7 +293,7 @@ diff --git a/components/autofill/core/common/autofill_prefs.cc b/components/auto
        user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
    registry->RegisterBooleanPref(
        kAutofillPaymentCardBenefits, true,
-@@ -202,7 +202,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
+@@ -206,7 +206,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
        user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
  
    // Deprecated prefs registered for migration.
@@ -305,7 +305,7 @@ diff --git a/components/autofill/core/common/autofill_prefs.cc b/components/auto
 diff --git a/components/password_manager/core/browser/password_generation_frame_helper.cc b/components/password_manager/core/browser/password_generation_frame_helper.cc
 --- a/components/password_manager/core/browser/password_generation_frame_helper.cc
 +++ b/components/password_manager/core/browser/password_generation_frame_helper.cc
-@@ -103,7 +103,6 @@ void PasswordGenerationFrameHelper::ProcessPasswordRequirements(
+@@ -104,7 +104,6 @@ void PasswordGenerationFrameHelper::ProcessPasswordRequirements(
  // In order for password generation to be enabled, we need to make sure:
  // (1) Password sync is enabled, and
  // (2) Password saving is enabled
@@ -313,7 +313,7 @@ diff --git a/components/password_manager/core/browser/password_generation_frame_
  bool PasswordGenerationFrameHelper::IsGenerationEnabled(
      bool log_debug_data) const {
    std::unique_ptr<Logger> logger;
-@@ -113,10 +112,6 @@ bool PasswordGenerationFrameHelper::IsGenerationEnabled(
+@@ -114,10 +113,6 @@ bool PasswordGenerationFrameHelper::IsGenerationEnabled(
    }
  
    GURL url = driver_->GetLastCommittedURL();
@@ -324,4 +324,5 @@ diff --git a/components/password_manager/core/browser/password_generation_frame_
    if (!password_manager_util::IsAbleToSavePasswords(client_)) {
      if (logger) {
        logger->LogMessage(Logger::STRING_GENERATION_DISABLED_STORE_ERROR);
+
 --

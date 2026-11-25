@@ -10,34 +10,456 @@ Some parts authored by csagan5.
 
 License: GPL-3.0-only - https://spdx.org/licenses/GPL-3.0-only.html
 ---
- .../java/res/xml/privacy_preferences.xml      |  6 ++
- .../privacy/settings/PrivacySettings.java     | 63 +++++++++++++++++++
- .../api/settings_private/prefs_util.cc        |  4 ++
- .../history/history_service_factory.cc        |  2 +
- chrome/browser/profiles/profile_impl.cc       |  1 +
- .../settings/privacy_page/privacy_page.html   |  9 +++
- .../settings/privacy_page/privacy_page.ts     | 19 ++++++
- .../strings/android_chrome_strings.grd        | 12 ++++
- .../settings_localized_strings_provider.cc    |  5 ++
- .../preference_spinner_single_line.xml        | 26 ++++++--
- .../java/res/layout/preference_spinner.xml    |  7 +++
- .../layout/preference_spinner_single_line.xml |  7 +++
- .../settings/SpinnerPreference.java           |  7 +++
- ...istory-number-of-days-privacy-setting.grdp | 18 ++++++
- .../core/browser/browsing_history_service.cc  |  4 +-
- .../core/browser/expire_history_backend.cc    | 13 +++-
- .../core/browser/expire_history_backend.h     |  2 +
- .../history/core/browser/history_backend.cc   | 17 +++++
- .../history/core/browser/history_backend.h    |  6 +-
- .../history/core/browser/history_service.cc   | 33 ++++++++++
- .../history/core/browser/history_service.h    |  8 +++
- components/history/core/common/pref_names.cc  |  4 ++
- components/history/core/common/pref_names.h   |  1 +
- .../history_embeddings/core/sql_database.cc   |  2 +-
- .../omnibox/browser/shortcuts_backend.cc      |  4 +-
- .../utility/safari_data_importer.cc           |  2 +-
- 26 files changed, 265 insertions(+), 17 deletions(-)
- create mode 100644 components/cromite_components_strings_grd/History-number-of-days-privacy-setting.grdp
+ .../extensions/api/settings_private/prefs_util.cc  |    4 +
+ chrome/browser/history/history_service_factory.cc  |    2 +
+ chrome/browser/profiles/profile_impl.cc            |    1 
+ .../settings/privacy_page/privacy_page.html.ts     |    7 ++
+ .../settings/privacy_page/privacy_page.ts          |   11 +++
+ .../ui/android/strings/android_chrome_strings.grd  |   12 ++++
+ .../settings_localized_strings_provider.cc         |    5 ++
+ .../History-number-of-days-privacy-setting.grdp    |   18 ++++++
+ .../core/browser/browsing_history_service.cc       |    4 +
+ .../history/core/browser/expire_history_backend.cc |   13 ++++
+ .../history/core/browser/expire_history_backend.h  |    2 +
+ components/history/core/browser/history_backend.cc |   17 +++++
+ components/history/core/browser/history_backend.h  |    6 +-
+ components/history/core/browser/history_service.cc |   33 ++++++++++
+ components/history/core/browser/history_service.h  |    8 +++
+ components/history/core/common/pref_names.cc       |    4 +
+ components/history/core/common/pref_names.h        |    1 
+ components/omnibox/browser/shortcuts_backend.cc    |    4 +
+ .../utility/safari_data_importer.cc                |    2 -
+ .../android/java/res/xml/privacy_preferences.xml   |    6 ++
+ .../browser/privacy/settings/PrivacySettings.java  |   63 ++++++++++++++++++++
+ .../preference_spinner_single_line.xml             |   26 ++++++--
+ .../android/java/res/layout/preference_spinner.xml |    7 ++
+ .../res/layout/preference_spinner_single_line.xml  |    7 ++
+ .../browser_ui/settings/SpinnerPreference.java     |    7 ++
+ 25 files changed, 254 insertions(+), 16 deletions(-)
+
+diff --git a/chrome/browser/extensions/api/settings_private/prefs_util.cc b/chrome/browser/extensions/api/settings_private/prefs_util.cc
+--- a/chrome/browser/extensions/api/settings_private/prefs_util.cc
++++ b/chrome/browser/extensions/api/settings_private/prefs_util.cc
+@@ -47,6 +47,7 @@
+ #include "components/contextual_search/pref_names.h"
+ #include "components/contextual_tasks/public/prefs.h"
+ #include "components/drive/drive_pref_names.h"
++#include "components/history/core/common/pref_names.h"
+ #include "components/embedder_support/pref_names.h"
+ #include "components/language/core/browser/pref_names.h"
+ #include "components/live_caption/pref_names.h"
+@@ -316,6 +317,9 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
+   (*s_allowlist)[::prefs::kSplitViewDragAndDropEnabled] =
+       settings_api::PrefType::kBoolean;
+ 
++  (*s_allowlist)[::prefs::kExpireDaysThreshold] =
++      settings_api::PrefType::kNumber;
++
+   // Appearance settings.
+   (*s_allowlist)[::prefs::kCtrlTabMru] = settings_api::PrefType::kBoolean;
+   (*s_allowlist)[::prefs::kCurrentThemeID] = settings_api::PrefType::kString;
+diff --git a/chrome/browser/history/history_service_factory.cc b/chrome/browser/history/history_service_factory.cc
+--- a/chrome/browser/history/history_service_factory.cc
++++ b/chrome/browser/history/history_service_factory.cc
+@@ -27,6 +27,8 @@ std::unique_ptr<KeyedService> BuildHistoryService(
+       /*device_info_tracker=*/nullptr, /*local_device_info_provider=*/nullptr);
+   history_service->Init(history::HistoryDatabaseParamsForPath(
+       context->GetPath(), chrome::GetChannel()));
++  Profile* profile = Profile::FromBrowserContext(context);
++  history_service->InitFromPreferences(profile->GetPrefs());
+   return history_service;
+ }
+ 
+diff --git a/chrome/browser/profiles/profile_impl.cc b/chrome/browser/profiles/profile_impl.cc
+--- a/chrome/browser/profiles/profile_impl.cc
++++ b/chrome/browser/profiles/profile_impl.cc
+@@ -403,6 +403,7 @@ std::unique_ptr<Profile> Profile::CreateProfile(const base::FilePath& path,
+ void ProfileImpl::RegisterProfilePrefs(
+     user_prefs::PrefRegistrySyncable* registry) {
+   registry->RegisterBooleanPref(prefs::kSavingBrowserHistoryDisabled, false);
++  registry->RegisterIntegerPref(prefs::kExpireDaysThreshold, 90);
+   registry->RegisterBooleanPref(prefs::kAllowDeletingBrowserHistory, true);
+   registry->RegisterBooleanPref(policy::policy_prefs::kForceGoogleSafeSearch,
+                                 false);
+diff --git a/chrome/browser/resources/settings/privacy_page/privacy_page.html.ts b/chrome/browser/resources/settings/privacy_page/privacy_page.html.ts
+--- a/chrome/browser/resources/settings/privacy_page/privacy_page.html.ts
++++ b/chrome/browser/resources/settings/privacy_page/privacy_page.html.ts
+@@ -50,6 +50,13 @@ export function getHtml(this: SettingsPrivacyPageElement) {
+       @click="${this.onSiteSettingsLinkRowClick_}"
+       role-description="$i18n{subpageArrowRoleDescription}">
+   </cr-link-row>
++  <div class="cr-row">
++    <div class="flex cr-padded-text" aria-hidden="true">$i18n{expireHistory}</div>
++    <settings-dropdown-menu id="expireDaysThreshold" label="$i18n{expireHistory}"
++        pref-key="history.expire_days_threshold"
++        .menuOptions="${this.historyExpireDaysThresholdOptions_}">
++    </settings-dropdown-menu>
++  </div>
+   <cr-toast id="deleteBrowsingDataToast" duration="5000">
+     <div>${this.dbdDeletionConfirmationToastLabel_}</div>
+   </cr-toast>
+diff --git a/chrome/browser/resources/settings/privacy_page/privacy_page.ts b/chrome/browser/resources/settings/privacy_page/privacy_page.ts
+--- a/chrome/browser/resources/settings/privacy_page/privacy_page.ts
++++ b/chrome/browser/resources/settings/privacy_page/privacy_page.ts
+@@ -7,6 +7,7 @@
+  * 'settings-privacy-page' is the settings page containing privacy and
+  * security settings.
+  */
++import '../controls/settings_dropdown_menu.js';
+ import 'chrome://resources/cr_elements/icons.html.js';
+ import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
+ import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
+@@ -84,6 +85,16 @@ export class SettingsPrivacyPageElement extends SettingsPrivacyPageElementBase {
+     };
+   }
+ 
++  protected readonly historyExpireDaysThresholdOptions_ = [
++      {value: 0, name: loadTimeData.getString('noHistory')},
++      {value: 1, name: '1 ' + loadTimeData.getString('dayHistory')},
++      {value: 7, name: '7 ' + loadTimeData.getString('daysHistory')},
++      {value: 15, name: '15 ' + loadTimeData.getString('daysHistory')},
++      {value: 30, name: '30 ' + loadTimeData.getString('daysHistory')},
++      {value: 60, name: '60 ' + loadTimeData.getString('daysHistory')},
++      {value: 90, name: '90 ' + loadTimeData.getString('daysHistory')},
++      {value: 0xFFFF, name: loadTimeData.getString('foreverHistory')},
++    ];
+   protected accessor showClearBrowsingDataDialog_: boolean = false;
+   protected accessor showPrivacyGuideDialog_: boolean = false;
+   protected accessor dbdDeletionConfirmationToastLabel_: string = '';
+diff --git a/chrome/browser/ui/android/strings/android_chrome_strings.grd b/chrome/browser/ui/android/strings/android_chrome_strings.grd
+--- a/chrome/browser/ui/android/strings/android_chrome_strings.grd
++++ b/chrome/browser/ui/android/strings/android_chrome_strings.grd
+@@ -1376,6 +1376,18 @@ Your Google account may have other forms of browsing history like searches and a
+       <message name="IDS_CLEAR_HISTORY_TITLE" desc="Title for Clear History in Clear Browsing Data dialog">
+         Browsing history
+       </message>
++      <message name="IDS_HISTORY_EXPIRE_DAYS_THRESHOLD_TITLE" desc="Title for history expire days threshold">
++        Expire history days threshold
++      </message>
++      <message name="IDS_HISTORY_EXPIRE_DAYS_NO_HISTORY" desc="Title for history expire days option to keep no navigation history">
++        No history
++      </message>
++      <message name="IDS_HISTORY_EXPIRE_DAYS_KEEP_FOREVER" desc="Title for history expire days option to keep navigation history forever">
++        Forever
++      </message>
++      <message name="IDS_HISTORY_EXPIRE_DAYS_THRESHOLD_SUMMARY" desc="Summary for history expire days threshold">
++        Number of days to keep navigation history
++      </message>
+       <message name="IDS_CLEAR_COOKIES_AND_SITE_DATA_TITLE" desc="Title for Clear Cookies and site data in Clear Browsing Data dialog">
+         Cookies and site data
+       </message>
+diff --git a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
+--- a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
++++ b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
+@@ -2756,6 +2756,11 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
+        IDS_SETTINGS_SAFEBROWSING_ENHANCED_THINGS_TO_CONSIDER_BULLET_THREE},
+       {"safeBrowsingStandard", IDS_SETTINGS_SAFEBROWSING_STANDARD},
+       {"safeBrowsingStandardDesc", IDS_SETTINGS_SAFEBROWSING_STANDARD_DESC},
++      {"expireHistory", IDS_SETTINGS_EXPIRE_HISTORY},
++      {"noHistory", IDS_SETTINGS_NO_HISTORY},
++      {"dayHistory", IDS_SETTINGS_DAY_HISTORY_DESCRIPTION},
++      {"daysHistory", IDS_SETTINGS_DAYS_HISTORY_DESCRIPTION},
++      {"foreverHistory", IDS_SETTINGS_FOREVER_HISTORY_DESCRIPTION},
+ #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+       {"safeBrowsingStandardDescProxy",
+        IDS_SETTINGS_SAFEBROWSING_STANDARD_DESC_PROXY},
+diff --git a/components/cromite_components_strings_grd/History-number-of-days-privacy-setting.grdp b/components/cromite_components_strings_grd/History-number-of-days-privacy-setting.grdp
+new file mode 100644
+--- /dev/null
++++ b/components/cromite_components_strings_grd/History-number-of-days-privacy-setting.grdp
+@@ -0,0 +1,18 @@
++<?xml version="1.0" encoding="utf-8"?>
++<grit-part>
++    <message name="IDS_SETTINGS_EXPIRE_HISTORY" desc="">
++        Expire history days threshold
++    </message>
++    <message name="IDS_SETTINGS_NO_HISTORY" desc="">
++        No history
++    </message>
++    <message name="IDS_SETTINGS_DAY_HISTORY_DESCRIPTION" desc="">
++        Day
++    </message>
++    <message name="IDS_SETTINGS_DAYS_HISTORY_DESCRIPTION" desc="">
++        Days
++    </message>
++    <message name="IDS_SETTINGS_FOREVER_HISTORY_DESCRIPTION" desc="">
++        Forever
++    </message>
++</grit-part>
+diff --git a/components/history/core/browser/browsing_history_service.cc b/components/history/core/browser/browsing_history_service.cc
+--- a/components/history/core/browser/browsing_history_service.cc
++++ b/components/history/core/browser/browsing_history_service.cc
+@@ -906,7 +906,7 @@ void BrowsingHistoryService::QueryComplete(
+     // Exhausted the local results; continue querying to get remote results.
+     // Start querying at the point where local history ends.
+     base::Time expiry_treshold =
+-        clock_->Now() - base::Days(HistoryBackend::kExpireDaysThreshold);
++        clock_->Now() - base::Days(90); // no matter
+     if (state->remote_end_time_for_continuation.is_null()) {
+       state->remote_end_time_for_continuation = base::Time::Max();
+     }
+@@ -1057,7 +1057,7 @@ void BrowsingHistoryService::RecordResultsMetrics(
+   // Count the number of local, remote, and combined entries, each split by
+   // entries before vs after the local expiry threshold (90 days).
+   const base::Time local_expiry_threshold =
+-      now - base::Days(HistoryBackend::kExpireDaysThreshold);
++      now - base::Days(90);
+   base::flat_map<HistoryEntry::EntryType, size_t> pre_expiry_counts;
+   base::flat_map<HistoryEntry::EntryType, size_t> post_expiry_counts;
+   for (const HistoryEntry& entry : results) {
+diff --git a/components/history/core/browser/expire_history_backend.cc b/components/history/core/browser/expire_history_backend.cc
+--- a/components/history/core/browser/expire_history_backend.cc
++++ b/components/history/core/browser/expire_history_backend.cc
+@@ -403,7 +403,7 @@ ExpireHistoryBackend::GetAutoSubframeVisitsReader() {
+ 
+ void ExpireHistoryBackend::StartExpiringOldStuff(
+     base::TimeDelta expiration_threshold) {
+-  expiration_threshold_ = expiration_threshold;
++  SetExpireDaysThreshold(expiration_threshold);
+ 
+   // Remove all readers, just in case this was method was called before.
+   readers_.clear();
+@@ -419,6 +419,11 @@ void ExpireHistoryBackend::StartExpiringOldStuff(
+   ScheduleExpire();
+ }
+ 
++void ExpireHistoryBackend::SetExpireDaysThreshold(
++    base::TimeDelta expiration_threshold) {
++  expiration_threshold_ = expiration_threshold;
++}
++
+ void ExpireHistoryBackend::DeleteFaviconsIfPossible(DeleteEffects* effects) {
+   if (!favicon_db_) {
+     return;
+@@ -675,6 +680,12 @@ void ExpireHistoryBackend::DoExpireIteration() {
+     return;
+   }
+ 
++  // evaluate special cases again in case value was changed while timer was sleeping
++  // (0 - no history, 65535 - keep history forever)
++  if (expiration_threshold_ == base::Days(0) ||
++      expiration_threshold_ == base::Days(0xFFFF))
++    return;
++
+   const ExpiringVisitsReader* reader = work_queue_.front();
+   bool more_to_expire = ExpireSomeOldHistory(GetCurrentExpirationTime(), reader,
+                                              kNumExpirePerIteration);
+diff --git a/components/history/core/browser/expire_history_backend.h b/components/history/core/browser/expire_history_backend.h
+--- a/components/history/core/browser/expire_history_backend.h
++++ b/components/history/core/browser/expire_history_backend.h
+@@ -84,6 +84,8 @@ class ExpireHistoryBackend {
+   // will continue until the object is deleted.
+   void StartExpiringOldStuff(base::TimeDelta expiration_threshold);
+ 
++  void SetExpireDaysThreshold(base::TimeDelta expiration_threshold);
++
+   // Deletes everything associated with a URL until `end_time`.
+   void DeleteURL(const GURL& url, base::Time end_time);
+ 
+diff --git a/components/history/core/browser/history_backend.cc b/components/history/core/browser/history_backend.cc
+--- a/components/history/core/browser/history_backend.cc
++++ b/components/history/core/browser/history_backend.cc
+@@ -174,6 +174,10 @@ const int kCommitIntervalSeconds = 10;
+ // deleting some.
+ const int kMaxRedirectCount = 32;
+ 
++// The number of days old a history entry can be before it is considered "old"
++// and is deleted.
++int kExpireDaysThreshold = 90;
++
+ // The maximum number of days for which domain visit metrics are computed
+ // each time HistoryBackend::GetDomainDiversity() is called.
+ constexpr int kDomainDiversityMaxBacktrackedDays = 7;
+@@ -1374,6 +1378,19 @@ void HistoryBackend::InitImpl(
+   expirer_.StartExpiringOldStuff(base::Days(kExpireDaysThreshold));
+ }
+ 
++void HistoryBackend::SetExpireDaysThreshold(int days) {
++  // there are 2 magic values here:
++  // 0 - keep no history
++  // 65535 - keep history forever
++  // they are stored as-is
++  kExpireDaysThreshold = days;
++  expirer_.SetExpireDaysThreshold(base::Days(days));
++  if (days == 0) {
++    task_runner_->PostTask(
++        FROM_HERE, base::BindOnce(&HistoryBackend::DeleteAllHistory, this));
++  }
++}
++
+ void HistoryBackend::CloseAllDatabases() {
+   // Reset to avoid dangling pointers to the database.
+   history_sync_bridge_.reset();
+diff --git a/components/history/core/browser/history_backend.h b/components/history/core/browser/history_backend.h
+--- a/components/history/core/browser/history_backend.h
++++ b/components/history/core/browser/history_backend.h
+@@ -206,10 +206,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
+   // Check if the transition should increment the typed_count of a visit.
+   static bool IsTypedIncrement(ui::PageTransition transition);
+ 
+-  // The number of days old a history entry can be before it is considered "old"
+-  // and is deleted.
+-  static constexpr int kExpireDaysThreshold = 90;
+-
+   // The maximum redirect chain depth to traverse before stopping. Prevents
+   // quadratic sql query floods on unbounded client-redirect chains.
+   static constexpr size_t kMaxRedirectChainLength = 30;
+@@ -250,6 +246,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
+   void Init(bool force_fail,
+             const HistoryDatabaseParams& history_database_params);
+ 
++  void SetExpireDaysThreshold(int days);
++
+   // Notification that the history system is shutting down. This will break
+   // the refs owned by the delegate and any pending transaction, so it will
+   // actually be deleted.
+diff --git a/components/history/core/browser/history_service.cc b/components/history/core/browser/history_service.cc
+--- a/components/history/core/browser/history_service.cc
++++ b/components/history/core/browser/history_service.cc
+@@ -41,6 +41,9 @@
+ #include "base/time/time.h"
+ #include "base/trace_event/trace_event.h"
+ #include "build/build_config.h"
++#include "components/prefs/pref_service.h"
++#include "components/prefs/pref_change_registrar.h"
++#include "components/history/core/common/pref_names.h"
+ #include "components/history/core/browser/download_row.h"
+ #include "components/history/core/browser/features.h"
+ #include "components/history/core/browser/history_backend.h"
+@@ -565,6 +568,33 @@ base::CancelableTaskTracker::TaskId HistoryService::ScheduleDBTask(
+   return task_id;
+ }
+ 
++void HistoryService::InitFromPreferences(PrefService* prefs) {
++  DCHECK(prefs);
++
++  active_user_pref_service_ = prefs;
++  OnUserPrefChanged();
++
++  active_user_pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
++  active_user_pref_change_registrar_->Init(prefs);
++  active_user_pref_change_registrar_->Add(
++      prefs::kExpireDaysThreshold,
++      base::BindRepeating(
++          &HistoryService::OnUserPrefChanged,
++          base::Unretained(this)));
++}
++
++void HistoryService::OnUserPrefChanged() {
++  DCHECK(active_user_pref_service_);
++
++  int kExpireDaysThreshold =
++        active_user_pref_service_->GetInteger(prefs::kExpireDaysThreshold);
++  // disable history saving when the 0 magic value is used
++  // the current history records are truncated elsewhere
++  active_user_pref_service_->SetBoolean(prefs::kSavingBrowserHistoryDisabled,
++                                (kExpireDaysThreshold == 0));
++  history_backend_->SetExpireDaysThreshold(kExpireDaysThreshold);
++}
++
+ void HistoryService::ScheduleDBTaskForUI(
+     base::OnceCallback<void(HistoryBackend*, URLDatabase*)> callback) {
+   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+@@ -1538,6 +1568,9 @@ void HistoryService::Cleanup() {
+     return;
+   }
+ 
++  active_user_pref_change_registrar_.reset();
++  active_user_pref_service_ = nullptr;
++
+   NotifyHistoryServiceBeingDeleted();
+ 
+   weak_ptr_factory_.InvalidateWeakPtrs();
+diff --git a/components/history/core/browser/history_service.h b/components/history/core/browser/history_service.h
+--- a/components/history/core/browser/history_service.h
++++ b/components/history/core/browser/history_service.h
+@@ -38,6 +38,8 @@
+ #include "components/favicon_base/favicon_callback.h"
+ #include "components/favicon_base/favicon_types.h"
+ #include "components/favicon_base/favicon_usage_data.h"
++#include "components/prefs/pref_service.h"
++#include "components/prefs/pref_change_registrar.h"
+ #include "components/history/core/browser/history_types.h"
+ #include "components/history/core/browser/journeys/journey.h"
+ #include "components/history/core/browser/keyword_id.h"
+@@ -121,6 +123,8 @@ class HistoryService : public KeyedService,
+   // Returns the directory containing the History databases.
+   const base::FilePath& history_dir() const { return history_dir_; }
+ 
++  void InitFromPreferences(PrefService* prefs);
++
+   // Triggers the backend to load if it hasn't already, and then returns whether
+   // it's finished loading.
+   // Note: Virtual needed for mocking.
+@@ -1257,6 +1261,10 @@ class HistoryService : public KeyedService,
+   raw_ptr<syncer::LocalDeviceInfoProvider> local_device_info_provider_ =
+       nullptr;
+ 
++  void OnUserPrefChanged();
++  raw_ptr<PrefService> active_user_pref_service_ = nullptr;
++  std::unique_ptr<PrefChangeRegistrar> active_user_pref_change_registrar_;
++
+   // All vended weak pointers are invalidated in Cleanup().
+   base::WeakPtrFactory<HistoryService> weak_ptr_factory_{this};
+ };
+diff --git a/components/history/core/common/pref_names.cc b/components/history/core/common/pref_names.cc
+--- a/components/history/core/common/pref_names.cc
++++ b/components/history/core/common/pref_names.cc
+@@ -9,6 +9,10 @@ namespace prefs {
+ // Boolean controlling whether history saving is disabled.
+ const char kSavingBrowserHistoryDisabled[] = "history.saving_disabled";
+ 
++// The number of days old a history entry can be before it is considered "old"
++// and is deleted.
++const char kExpireDaysThreshold[] = "history.expire_days_threshold";
++
+ // Boolean controlling whether deleting browsing and download history is
+ // permitted.
+ const char kAllowDeletingBrowserHistory[] = "history.deleting_enabled";
+diff --git a/components/history/core/common/pref_names.h b/components/history/core/common/pref_names.h
+--- a/components/history/core/common/pref_names.h
++++ b/components/history/core/common/pref_names.h
+@@ -12,6 +12,7 @@
+ namespace prefs {
+ 
+ extern const char kSavingBrowserHistoryDisabled[];
++extern const char kExpireDaysThreshold[];
+ extern const char kAllowDeletingBrowserHistory[];
+ 
+ }  // namespace prefs
+diff --git a/components/omnibox/browser/shortcuts_backend.cc b/components/omnibox/browser/shortcuts_backend.cc
+--- a/components/omnibox/browser/shortcuts_backend.cc
++++ b/components/omnibox/browser/shortcuts_backend.cc
+@@ -560,7 +560,7 @@ void ShortcutsBackend::ComputeDatabaseMetrics() {
+   const base::Time now(base::Time::Now());
+   for (const auto& shortcut_pair : shortcuts_map_) {
+     if (now - shortcut_pair.second.last_access_time >
+-        base::Days(history::HistoryBackend::kExpireDaysThreshold)) {
++        base::Days(90)) {
+       num_old_shortcuts++;
+     }
+   }
+@@ -730,7 +730,7 @@ ShortcutsDatabase::ShortcutIDs ShortcutsBackend::GetShortcutsWithExpiredTime()
+   const base::Time now(base::Time::Now());
+   for (const auto& guid_pair : guid_map_) {
+     if (now - guid_pair.second->second.last_access_time >
+-        base::Days(history::HistoryBackend::kExpireDaysThreshold)) {
++        base::Days(90)) {
+       shortcut_ids.push_back(guid_pair.first);
+     }
+   }
+diff --git a/components/user_data_importer/utility/safari_data_importer.cc b/components/user_data_importer/utility/safari_data_importer.cc
+--- a/components/user_data_importer/utility/safari_data_importer.cc
++++ b/components/user_data_importer/utility/safari_data_importer.cc
+@@ -148,7 +148,7 @@ bool IsSkippedEntry(const user_data_importer::SafariHistoryEntry& entry) {
+       base::Time::UnixEpoch() + base::Microseconds(entry.time_usec);
+   base::Time expiration_time =
+       base::Time::Now() -
+-      base::Days(history::HistoryBackend::kExpireDaysThreshold);
++      base::Days(/*history::HistoryBackend::kExpireDaysThreshold*/ 90);
+ 
+   if (last_visit < expiration_time) {
+     return true;
 
 diff --git a/chrome/android/java/res/xml/privacy_preferences.xml b/chrome/android/java/res/xml/privacy_preferences.xml
 --- a/chrome/android/java/res/xml/privacy_preferences.xml
@@ -156,149 +578,6 @@ diff --git a/chrome/android/java/src/org/chromium/chrome/browser/privacy/setting
      @Override
      public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
          menu.clear();
-diff --git a/chrome/browser/extensions/api/settings_private/prefs_util.cc b/chrome/browser/extensions/api/settings_private/prefs_util.cc
---- a/chrome/browser/extensions/api/settings_private/prefs_util.cc
-+++ b/chrome/browser/extensions/api/settings_private/prefs_util.cc
-@@ -50,6 +50,7 @@
- #include "components/contextual_tasks/public/prefs.h"
- #include "components/dom_distiller/core/pref_names.h"
- #include "components/drive/drive_pref_names.h"
-+#include "components/history/core/common/pref_names.h"
- #include "components/embedder_support/pref_names.h"
- #include "components/language/core/browser/pref_names.h"
- #include "components/live_caption/pref_names.h"
-@@ -315,6 +316,9 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
-   (*s_allowlist)[::prefs::kSplitViewDragAndDropEnabled] =
-       settings_api::PrefType::kBoolean;
- 
-+  (*s_allowlist)[::prefs::kExpireDaysThreshold] =
-+      settings_api::PrefType::kNumber;
-+
-   // Appearance settings.
-   (*s_allowlist)[::prefs::kCtrlTabMru] = settings_api::PrefType::kBoolean;
-   (*s_allowlist)[::prefs::kCurrentThemeID] = settings_api::PrefType::kString;
-diff --git a/chrome/browser/history/history_service_factory.cc b/chrome/browser/history/history_service_factory.cc
---- a/chrome/browser/history/history_service_factory.cc
-+++ b/chrome/browser/history/history_service_factory.cc
-@@ -29,6 +29,8 @@ std::unique_ptr<KeyedService> BuildHistoryService(
-           context->GetPath(), chrome::GetChannel()))) {
-     return nullptr;
-   }
-+  Profile* profile = Profile::FromBrowserContext(context);
-+  history_service->InitFromPreferences(profile->GetPrefs());
-   return history_service;
- }
- 
-diff --git a/chrome/browser/profiles/profile_impl.cc b/chrome/browser/profiles/profile_impl.cc
---- a/chrome/browser/profiles/profile_impl.cc
-+++ b/chrome/browser/profiles/profile_impl.cc
-@@ -400,6 +400,7 @@ std::unique_ptr<Profile> Profile::CreateProfile(const base::FilePath& path,
- void ProfileImpl::RegisterProfilePrefs(
-     user_prefs::PrefRegistrySyncable* registry) {
-   registry->RegisterBooleanPref(prefs::kSavingBrowserHistoryDisabled, false);
-+  registry->RegisterIntegerPref(prefs::kExpireDaysThreshold, 90);
-   registry->RegisterBooleanPref(prefs::kAllowDeletingBrowserHistory, true);
-   registry->RegisterBooleanPref(policy::policy_prefs::kForceGoogleSafeSearch,
-                                 false);
-diff --git a/chrome/browser/resources/settings/privacy_page/privacy_page.html b/chrome/browser/resources/settings/privacy_page/privacy_page.html
---- a/chrome/browser/resources/settings/privacy_page/privacy_page.html
-+++ b/chrome/browser/resources/settings/privacy_page/privacy_page.html
-@@ -43,6 +43,15 @@
-         sub-label="$i18n{siteSettingsSublabel}"
-         on-click="onSiteSettingsLinkRowClick_"
-         role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
-+    <div class="cr-row">
-+      <div class="flex cr-padded-text" aria-hidden="true">
-+        $i18n{expireHistory}
-+      </div>
-+      <settings-dropdown-menu id="expireDaysThreshold" label="$i18n{expireHistory}"
-+          pref="{{prefs.history.expire_days_threshold}}"
-+          menu-options="[[historyExpireDaysThresholdOptions_]]">
-+      </settings-dropdown-menu>
-+    </div>
-     <cr-toast id="deleteBrowsingDataToast" duration="5000">
-       <div>[[dbdDeletionConfirmationToastLabel_]]</div>
-     </cr-toast>
-diff --git a/chrome/browser/resources/settings/privacy_page/privacy_page.ts b/chrome/browser/resources/settings/privacy_page/privacy_page.ts
---- a/chrome/browser/resources/settings/privacy_page/privacy_page.ts
-+++ b/chrome/browser/resources/settings/privacy_page/privacy_page.ts
-@@ -8,6 +8,7 @@
-  * security settings.
-  */
- import '/shared/settings/prefs/prefs.js';
-+import '../controls/settings_dropdown_menu.js';
- import 'chrome://resources/cr_elements/icons.html.js';
- import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
- import 'chrome://resources/cr_elements/cr_shared_style.css.js';
-@@ -62,6 +63,23 @@ export class SettingsPrivacyPageElement extends SettingsPrivacyPageElementBase {
- 
-   static get properties() {
-     return {
-+      historyExpireDaysThresholdOptions_: {
-+        readOnly: true,
-+        type: Array,
-+        value() {
-+          return [
-+            {value: 0, name: loadTimeData.getString('noHistory')},
-+            {value: 1, name: "1 " + loadTimeData.getString('dayHistory')},
-+            {value: 7, name: "7 " + loadTimeData.getString('daysHistory')},
-+            {value: 15, name: "15 " + loadTimeData.getString('daysHistory')},
-+            {value: 30, name: "30 " + loadTimeData.getString('daysHistory')},
-+            {value: 60, name: "60 " + loadTimeData.getString('daysHistory')},
-+            {value: 90, name: "90 " + loadTimeData.getString('daysHistory')},
-+            {value: 0xFFFF, name: loadTimeData.getString('foreverHistory')},
-+          ];
-+        },
-+      },
-+
-       showClearBrowsingDataDialog_: Boolean,
-       showPrivacyGuideDialog_: Boolean,
- 
-@@ -97,6 +115,7 @@ export class SettingsPrivacyPageElement extends SettingsPrivacyPageElementBase {
-     };
-   }
- 
-+  declare private historyExpireDaysThresholdOptions_: object[];
-   declare private showClearBrowsingDataDialog_: boolean;
-   declare private showPrivacyGuideDialog_: boolean;
-   declare private dbdDeletionConfirmationToastLabel_: string;
-diff --git a/chrome/browser/ui/android/strings/android_chrome_strings.grd b/chrome/browser/ui/android/strings/android_chrome_strings.grd
---- a/chrome/browser/ui/android/strings/android_chrome_strings.grd
-+++ b/chrome/browser/ui/android/strings/android_chrome_strings.grd
-@@ -1269,6 +1269,18 @@ Your Google account may have other forms of browsing history like searches and a
-       <message name="IDS_CLEAR_HISTORY_TITLE" desc="Title for Clear History in Clear Browsing Data dialog">
-         Browsing history
-       </message>
-+      <message name="IDS_HISTORY_EXPIRE_DAYS_THRESHOLD_TITLE" desc="Title for history expire days threshold">
-+        Expire history days threshold
-+      </message>
-+      <message name="IDS_HISTORY_EXPIRE_DAYS_NO_HISTORY" desc="Title for history expire days option to keep no navigation history">
-+        No history
-+      </message>
-+      <message name="IDS_HISTORY_EXPIRE_DAYS_KEEP_FOREVER" desc="Title for history expire days option to keep navigation history forever">
-+        Forever
-+      </message>
-+      <message name="IDS_HISTORY_EXPIRE_DAYS_THRESHOLD_SUMMARY" desc="Summary for history expire days threshold">
-+        Number of days to keep navigation history
-+      </message>
-       <message name="IDS_CLEAR_COOKIES_AND_SITE_DATA_TITLE" desc="Title for Clear Cookies and site data in Clear Browsing Data dialog">
-         Cookies and site data
-       </message>
-diff --git a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
---- a/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
-+++ b/chrome/browser/ui/webui/settings/settings_localized_strings_provider.cc
-@@ -2642,6 +2642,11 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
-        IDS_SETTINGS_SAFEBROWSING_ENHANCED_THINGS_TO_CONSIDER_BULLET_THREE},
-       {"safeBrowsingStandard", IDS_SETTINGS_SAFEBROWSING_STANDARD},
-       {"safeBrowsingStandardDesc", IDS_SETTINGS_SAFEBROWSING_STANDARD_DESC},
-+      {"expireHistory", IDS_SETTINGS_EXPIRE_HISTORY},
-+      {"noHistory", IDS_SETTINGS_NO_HISTORY},
-+      {"dayHistory", IDS_SETTINGS_DAY_HISTORY_DESCRIPTION},
-+      {"daysHistory", IDS_SETTINGS_DAYS_HISTORY_DESCRIPTION},
-+      {"foreverHistory", IDS_SETTINGS_FOREVER_HISTORY_DESCRIPTION},
- #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-       {"safeBrowsingStandardDescProxy",
-        IDS_SETTINGS_SAFEBROWSING_STANDARD_DESC_PROXY},
 diff --git a/components/browser_ui/settings/android/java/res/layout-sw360dp/preference_spinner_single_line.xml b/components/browser_ui/settings/android/java/res/layout-sw360dp/preference_spinner_single_line.xml
 --- a/components/browser_ui/settings/android/java/res/layout-sw360dp/preference_spinner_single_line.xml
 +++ b/components/browser_ui/settings/android/java/res/layout-sw360dp/preference_spinner_single_line.xml
@@ -400,313 +679,4 @@ diff --git a/components/browser_ui/settings/android/widget/java/src/org/chromium
          mSpinner = (Spinner) holder.findViewById(R.id.spinner);
          assert mSpinner != null;
          // Set the inner spinner to non-focusable/clickable, this allows the screen reader to
-diff --git a/components/cromite_components_strings_grd/History-number-of-days-privacy-setting.grdp b/components/cromite_components_strings_grd/History-number-of-days-privacy-setting.grdp
-new file mode 100644
---- /dev/null
-+++ b/components/cromite_components_strings_grd/History-number-of-days-privacy-setting.grdp
-@@ -0,0 +1,18 @@
-+<?xml version="1.0" encoding="utf-8"?>
-+<grit-part>
-+    <message name="IDS_SETTINGS_EXPIRE_HISTORY" desc="">
-+        Expire history days threshold
-+    </message>
-+    <message name="IDS_SETTINGS_NO_HISTORY" desc="">
-+        No history
-+    </message>
-+    <message name="IDS_SETTINGS_DAY_HISTORY_DESCRIPTION" desc="">
-+        Day
-+    </message>
-+    <message name="IDS_SETTINGS_DAYS_HISTORY_DESCRIPTION" desc="">
-+        Days
-+    </message>
-+    <message name="IDS_SETTINGS_FOREVER_HISTORY_DESCRIPTION" desc="">
-+        Forever
-+    </message>
-+</grit-part>
-diff --git a/components/history/core/browser/browsing_history_service.cc b/components/history/core/browser/browsing_history_service.cc
---- a/components/history/core/browser/browsing_history_service.cc
-+++ b/components/history/core/browser/browsing_history_service.cc
-@@ -803,7 +803,7 @@ void BrowsingHistoryService::QueryComplete(
-     // Exhausted the local results; continue querying to get remote results.
-     // Start querying at the point where local history ends.
-     base::Time expiry_treshold =
--        clock_->Now() - base::Days(HistoryBackend::kExpireDaysThreshold);
-+        clock_->Now() - base::Days(90); // no matter
-     if (state->remote_end_time_for_continuation.is_null()) {
-       state->remote_end_time_for_continuation = base::Time::Max();
-     }
-@@ -888,7 +888,7 @@ void BrowsingHistoryService::RecordResultsMetrics(
-   // Count the number of local, remote, and combined entries, each split by
-   // entries before vs after the local expiry threshold (90 days).
-   const base::Time local_expiry_threshold =
--      clock_->Now() - base::Days(HistoryBackend::kExpireDaysThreshold);
-+      clock_->Now() - base::Days(90); // dont care
-   base::flat_map<HistoryEntry::EntryType, size_t> pre_expiry_counts;
-   base::flat_map<HistoryEntry::EntryType, size_t> post_expiry_counts;
-   for (const HistoryEntry& entry : results) {
-diff --git a/components/history/core/browser/expire_history_backend.cc b/components/history/core/browser/expire_history_backend.cc
---- a/components/history/core/browser/expire_history_backend.cc
-+++ b/components/history/core/browser/expire_history_backend.cc
-@@ -391,7 +391,7 @@ const ExpiringVisitsReader*
- 
- void ExpireHistoryBackend::StartExpiringOldStuff(
-     base::TimeDelta expiration_threshold) {
--  expiration_threshold_ = expiration_threshold;
-+  SetExpireDaysThreshold(expiration_threshold);
- 
-   // Remove all readers, just in case this was method was called before.
-   readers_.clear();
-@@ -407,6 +407,11 @@ void ExpireHistoryBackend::StartExpiringOldStuff(
-   ScheduleExpire();
- }
- 
-+void ExpireHistoryBackend::SetExpireDaysThreshold(
-+    base::TimeDelta expiration_threshold) {
-+  expiration_threshold_ = expiration_threshold;
-+}
-+
- void ExpireHistoryBackend::DeleteFaviconsIfPossible(DeleteEffects* effects) {
-   if (!favicon_db_)
-     return;
-@@ -655,6 +660,12 @@ void ExpireHistoryBackend::DoExpireIteration() {
-     return;
-   }
- 
-+  // evaluate special cases again in case value was changed while timer was sleeping
-+  // (0 - no history, 65535 - keep history forever)
-+  if (expiration_threshold_ == base::Days(0) ||
-+      expiration_threshold_ == base::Days(0xFFFF))
-+    return;
-+
-   const ExpiringVisitsReader* reader = work_queue_.front();
-   bool more_to_expire = ExpireSomeOldHistory(
-       GetCurrentExpirationTime(), reader, kNumExpirePerIteration);
-diff --git a/components/history/core/browser/expire_history_backend.h b/components/history/core/browser/expire_history_backend.h
---- a/components/history/core/browser/expire_history_backend.h
-+++ b/components/history/core/browser/expire_history_backend.h
-@@ -82,6 +82,8 @@ class ExpireHistoryBackend {
-   // will continue until the object is deleted.
-   void StartExpiringOldStuff(base::TimeDelta expiration_threshold);
- 
-+  void SetExpireDaysThreshold(base::TimeDelta expiration_threshold);
-+
-   // Deletes everything associated with a URL until `end_time`.
-   void DeleteURL(const GURL& url, base::Time end_time);
- 
-diff --git a/components/history/core/browser/history_backend.cc b/components/history/core/browser/history_backend.cc
---- a/components/history/core/browser/history_backend.cc
-+++ b/components/history/core/browser/history_backend.cc
-@@ -169,6 +169,10 @@ const int kCommitIntervalSeconds = 10;
- // deleting some.
- const int kMaxRedirectCount = 32;
- 
-+// The number of days old a history entry can be before it is considered "old"
-+// and is deleted.
-+int kExpireDaysThreshold = 90;
-+
- // The maximum number of days for which domain visit metrics are computed
- // each time HistoryBackend::GetDomainDiversity() is called.
- constexpr int kDomainDiversityMaxBacktrackedDays = 7;
-@@ -1351,6 +1355,19 @@ void HistoryBackend::InitImpl(
-   expirer_.StartExpiringOldStuff(base::Days(kExpireDaysThreshold));
- }
- 
-+void HistoryBackend::SetExpireDaysThreshold(int days) {
-+  // there are 2 magic values here:
-+  // 0 - keep no history
-+  // 65535 - keep history forever
-+  // they are stored as-is
-+  kExpireDaysThreshold = days;
-+  expirer_.SetExpireDaysThreshold(base::Days(days));
-+  if (days == 0) {
-+    task_runner_->PostTask(
-+        FROM_HERE, base::BindOnce(&HistoryBackend::DeleteAllHistory, this));
-+  }
-+}
-+
- void HistoryBackend::CloseAllDatabases() {
-   // Reset to avoid dangling pointers to the database.
-   history_sync_bridge_.reset();
-diff --git a/components/history/core/browser/history_backend.h b/components/history/core/browser/history_backend.h
---- a/components/history/core/browser/history_backend.h
-+++ b/components/history/core/browser/history_backend.h
-@@ -203,10 +203,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
-   // Check if the transition should increment the typed_count of a visit.
-   static bool IsTypedIncrement(ui::PageTransition transition);
- 
--  // The number of days old a history entry can be before it is considered "old"
--  // and is deleted.
--  static constexpr int kExpireDaysThreshold = 90;
--
-   // Init must be called to complete object creation. This object can be
-   // constructed on any thread, but all other functions including Init() must
-   // be called on the history thread.
-@@ -234,6 +230,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
-   void Init(bool force_fail,
-             const HistoryDatabaseParams& history_database_params);
- 
-+  void SetExpireDaysThreshold(int days);
-+
-   // Notification that the history system is shutting down. This will break
-   // the refs owned by the delegate and any pending transaction, so it will
-   // actually be deleted.
-diff --git a/components/history/core/browser/history_service.cc b/components/history/core/browser/history_service.cc
---- a/components/history/core/browser/history_service.cc
-+++ b/components/history/core/browser/history_service.cc
-@@ -38,6 +38,9 @@
- #include "base/time/time.h"
- #include "base/trace_event/trace_event.h"
- #include "build/build_config.h"
-+#include "components/prefs/pref_service.h"
-+#include "components/prefs/pref_change_registrar.h"
-+#include "components/history/core/common/pref_names.h"
- #include "components/history/core/browser/download_row.h"
- #include "components/history/core/browser/features.h"
- #include "components/history/core/browser/history_backend.h"
-@@ -513,6 +516,33 @@ base::CancelableTaskTracker::TaskId HistoryService::ScheduleDBTask(
-   return task_id;
- }
- 
-+void HistoryService::InitFromPreferences(PrefService* prefs) {
-+  DCHECK(prefs);
-+
-+  active_user_pref_service_ = prefs;
-+  OnUserPrefChanged();
-+
-+  active_user_pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
-+  active_user_pref_change_registrar_->Init(prefs);
-+  active_user_pref_change_registrar_->Add(
-+      prefs::kExpireDaysThreshold,
-+      base::BindRepeating(
-+          &HistoryService::OnUserPrefChanged,
-+          base::Unretained(this)));
-+}
-+
-+void HistoryService::OnUserPrefChanged() {
-+  DCHECK(active_user_pref_service_);
-+
-+  int kExpireDaysThreshold =
-+        active_user_pref_service_->GetInteger(prefs::kExpireDaysThreshold);
-+  // disable history saving when the 0 magic value is used
-+  // the current history records are truncated elsewhere
-+  active_user_pref_service_->SetBoolean(prefs::kSavingBrowserHistoryDisabled,
-+                                (kExpireDaysThreshold == 0));
-+  history_backend_->SetExpireDaysThreshold(kExpireDaysThreshold);
-+}
-+
- void HistoryService::ScheduleDBTaskForUI(
-     base::OnceCallback<void(HistoryBackend*, URLDatabase*)> callback) {
-   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-@@ -1440,6 +1470,9 @@ void HistoryService::Cleanup() {
-     return;
-   }
- 
-+  active_user_pref_change_registrar_.reset();
-+  active_user_pref_service_ = nullptr;
-+
-   NotifyHistoryServiceBeingDeleted();
- 
-   weak_ptr_factory_.InvalidateWeakPtrs();
-diff --git a/components/history/core/browser/history_service.h b/components/history/core/browser/history_service.h
---- a/components/history/core/browser/history_service.h
-+++ b/components/history/core/browser/history_service.h
-@@ -37,6 +37,8 @@
- #include "components/favicon_base/favicon_callback.h"
- #include "components/favicon_base/favicon_types.h"
- #include "components/favicon_base/favicon_usage_data.h"
-+#include "components/prefs/pref_service.h"
-+#include "components/prefs/pref_change_registrar.h"
- #include "components/history/core/browser/history_types.h"
- #include "components/history/core/browser/keyword_id.h"
- #include "components/history/core/browser/url_row.h"
-@@ -119,6 +121,8 @@ class HistoryService : public KeyedService,
-   // Returns the directory containing the History databases.
-   const base::FilePath& history_dir() const { return history_dir_; }
- 
-+  void InitFromPreferences(PrefService* prefs);
-+
-   // Triggers the backend to load if it hasn't already, and then returns whether
-   // it's finished loading.
-   // Note: Virtual needed for mocking.
-@@ -1181,6 +1185,10 @@ class HistoryService : public KeyedService,
-   raw_ptr<syncer::LocalDeviceInfoProvider> local_device_info_provider_ =
-       nullptr;
- 
-+  void OnUserPrefChanged();
-+  raw_ptr<PrefService> active_user_pref_service_ = nullptr;
-+  std::unique_ptr<PrefChangeRegistrar> active_user_pref_change_registrar_;
-+
-   // All vended weak pointers are invalidated in Cleanup().
-   base::WeakPtrFactory<HistoryService> weak_ptr_factory_{this};
- };
-diff --git a/components/history/core/common/pref_names.cc b/components/history/core/common/pref_names.cc
---- a/components/history/core/common/pref_names.cc
-+++ b/components/history/core/common/pref_names.cc
-@@ -9,6 +9,10 @@ namespace prefs {
- // Boolean controlling whether history saving is disabled.
- const char kSavingBrowserHistoryDisabled[] = "history.saving_disabled";
- 
-+// The number of days old a history entry can be before it is considered "old"
-+// and is deleted.
-+const char kExpireDaysThreshold[] = "history.expire_days_threshold";
-+
- // Boolean controlling whether deleting browsing and download history is
- // permitted.
- const char kAllowDeletingBrowserHistory[] = "history.deleting_enabled";
-diff --git a/components/history/core/common/pref_names.h b/components/history/core/common/pref_names.h
---- a/components/history/core/common/pref_names.h
-+++ b/components/history/core/common/pref_names.h
-@@ -12,6 +12,7 @@
- namespace prefs {
- 
- extern const char kSavingBrowserHistoryDisabled[];
-+extern const char kExpireDaysThreshold[];
- extern const char kAllowDeletingBrowserHistory[];
- 
- }  // namespace prefs
-diff --git a/components/history_embeddings/core/sql_database.cc b/components/history_embeddings/core/sql_database.cc
---- a/components/history_embeddings/core/sql_database.cc
-+++ b/components/history_embeddings/core/sql_database.cc
-@@ -184,7 +184,7 @@ sql::InitStatus SqlDatabase::InitInternal(const base::FilePath& storage_dir,
-   // Chrome is running, but it's possible to miss events or start Chrome after
-   // some down time, so this prevents long term accidental retention edge cases.
-   DeleteExpiredData(/*expiration_time=*/base::Time::Now() -
--                    base::Days(history::HistoryBackend::kExpireDaysThreshold));
-+                    base::Days(/*kExpireDaysThreshold*/ 90));
- 
-   // It's possible to get here without `embedder_metadata_` if forcing for
-   // data deletion. In that case, don't check or change meta table.
-diff --git a/components/omnibox/browser/shortcuts_backend.cc b/components/omnibox/browser/shortcuts_backend.cc
---- a/components/omnibox/browser/shortcuts_backend.cc
-+++ b/components/omnibox/browser/shortcuts_backend.cc
-@@ -556,7 +556,7 @@ void ShortcutsBackend::ComputeDatabaseMetrics() {
-   const base::Time now(base::Time::Now());
-   for (const auto& shortcut_pair : shortcuts_map_) {
-     if (now - shortcut_pair.second.last_access_time >
--        base::Days(history::HistoryBackend::kExpireDaysThreshold)) {
-+        base::Days(90)) {
-       num_old_shortcuts++;
-     }
-   }
-@@ -726,7 +726,7 @@ ShortcutsDatabase::ShortcutIDs ShortcutsBackend::GetShortcutsWithExpiredTime()
-   const base::Time now(base::Time::Now());
-   for (const auto& guid_pair : guid_map_) {
-     if (now - guid_pair.second->second.last_access_time >
--        base::Days(history::HistoryBackend::kExpireDaysThreshold)) {
-+        base::Days(90)) {
-       shortcut_ids.push_back(guid_pair.first);
-     }
-   }
-diff --git a/components/user_data_importer/utility/safari_data_importer.cc b/components/user_data_importer/utility/safari_data_importer.cc
---- a/components/user_data_importer/utility/safari_data_importer.cc
-+++ b/components/user_data_importer/utility/safari_data_importer.cc
-@@ -148,7 +148,7 @@ bool IsSkippedEntry(const user_data_importer::SafariHistoryEntry& entry) {
-       base::Time::UnixEpoch() + base::Microseconds(entry.time_usec);
-   base::Time expiration_time =
-       base::Time::Now() -
--      base::Days(history::HistoryBackend::kExpireDaysThreshold);
-+      base::Days(/*history::HistoryBackend::kExpireDaysThreshold*/ 90);
- 
-   if (last_visit < expiration_time) {
-     return true;
 --
