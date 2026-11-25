@@ -4,21 +4,22 @@ Subject: Remove SMS integration
 
 License: GPL-3.0-only - https://spdx.org/licenses/GPL-3.0-only.html
 ---
- .../browser/language/AppLocaleUtils.java      |  55 --------
- .../content/browser/sms/SmsProviderGms.java   |  29 +----
- .../browser/sms/SmsUserConsentReceiver.java   |  49 +------
- .../browser/sms/SmsVerificationReceiver.java  | 122 +-----------------
- .../content/browser/sms/Wrappers.java         |  30 +----
- 5 files changed, 8 insertions(+), 277 deletions(-)
+ .../chrome/browser/language/AppLocaleUtils.java    |  57 ---------
+ .../content/browser/sms/SmsProviderGms.java        |  29 +----
+ .../browser/sms/SmsUserConsentReceiver.java        |  49 +-------
+ .../browser/sms/SmsVerificationReceiver.java       | 127 +--------------------
+ .../org/chromium/content/browser/sms/Wrappers.java |  30 +----
+ 5 files changed, 8 insertions(+), 284 deletions(-)
 
 diff --git a/chrome/browser/language/android/java/src/org/chromium/chrome/browser/language/AppLocaleUtils.java b/chrome/browser/language/android/java/src/org/chromium/chrome/browser/language/AppLocaleUtils.java
 --- a/chrome/browser/language/android/java/src/org/chromium/chrome/browser/language/AppLocaleUtils.java
 +++ b/chrome/browser/language/android/java/src/org/chromium/chrome/browser/language/AppLocaleUtils.java
-@@ -16,13 +16,10 @@ import androidx.annotation.RequiresApi;
+@@ -16,14 +16,11 @@ import androidx.annotation.RequiresApi;
  
  import org.chromium.base.ContextUtils;
  import org.chromium.base.LocaleUtils;
 -import org.chromium.build.BuildConfig;
+ import org.chromium.build.annotations.Contract;
  import org.chromium.build.annotations.NullMarked;
  import org.chromium.build.annotations.Nullable;
 -import org.chromium.chrome.browser.lifetime.ApplicationLifetime;
@@ -28,7 +29,7 @@ diff --git a/chrome/browser/language/android/java/src/org/chromium/chrome/browse
  import org.chromium.ui.base.ResourceBundle;
  
  import java.util.Arrays;
-@@ -129,58 +126,6 @@ public class AppLocaleUtils {
+@@ -132,60 +129,6 @@ public class AppLocaleUtils {
          return Locale.forLanguageTag("en-US");
      }
  
@@ -57,8 +58,10 @@ diff --git a/chrome/browser/language/android/java/src/org/chromium/chrome/browse
 -                    if (success) {
 -                        // The locale change will trigger a process restart to apply the new
 -                        // language and reopen chrome when SettingsInTab is enabled. See
--                        // https://crbug.com/545907093.
--                        if (SettingsInTab.isEnabled()) {
+-                        // crbug.com/545907093.
+-                        // TODO(crbug.com/562619494): Consider passing shownInTab from callers
+-                        // rather than querying the global.
+-                        if (SettingsInTab.shouldOpenSettingsInTab()) {
 -                            ApplicationLifetime.setRestartForLocaleSwitch(true);
 -                        }
 -                        if (shouldUseSystemManagedLocale()) {
@@ -324,57 +327,62 @@ diff --git a/content/public/android/java/src/org/chromium/content/browser/sms/Sm
      }
  
      public void onPermissionDone(int resultCode, boolean isLocalRequest) {
-@@ -153,72 +95,10 @@ public class SmsVerificationReceiver extends BroadcastReceiver {
+@@ -153,77 +95,10 @@ public class SmsVerificationReceiver extends BroadcastReceiver {
       * task.
       */
      public void onRetrieverTaskFailure(boolean isLocalRequest, Exception e) {
 -        if (DEBUG) Log.d(TAG, "Task failed. Attempting recovery.", e);
 -        ApiException exception = (ApiException) e;
--        if (exception.getStatusCode() == SmsRetrieverStatusCodes.API_NOT_CONNECTED) {
--            reportBackendAvailability(BackendAvailability.API_NOT_CONNECTED);
--            mProvider.onMethodNotAvailable(isLocalRequest);
--            Log.d(TAG, "update GMS services.");
--        } else if (exception.getStatusCode() == SmsRetrieverStatusCodes.PLATFORM_NOT_SUPPORTED) {
--            reportBackendAvailability(BackendAvailability.PLATFORM_NOT_SUPPORTED);
--            mProvider.onMethodNotAvailable(isLocalRequest);
--            Log.d(TAG, "old android platform.");
--        } else if (exception.getStatusCode() == SmsRetrieverStatusCodes.API_NOT_AVAILABLE) {
--            reportBackendAvailability(BackendAvailability.API_NOT_AVAILABLE);
--            mProvider.onMethodNotAvailable(isLocalRequest);
--            Log.d(TAG, "not the default browser.");
--        } else if (exception.getStatusCode() == SmsRetrieverStatusCodes.USER_PERMISSION_REQUIRED) {
--            cancelRequestAndReportBackendAvailability();
--            Log.d(TAG, "user permission is required.");
--        } else if (exception.getStatusCode() == CommonStatusCodes.RESOLUTION_REQUIRED) {
--            if (exception instanceof ResolvableApiException) {
--                // This occurs if the default browser is in NONE permission
--                // state. Resolve it by calling PendingIntent.send() method.
--                // This shows the consent dialog to user so they grant
--                // one-time permission. The dialog result will be received
--                // via `onPermissionDone()`
--                ResolvableApiException rex = (ResolvableApiException) exception;
--                try {
--                    PendingIntent resolutionIntent = rex.getResolution();
--                    assumeNonNull(mProvider.getWindow())
--                            .showIntent(
--                                    resolutionIntent,
--                                    new WindowAndroid.IntentCallback() {
--                                        @Override
--                                        public void onIntentCompleted(
--                                                int resultCode, @Nullable Intent data) {
--                                            // Backend availability will be recorded inside
--                                            // |onPermissionDone|.
--                                            onPermissionDone(resultCode, isLocalRequest);
--                                        }
--                                    },
--                                    null);
--                } catch (Exception ex) {
--                    cancelRequestAndReportBackendAvailability();
--                    Log.e(TAG, "Cannot launch user permission", ex);
+-        switch (exception.getStatusCode()) {
+-            case SmsRetrieverStatusCodes.API_NOT_CONNECTED -> {
+-                reportBackendAvailability(BackendAvailability.API_NOT_CONNECTED);
+-                mProvider.onMethodNotAvailable(isLocalRequest);
+-                Log.d(TAG, "update GMS services.");
+-            }
+-            case SmsRetrieverStatusCodes.PLATFORM_NOT_SUPPORTED -> {
+-                reportBackendAvailability(BackendAvailability.PLATFORM_NOT_SUPPORTED);
+-                mProvider.onMethodNotAvailable(isLocalRequest);
+-                Log.d(TAG, "old android platform.");
+-            }
+-            case SmsRetrieverStatusCodes.API_NOT_AVAILABLE -> {
+-                reportBackendAvailability(BackendAvailability.API_NOT_AVAILABLE);
+-                mProvider.onMethodNotAvailable(isLocalRequest);
+-                Log.d(TAG, "not the default browser.");
+-            }
+-            case SmsRetrieverStatusCodes.USER_PERMISSION_REQUIRED -> {
+-                cancelRequestAndReportBackendAvailability();
+-                Log.d(TAG, "user permission is required.");
+-            }
+-            case CommonStatusCodes.RESOLUTION_REQUIRED -> {
+-                if (exception instanceof ResolvableApiException) {
+-                    // This occurs if the default browser is in NONE permission
+-                    // state. Resolve it by calling PendingIntent.send() method.
+-                    // This shows the consent dialog to user so they grant
+-                    // one-time permission. The dialog result will be received
+-                    // via `onPermissionDone()`
+-                    ResolvableApiException rex = (ResolvableApiException) exception;
+-                    try {
+-                        PendingIntent resolutionIntent = rex.getResolution();
+-                        assumeNonNull(mProvider.getWindow())
+-                                .showIntent(
+-                                        resolutionIntent,
+-                                        new WindowAndroid.IntentCallback() {
+-                                            @Override
+-                                            public void onIntentCompleted(
+-                                                    int resultCode, @Nullable Intent data) {
+-                                                // Backend availability will be recorded inside
+-                                                // |onPermissionDone|.
+-                                                onPermissionDone(resultCode, isLocalRequest);
+-                                            }
+-                                        },
+-                                        null);
+-                    } catch (Exception ex) {
+-                        cancelRequestAndReportBackendAvailability();
+-                        Log.e(TAG, "Cannot launch user permission", ex);
+-                    }
 -                }
 -            }
--        } else {
--            Log.w(TAG, "Unexpected exception", e);
+-            default -> Log.w(TAG, "Unexpected exception", e);
 -        }
      }
  

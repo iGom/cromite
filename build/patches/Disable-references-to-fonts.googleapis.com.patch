@@ -4,20 +4,20 @@ Subject: Disable references to fonts.googleapis.com
 
 License: GPL-3.0-only - https://spdx.org/licenses/GPL-3.0-only.html
 ---
- chrome/android/java/res/font/reader_mode_lexend.xml       | 1 -
- chrome/android/java/res_base/font/chrome_google_sans.xml  | 8 +-------
- .../java/res_base/font/chrome_google_sans_bold.xml        | 8 +-------
- .../java/res_base/font/chrome_google_sans_medium.xml      | 8 +-------
- .../java/res_base/font/chrome_google_sans_text.xml        | 8 +-------
- .../java/res_base/font/chrome_google_sans_text_medium.xml | 8 +-------
- .../org/chromium/chrome/browser/fonts/FontPreloader.java  | 1 +
- .../side_panel/read_anything/app/read_anything_toolbar.ts | 4 +---
- .../content/browser/dom_distiller_viewer_source.cc        | 2 +-
- .../dom_distiller/core/html/dom_distiller_viewer.html     | 4 ----
- components/dom_distiller/core/html/preview.html           | 2 +-
- .../content/browser/font/AndroidFontLookupImpl.java       | 1 +
- .../crashpad/crashpad/doc/support/crashpad_doxygen.css    | 3 +--
- 13 files changed, 11 insertions(+), 47 deletions(-)
+ chrome/android/java/res/font/reader_mode_lexend.xml               | 1 -
+ chrome/android/java/res_base/font/chrome_google_sans.xml          | 8 +-------
+ chrome/android/java/res_base/font/chrome_google_sans_bold.xml     | 8 +-------
+ chrome/android/java/res_base/font/chrome_google_sans_medium.xml   | 8 +-------
+ chrome/android/java/res_base/font/chrome_google_sans_text.xml     | 8 +-------
+ .../android/java/res_base/font/chrome_google_sans_text_medium.xml | 8 +-------
+ .../java/src/org/chromium/chrome/browser/fonts/FontPreloader.java | 1 +
+ .../side_panel/read_anything/app/read_anything_toolbar.ts         | 4 +---
+ .../web_distiller/content/browser/web_distiller_viewer_source.cc  | 2 +-
+ components/web_distiller/core/html/preview.html                   | 2 +-
+ components/web_distiller/core/html/web_distiller_viewer.html      | 8 --------
+ .../org/chromium/content/browser/font/AndroidFontLookupImpl.java  | 1 +
+ third_party/crashpad/crashpad/doc/support/crashpad_doxygen.css    | 3 +--
+ 13 files changed, 11 insertions(+), 51 deletions(-)
 
 diff --git a/chrome/android/java/res/font/reader_mode_lexend.xml b/chrome/android/java/res/font/reader_mode_lexend.xml
 --- a/chrome/android/java/res/font/reader_mode_lexend.xml
@@ -120,7 +120,7 @@ diff --git a/chrome/android/java/src/org/chromium/chrome/browser/fonts/FontPrelo
 diff --git a/chrome/browser/resources/side_panel/read_anything/app/read_anything_toolbar.ts b/chrome/browser/resources/side_panel/read_anything/app/read_anything_toolbar.ts
 --- a/chrome/browser/resources/side_panel/read_anything/app/read_anything_toolbar.ts
 +++ b/chrome/browser/resources/side_panel/read_anything/app/read_anything_toolbar.ts
-@@ -320,9 +320,7 @@ export class ReadAnythingToolbarElement extends ReadAnythingToolbarElementBase {
+@@ -295,9 +295,7 @@ export class ReadAnythingToolbarElement extends ReadAnythingToolbarElementBase {
      const link = document.createElement('link');
      link.rel = 'preload';
      link.as = 'style';
@@ -131,39 +131,21 @@ diff --git a/chrome/browser/resources/side_panel/read_anything/app/read_anything
  
      link.addEventListener('load', () => {
        link.media = 'all';
-diff --git a/components/dom_distiller/content/browser/dom_distiller_viewer_source.cc b/components/dom_distiller/content/browser/dom_distiller_viewer_source.cc
---- a/components/dom_distiller/content/browser/dom_distiller_viewer_source.cc
-+++ b/components/dom_distiller/content/browser/dom_distiller_viewer_source.cc
-@@ -308,7 +308,7 @@ bool DomDistillerViewerSource::ShouldServiceRequest(
- std::string DomDistillerViewerSource::GetContentSecurityPolicy(
-     network::mojom::CSPDirectiveName directive) {
-   if (directive == network::mojom::CSPDirectiveName::StyleSrc) {
--    return "style-src 'self' https://fonts.googleapis.com;";
-+    return "style-src 'self';";
-   } else if (directive == network::mojom::CSPDirectiveName::ChildSrc) {
-     return "child-src *;";
-   } else if (directive ==
-diff --git a/components/dom_distiller/core/html/dom_distiller_viewer.html b/components/dom_distiller/core/html/dom_distiller_viewer.html
---- a/components/dom_distiller/core/html/dom_distiller_viewer.html
-+++ b/components/dom_distiller/core/html/dom_distiller_viewer.html
-@@ -17,14 +17,10 @@ found in the LICENSE file.
-   <!-- Placeholder for CSP. -->
-   $1
-   <title>$i18n{title}</title>
--  <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
--      rel="stylesheet">
-   <!-- Import web fonts. -->
-   <!-- On iOS, the web fonts block the rendering until the resources are fetched,
-     which can take a long time on slow networks. In Blink, it times out after 3
-     seconds and uses fallback fonts. See crbug.com/711650 -->
--  <link href="https://fonts.googleapis.com/css2?family=Lexend&family=Roboto&display=block"
--      rel="stylesheet" type="text/css">
-   <!-- Placeholder for CSS. -->
-   $2
- </head>
-diff --git a/components/dom_distiller/core/html/preview.html b/components/dom_distiller/core/html/preview.html
---- a/components/dom_distiller/core/html/preview.html
-+++ b/components/dom_distiller/core/html/preview.html
+diff --git a/components/web_distiller/content/browser/web_distiller_viewer_source.cc b/components/web_distiller/content/browser/web_distiller_viewer_source.cc
+--- a/components/web_distiller/content/browser/web_distiller_viewer_source.cc
++++ b/components/web_distiller/content/browser/web_distiller_viewer_source.cc
+@@ -329,7 +329,7 @@ std::string WebDistillerViewerSource::GetContentSecurityPolicy(
+     case network::mojom::CSPDirectiveName::BaseURI:
+       return "base-uri 'none';";
+     case network::mojom::CSPDirectiveName::StyleSrc:
+-      return "style-src 'self' https://fonts.googleapis.com;";
++      return "style-src 'self';";
+     case network::mojom::CSPDirectiveName::ChildSrc:
+       return "child-src *;";
+     case network::mojom::CSPDirectiveName::RequireTrustedTypesFor:
+diff --git a/components/web_distiller/core/html/preview.html b/components/web_distiller/core/html/preview.html
+--- a/components/web_distiller/core/html/preview.html
++++ b/components/web_distiller/core/html/preview.html
 @@ -11,7 +11,7 @@ found in the LICENSE file.
    <meta name="theme-color" id="theme-color">
    <title>Title goes here and it could be kind of lengthy - Publisher name</title>
@@ -173,10 +155,28 @@ diff --git a/components/dom_distiller/core/html/preview.html b/components/dom_di
    <style>
      .english :lang(th) {display: none}
      .english :lang(zh) {display: none}
+diff --git a/components/web_distiller/core/html/web_distiller_viewer.html b/components/web_distiller/core/html/web_distiller_viewer.html
+--- a/components/web_distiller/core/html/web_distiller_viewer.html
++++ b/components/web_distiller/core/html/web_distiller_viewer.html
+@@ -17,14 +17,6 @@ found in the LICENSE file.
+   <!-- Placeholder for CSP. -->
+   $1
+   <title>$i18n{title}</title>
+-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+-      rel="stylesheet">
+-  <!-- Import web fonts. -->
+-  <!-- On iOS, the web fonts block the rendering until the resources are fetched,
+-    which can take a long time on slow networks. In Blink, it times out after 3
+-    seconds and uses fallback fonts. See crbug.com/711650 -->
+-  <link href="https://fonts.googleapis.com/css2?family=Lexend&family=Roboto&display=block"
+-      rel="stylesheet" type="text/css">
+   <!-- Placeholder for CSS. -->
+   $2
+ </head>
 diff --git a/content/public/android/java/src/org/chromium/content/browser/font/AndroidFontLookupImpl.java b/content/public/android/java/src/org/chromium/content/browser/font/AndroidFontLookupImpl.java
 --- a/content/public/android/java/src/org/chromium/content/browser/font/AndroidFontLookupImpl.java
 +++ b/content/public/android/java/src/org/chromium/content/browser/font/AndroidFontLookupImpl.java
-@@ -211,6 +211,7 @@ public class AndroidFontLookupImpl implements AndroidFontLookup {
+@@ -198,6 +198,7 @@ public class AndroidFontLookupImpl implements AndroidFontLookup {
       * @return An opened font file descriptor, or null if the font file is not available.
       */
      private @Nullable ParcelFileDescriptor tryFetchFont(String fontUniqueName) {

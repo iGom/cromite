@@ -6,15 +6,14 @@ Ignore any partner-provided home page.
 
 License: GPL-3.0-only - https://spdx.org/licenses/GPL-3.0-only.html
 ---
- .../chrome/browser/homepage/HomepageManager.java     | 12 +-----------
- .../browser/new_tab_url/DseNewTabUrlManager.java     |  2 +-
- .../PartnerBookmarksProviderIterator.java            |  1 +
- .../PartnerBrowserCustomizations.java                |  2 +-
- .../components/search_engines/TemplateUrl.java       |  1 +
- .../android/template_url_service_android.cc          |  1 +
- ...always-use-new-tab-page-for-default-home-page.inc |  1 +
- 7 files changed, 7 insertions(+), 13 deletions(-)
- create mode 100755 cromite_flags/chrome/browser/flags/android/chrome_feature_list_cc/always-use-new-tab-page-for-default-home-page.inc
+ .../chromium/chrome/browser/homepage/HomepageManager.java   | 12 +-----------
+ .../chrome/browser/new_tab_url/DseNewTabUrlManager.java     | 13 +------------
+ .../partnerbookmarks/PartnerBookmarksProviderIterator.java  |  1 +
+ .../partnercustomizations/PartnerBrowserCustomizations.java |  2 +-
+ .../org/chromium/components/search_engines/TemplateUrl.java |  1 +
+ .../search_engines/android/template_url_service_android.cc  |  1 +
+ .../always-use-new-tab-page-for-default-home-page.inc       |  1 +
+ 7 files changed, 7 insertions(+), 24 deletions(-)
 
 diff --git a/chrome/android/java/src/org/chromium/chrome/browser/homepage/HomepageManager.java b/chrome/android/java/src/org/chromium/chrome/browser/homepage/HomepageManager.java
 --- a/chrome/android/java/src/org/chromium/chrome/browser/homepage/HomepageManager.java
@@ -48,15 +47,26 @@ diff --git a/chrome/android/java/src/org/chromium/chrome/browser/homepage/Homepa
 diff --git a/chrome/android/java/src/org/chromium/chrome/browser/new_tab_url/DseNewTabUrlManager.java b/chrome/android/java/src/org/chromium/chrome/browser/new_tab_url/DseNewTabUrlManager.java
 --- a/chrome/android/java/src/org/chromium/chrome/browser/new_tab_url/DseNewTabUrlManager.java
 +++ b/chrome/android/java/src/org/chromium/chrome/browser/new_tab_url/DseNewTabUrlManager.java
-@@ -59,7 +59,7 @@ public class DseNewTabUrlManager {
- 
-     /** Returns whether the feature NewTabSearchEngineUrlAndroid is enabled. */
-     public static boolean isNewTabSearchEngineUrlAndroidEnabled() {
--        return true;
-+        return false;
+@@ -70,18 +70,7 @@ public class DseNewTabUrlManager {
+      * @param templateUrlService The instance of {@link TemplateUrlService}.
+      */
+     public static @Nullable String getDseNewTabUrl(TemplateUrlService templateUrlService) {
+-        if (templateUrlService == null) {
+-            return ChromeSharedPreferences.getInstance()
+-                    .readString(ChromePreferenceKeys.DSE_NEW_TAB_URL, null);
+-        }
+-
+-        if (templateUrlService.isDefaultSearchEngineGoogle()) return null;
+-
+-        TemplateUrl templateUrl = templateUrlService.getDefaultSearchEngineTemplateUrl();
+-        if (templateUrl == null) return null;
+-
+-        String newTabUrl = templateUrl.getNewTabURL();
+-        return newTabUrl != null ? newTabUrl : templateUrl.getURL();
++        return null;
      }
  
-     /**
+     @VisibleForTesting
 diff --git a/chrome/browser/partnerbookmarks/android/java/src/org/chromium/chrome/browser/partnerbookmarks/PartnerBookmarksProviderIterator.java b/chrome/browser/partnerbookmarks/android/java/src/org/chromium/chrome/browser/partnerbookmarks/PartnerBookmarksProviderIterator.java
 --- a/chrome/browser/partnerbookmarks/android/java/src/org/chromium/chrome/browser/partnerbookmarks/PartnerBookmarksProviderIterator.java
 +++ b/chrome/browser/partnerbookmarks/android/java/src/org/chromium/chrome/browser/partnerbookmarks/PartnerBookmarksProviderIterator.java
@@ -71,7 +81,7 @@ diff --git a/chrome/browser/partnerbookmarks/android/java/src/org/chromium/chrom
 diff --git a/chrome/browser/partnercustomizations/java/src/org/chromium/chrome/browser/partnercustomizations/PartnerBrowserCustomizations.java b/chrome/browser/partnercustomizations/java/src/org/chromium/chrome/browser/partnercustomizations/PartnerBrowserCustomizations.java
 --- a/chrome/browser/partnercustomizations/java/src/org/chromium/chrome/browser/partnercustomizations/PartnerBrowserCustomizations.java
 +++ b/chrome/browser/partnercustomizations/java/src/org/chromium/chrome/browser/partnercustomizations/PartnerBrowserCustomizations.java
-@@ -247,7 +247,7 @@ public class PartnerBrowserCustomizations {
+@@ -246,7 +246,7 @@ public class PartnerBrowserCustomizations {
                                                              & ApplicationInfo.FLAG_SYSTEM)
                                                      == 1
                                              || !VersionInfo.isStableBuild();
@@ -79,7 +89,7 @@ diff --git a/chrome/browser/partnercustomizations/java/src/org/chromium/chrome/b
 +                            if ((true)) {
                                  // Only allow partner customization if this browser is a system
                                  // package, or is in pre-stable channels.
-                                 return null;
+                                 Log.w(
 diff --git a/components/search_engines/android/java/src/org/chromium/components/search_engines/TemplateUrl.java b/components/search_engines/android/java/src/org/chromium/components/search_engines/TemplateUrl.java
 --- a/components/search_engines/android/java/src/org/chromium/components/search_engines/TemplateUrl.java
 +++ b/components/search_engines/android/java/src/org/chromium/components/search_engines/TemplateUrl.java
@@ -94,7 +104,7 @@ diff --git a/components/search_engines/android/java/src/org/chromium/components/
 diff --git a/components/search_engines/android/template_url_service_android.cc b/components/search_engines/android/template_url_service_android.cc
 --- a/components/search_engines/android/template_url_service_android.cc
 +++ b/components/search_engines/android/template_url_service_android.cc
-@@ -432,6 +432,7 @@ bool TemplateUrlServiceAndroid::SetPlayAPISearchEngine(
+@@ -439,6 +439,7 @@ bool TemplateUrlServiceAndroid::SetPlayAPISearchEngine(
          jimage_translate_source_language_param_key,
      const base::android::JavaRef<jstring>&
          jimage_translate_target_language_param_key) {

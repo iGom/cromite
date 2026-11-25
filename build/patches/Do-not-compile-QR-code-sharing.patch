@@ -4,24 +4,24 @@ Subject: Do not compile QR code sharing
 
 License: GPL-3.0-only - https://spdx.org/licenses/GPL-3.0-only.html
 ---
- chrome/android/BUILD.gn                       |  1 -
- .../chrome/browser/ChromeTabbedActivity.java  |  4 ----
- .../ChromeContextMenuPopulator.java           | 12 ----------
- .../chrome/browser/ui/RootUiCoordinator.java  |  5 ----
- chrome/browser/prefs/browser_prefs.cc         |  2 +-
- chrome/browser/share/BUILD.gn                 |  1 -
- ...omeProvidedSharingOptionsProviderBase.java | 23 -------------------
- chrome/browser/share/android/java_sources.gni | 11 ---------
- .../sharing_hub/sharing_hub_features.cc       |  2 +-
- .../browser/ui/browser_command_controller.cc  |  6 ++---
- chrome/browser/ui/browser_commands.cc         |  1 +
- .../qrcode_generator_bubble_controller.cc     |  1 +
- 12 files changed, 7 insertions(+), 62 deletions(-)
+ chrome/android/BUILD.gn                            |  1 -
+ .../chrome/browser/ChromeTabbedActivity.java       |  5 -----
+ .../contextmenu/ChromeContextMenuPopulator.java    | 12 -----------
+ .../chrome/browser/ui/RootUiCoordinator.java       |  4 ----
+ chrome/browser/prefs/browser_prefs.cc              |  2 +-
+ chrome/browser/share/BUILD.gn                      |  1 -
+ .../ChromeProvidedSharingOptionsProviderBase.java  | 23 ----------------------
+ chrome/browser/share/android/java_sources.gni      | 11 -----------
+ chrome/browser/sharing_hub/sharing_hub_features.cc |  2 +-
+ chrome/browser/ui/browser_command_controller.cc    |  4 ++--
+ chrome/browser/ui/browser_commands.cc              |  1 +
+ .../qrcode_generator_bubble_controller.cc          |  1 +
+ 12 files changed, 6 insertions(+), 61 deletions(-)
 
 diff --git a/chrome/android/BUILD.gn b/chrome/android/BUILD.gn
 --- a/chrome/android/BUILD.gn
 +++ b/chrome/android/BUILD.gn
-@@ -2981,7 +2981,6 @@ if (_is_default_toolchain) {
+@@ -2745,7 +2745,6 @@ if (_is_default_toolchain) {
        "../browser/share/android/java/src/org/chromium/chrome/browser/share/link_to_text/LinkToTextBridge.java",
        "../browser/share/android/java/src/org/chromium/chrome/browser/share/long_screenshots/bitmap_generation/LongScreenshotsTabService.java",
        "../browser/share/android/java/src/org/chromium/chrome/browser/share/long_screenshots/bitmap_generation/LongScreenshotsTabServiceFactory.java",
@@ -32,20 +32,21 @@ diff --git a/chrome/android/BUILD.gn b/chrome/android/BUILD.gn
 diff --git a/chrome/android/java/src/org/chromium/chrome/browser/ChromeTabbedActivity.java b/chrome/android/java/src/org/chromium/chrome/browser/ChromeTabbedActivity.java
 --- a/chrome/android/java/src/org/chromium/chrome/browser/ChromeTabbedActivity.java
 +++ b/chrome/android/java/src/org/chromium/chrome/browser/ChromeTabbedActivity.java
-@@ -256,7 +256,6 @@ import org.chromium.chrome.browser.settings.SettingsNavigationFactory;
+@@ -262,7 +262,6 @@ import org.chromium.chrome.browser.settings.SettingsNavigationFactory;
  import org.chromium.chrome.browser.setup_list.SetupListModuleUtils;
  import org.chromium.chrome.browser.share.ShareDelegate;
  import org.chromium.chrome.browser.share.ShareHelper;
 -import org.chromium.chrome.browser.share.qrcode.QrCodeCoordinator;
  import org.chromium.chrome.browser.share.send_tab_to_self.SendTabToSelfAndroidBridge;
+ import org.chromium.chrome.browser.share.send_tab_to_self.SendTabToSelfBackPressHandler;
  import org.chromium.chrome.browser.share.send_tab_to_self.SendTabToSelfGestureDetector;
- import org.chromium.chrome.browser.share.send_tab_to_self.SendTabToSelfMetricsRecorder;
-@@ -4412,9 +4411,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements PreAttachInt
+@@ -4591,10 +4590,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements PreAttachInt
              return false;
          } else if (id == R.id.qr_code_menu_id) {
              assert currentTab != null;
+-            var windowAndroid = assertNonNull(getWindowAndroid());
 -            QrCodeCoordinator qrCodeCoordinator =
--                    new QrCodeCoordinator(this, currentTab.getUrl().getSpec(), getWindowAndroid());
+-                    new QrCodeCoordinator(this, currentTab.getUrl().getSpec(), windowAndroid);
 -            qrCodeCoordinator.show();
              RecordUserAction.record("MobileMenuQRCode");
              return true;
@@ -53,7 +54,7 @@ diff --git a/chrome/android/java/src/org/chromium/chrome/browser/ChromeTabbedAct
 diff --git a/chrome/android/java/src/org/chromium/chrome/browser/contextmenu/ChromeContextMenuPopulator.java b/chrome/android/java/src/org/chromium/chrome/browser/contextmenu/ChromeContextMenuPopulator.java
 --- a/chrome/android/java/src/org/chromium/chrome/browser/contextmenu/ChromeContextMenuPopulator.java
 +++ b/chrome/android/java/src/org/chromium/chrome/browser/contextmenu/ChromeContextMenuPopulator.java
-@@ -78,7 +78,6 @@ import org.chromium.chrome.browser.share.ShareDelegate.ShareOrigin;
+@@ -81,7 +81,6 @@ import org.chromium.chrome.browser.share.ShareDelegate.ShareOrigin;
  import org.chromium.chrome.browser.share.ShareHelper;
  import org.chromium.chrome.browser.share.ShareUtils;
  import org.chromium.chrome.browser.share.link_to_text.LinkToTextHelper;
@@ -61,7 +62,7 @@ diff --git a/chrome/android/java/src/org/chromium/chrome/browser/contextmenu/Chr
  import org.chromium.chrome.browser.share.send_tab_to_self.SendTabToSelfAndroidBridge;
  import org.chromium.chrome.browser.tab.Tab;
  import org.chromium.chrome.browser.tab.TabContextMenuItemDelegate;
-@@ -1268,17 +1267,6 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
+@@ -1248,17 +1247,6 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
              if (tab != null) {
                  TranslateBridge.translateTabWhenReady(tab);
              }
@@ -90,12 +91,11 @@ diff --git a/chrome/android/java/src/org/chromium/chrome/browser/ui/RootUiCoordi
  import org.chromium.chrome.browser.share.scroll_capture.ScrollCaptureManager;
  import org.chromium.chrome.browser.signin.SigninAndHistorySyncActivityLauncherImpl;
  import org.chromium.chrome.browser.signin.WebSigninRedirectCoordinator;
-@@ -935,10 +934,6 @@ public class RootUiCoordinator
+@@ -935,9 +934,6 @@ public class RootUiCoordinator
      }
  
      public void onAttachFragment(Fragment fragment) {
--        if (fragment instanceof QrCodeDialog) {
--            QrCodeDialog qrCodeDialog = (QrCodeDialog) fragment;
+-        if (fragment instanceof QrCodeDialog qrCodeDialog) {
 -            qrCodeDialog.setWindowAndroid(mWindowAndroid);
 -        }
      }
@@ -104,7 +104,7 @@ diff --git a/chrome/android/java/src/org/chromium/chrome/browser/ui/RootUiCoordi
 diff --git a/chrome/browser/prefs/browser_prefs.cc b/chrome/browser/prefs/browser_prefs.cc
 --- a/chrome/browser/prefs/browser_prefs.cc
 +++ b/chrome/browser/prefs/browser_prefs.cc
-@@ -1766,7 +1766,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
+@@ -2084,7 +2084,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
    registry->RegisterBooleanPref(prefs::kChromeForTestingAllowed, true);
  #endif
  
@@ -116,7 +116,7 @@ diff --git a/chrome/browser/prefs/browser_prefs.cc b/chrome/browser/prefs/browse
 diff --git a/chrome/browser/share/BUILD.gn b/chrome/browser/share/BUILD.gn
 --- a/chrome/browser/share/BUILD.gn
 +++ b/chrome/browser/share/BUILD.gn
-@@ -67,7 +67,6 @@ source_set("impl") {
+@@ -62,7 +62,6 @@ source_set("impl") {
        "default_ranking_android.cc",
        "editor_screenshot_task.cc",
        "link_to_text_bridge.cc",
@@ -145,7 +145,7 @@ diff --git a/chrome/browser/share/android/java/src/org/chromium/chrome/browser/s
      }
  
      private void maybeAddLongScreenshotFirstPartyOption() {
-@@ -471,25 +467,6 @@ public abstract class ChromeProvidedSharingOptionsProviderBase {
+@@ -472,25 +468,6 @@ public abstract class ChromeProvidedSharingOptionsProviderBase {
                  .build();
      }
  
@@ -207,13 +207,11 @@ diff --git a/chrome/browser/sharing_hub/sharing_hub_features.cc b/chrome/browser
 diff --git a/chrome/browser/ui/browser_command_controller.cc b/chrome/browser/ui/browser_command_controller.cc
 --- a/chrome/browser/ui/browser_command_controller.cc
 +++ b/chrome/browser/ui/browser_command_controller.cc
-@@ -2427,10 +2427,10 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
+@@ -2540,9 +2540,9 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
+   command_updater_->UpdateCommandEnabled(IDC_CHROME_TIPS, show_main_ui);
    command_updater_->UpdateCommandEnabled(IDC_CHROME_WHATS_NEW, show_main_ui);
  #endif
-   command_updater_->UpdateCommandEnabled(IDC_CONTENT_CONTEXT_SHARING_SUBMENU,
--                                         show_main_ui);
 -  command_updater_->UpdateCommandEnabled(IDC_SHARING_HUB, show_main_ui);
-+                                         false);
 +  command_updater_->UpdateCommandEnabled(IDC_SHARING_HUB, false);
    command_updater_->UpdateCommandEnabled(IDC_SHARING_HUB_SCREENSHOT,
 -                                         show_main_ui);
@@ -224,7 +222,7 @@ diff --git a/chrome/browser/ui/browser_command_controller.cc b/chrome/browser/ui
 diff --git a/chrome/browser/ui/browser_commands.cc b/chrome/browser/ui/browser_commands.cc
 --- a/chrome/browser/ui/browser_commands.cc
 +++ b/chrome/browser/ui/browser_commands.cc
-@@ -2359,6 +2359,7 @@ void SendTabToSelf(BrowserWindowInterface* browser) {
+@@ -2362,6 +2362,7 @@ void SendTabToSelf(BrowserWindowInterface* browser) {
  }
  
  bool CanGenerateQrCode(BrowserWindowInterface* browser) {
@@ -235,7 +233,7 @@ diff --git a/chrome/browser/ui/browser_commands.cc b/chrome/browser/ui/browser_c
 diff --git a/chrome/browser/ui/qrcode_generator/qrcode_generator_bubble_controller.cc b/chrome/browser/ui/qrcode_generator/qrcode_generator_bubble_controller.cc
 --- a/chrome/browser/ui/qrcode_generator/qrcode_generator_bubble_controller.cc
 +++ b/chrome/browser/ui/qrcode_generator/qrcode_generator_bubble_controller.cc
-@@ -38,6 +38,7 @@ QRCodeGeneratorBubbleController::~QRCodeGeneratorBubbleController() {
+@@ -42,6 +42,7 @@ QRCodeGeneratorBubbleController::~QRCodeGeneratorBubbleController() {
  
  // static
  bool QRCodeGeneratorBubbleController::IsGeneratorAvailable(const GURL& url) {
