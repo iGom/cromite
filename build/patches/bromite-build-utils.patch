@@ -3,25 +3,25 @@ Date: Fri, 9 Jun 2023 15:11:46 +0000
 Subject: bromite build utils
 
 ---
- build/android/gyp/java_cpp_enum.py                 |  34 +++++--
- build/android/gyp/util/build_utils.py              |  25 ++++-
- build/bromite/bromite_utils.gni                    |  79 +++++++++++++++
- build/bromite/gyp/cpp_bromite_include.py           |  35 +++++++
- build/bromite/gyp/cpp_bromite_include.pydeps       |   9 ++
- build/bromite/gyp/java_bromite_impl.py             | 107 +++++++++++++++++++++
- build/bromite/gyp/java_bromite_impl.pydeps         |   9 ++
- build/config/BUILDCONFIG.gn                        |   2 +
- build/config/android/rules.gni                     |   6 +-
- .../ChromeAccessibilitySettingsDelegate.java       |   5 +
- chrome/browser/flags/BUILD.gn                      |   8 +-
- .../browser/flags/android/cromite_native_utils.cc  |  94 ++++++++++++++++++
- .../browser/flags/android/cromite_native_utils.h   |  14 +++
- .../chrome/browser/flags/CromiteNativeUtils.java   |  46 +++++++++
- mojo/public/tools/mojom/mojom_parser.py            |  26 ++++-
- tools/grit/grit/grd_reader.py                      |  27 +++++-
- tools/grit/grit_rule.gni                           |   2 +-
- tools/grit/preprocess_if_expr.py                   |  32 +++++-
- 18 files changed, 540 insertions(+), 20 deletions(-)
+ build/android/gyp/java_cpp_enum.py                 |   34 +++++-
+ build/android/gyp/util/build_utils.py              |   25 ++++-
+ build/bromite/bromite_utils.gni                    |   79 +++++++++++++++
+ build/bromite/gyp/cpp_bromite_include.py           |   32 ++++++
+ build/bromite/gyp/cpp_bromite_include.pydeps       |    9 ++
+ build/bromite/gyp/java_bromite_impl.py             |  107 ++++++++++++++++++++
+ build/bromite/gyp/java_bromite_impl.pydeps         |    9 ++
+ build/config/BUILDCONFIG.gn                        |    2
+ build/config/android/rules.gni                     |    6 +
+ .../ChromeAccessibilitySettingsDelegate.java       |    5 +
+ chrome/browser/flags/BUILD.gn                      |    8 +
+ .../browser/flags/android/cromite_native_utils.cc  |   94 ++++++++++++++++++
+ .../browser/flags/android/cromite_native_utils.h   |   14 +++
+ .../chrome/browser/flags/CromiteNativeUtils.java   |   46 +++++++++
+ mojo/public/tools/mojom/mojom_parser.py            |   26 ++++-
+ tools/grit/grit/grd_reader.py                      |   27 ++++-
+ tools/grit/grit_rule.gni                           |    2
+ tools/grit/preprocess_if_expr.py                   |   32 ++++++
+ 18 files changed, 537 insertions(+), 20 deletions(-)
 
 diff --git a/build/android/gyp/java_cpp_enum.py b/build/android/gyp/java_cpp_enum.py
 --- a/build/android/gyp/java_cpp_enum.py
@@ -245,12 +245,11 @@ diff --git a/build/bromite/gyp/cpp_bromite_include.py b/build/bromite/gyp/cpp_br
 new file mode 100644
 --- /dev/null
 +++ b/build/bromite/gyp/cpp_bromite_include.py
-@@ -0,0 +1,35 @@
+@@ -0,0 +1,32 @@
 +#!/usr/bin/env python3
 +
 +import argparse
-+import os
-+import re
++from pathlib import Path
 +import sys
 +
 +def _Main(argv):
@@ -264,19 +263,17 @@ new file mode 100644
 +      'inputs', nargs='+', help='Input folder(s)', metavar='INPUTFILE')
 +  args = parser.parse_args(argv)
 +
-+  for include_file in args.inputs:
-+    directory = os.path.dirname(include_file)
-+    files = []
-+    for root, dirs, directory_files in os.walk(directory):
-+      for directory_file in sorted(directory_files):
-+        files.append(os.path.join(directory, directory_file))
++  source_root = Path(__file__).resolve().parents[3]
++  includes = set()
++  for marker in args.inputs:
++    for path in Path(marker).resolve().parent.rglob('*.inc'):
++      if path.is_file():
++        includes.add(path.relative_to(source_root).as_posix())
 +
-+    files = [f for f in files if f.endswith('.inc')]
-+
-+  with open(args.output, 'w') as f:
-+    for file in files:
-+      f.write("#include \"" + file + "\"\n")
-+    f.write("\n")
++  with open(args.output, 'w', encoding='utf-8', newline='\n') as output:
++    for include in sorted(includes):
++      output.write(f'#include "{include}"\n')
++    output.write('\n')
 +
 +
 +if __name__ == '__main__':

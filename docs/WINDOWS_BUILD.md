@@ -30,6 +30,7 @@ git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 git clone --single-branch --branch windows-159.0.8154.34 https://github.com/iGom/cromite.git
 set "PATH=C:\src\depot_tools;%PATH%"
 set "DEPOT_TOOLS_WIN_TOOLCHAIN=0"
+if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\18\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" set "vs2026_install=%ProgramFiles(x86)%\Microsoft Visual Studio\18\BuildTools"
 call gclient
 
 mkdir C:\src\chromium
@@ -41,6 +42,8 @@ call gclient sync --no-history --revision src@4deb883708d3d25100c5aac2148aafc95d
 The revision is the commit for the Chromium tag. The PGO setting fetches the profiles selected by its DEPS hooks, including the Win64 profile needed by the Cromite GN settings.
 
 ## Check and apply the series
+
+If the pinned Chromium checkout already exists, update the Cromite branch with `git -C C:\src\cromite pull --ff-only` and use the toolchain environment above in the current command prompt. The patch helper expects the original Chromium files.
 
 ```bat
 cd /d C:\src\chromium\src

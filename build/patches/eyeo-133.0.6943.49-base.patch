@@ -89,7 +89,7 @@ Based on Chromium 133.0.6943.49
  .../test/adblock_page_view_stats_browsertest.cc    |  840 ++++++++++++
  .../test/adblock_request_throttle_browsertest.cc   |  127 ++
  .../test/adblock_service_workers_browsertest.cc    |  208 +++
- .../browser/test/adblock_sitekey_browsertest.cc    |  177 +++
+ .../browser/test/adblock_sitekey_browsertest.cc    |  165 ++
  .../browser/test/adblock_snippets_browsertest.cc   |   76 +
  .../adblock_subscription_service_browsertest.cc    |  202 +++
  .../test/adblock_telemetry_service_browsertest.cc  |  280 ++++
@@ -256,7 +256,7 @@ Based on Chromium 133.0.6943.49
  .../recommended_subscription_installer_impl.h      |   73 +
  .../recommended_subscription_parser.cc             |   82 +
  .../subscription/recommended_subscription_parser.h |   35 
- .../adblock/core/subscription/regex_matcher.cc     |  162 ++
+ .../adblock/core/subscription/regex_matcher.cc     |  158 ++
  .../adblock/core/subscription/regex_matcher.h      |   75 +
  .../adblock/core/subscription/subscription.cc      |   24 
  .../adblock/core/subscription/subscription.h       |   81 +
@@ -365,7 +365,7 @@ Based on Chromium 133.0.6943.49
  tools/eyeo/update_git_grafts.py                    |  138 ++
  tools/gritsettings/resource_ids.spec               |   12 
  .../histograms/metadata/extensions/enums.xml       |    8 
- 361 files changed, 48832 insertions(+), 9 deletions(-)
+ 361 files changed, 48816 insertions(+), 9 deletions(-)
 
 diff --git a/DEPS b/DEPS
 --- a/DEPS
@@ -13662,7 +13662,7 @@ diff --git a/components/adblock/content/browser/test/adblock_sitekey_browsertest
 new file mode 100644
 --- /dev/null
 +++ b/components/adblock/content/browser/test/adblock_sitekey_browsertest.cc
-@@ -0,0 +1,177 @@
+@@ -0,0 +1,165 @@
 +/*
 + * This file is part of eyeo Chromium SDK,
 + * Copyright (C) 2006-present eyeo GmbH
@@ -13681,6 +13681,7 @@ new file mode 100644
 + */
 +
 +#include "base/base64.h"
++#include "base/containers/span.h"
 +#include "components/adblock/content/browser/adblock_filter_match.h"
 +#include "components/adblock/content/browser/factories/subscription_service_factory.h"
 +#include "components/adblock/content/browser/test/adblock_browsertest_base.h"
@@ -13692,8 +13693,8 @@ new file mode 100644
 +#include "content/public/test/content_browser_test_utils.h"
 +#include "content/shell/browser/shell.h"
 +#include "content/shell/browser/shell_content_browser_client.h"
-+#include "crypto/rsa_private_key.h"
-+#include "crypto/signature_creator.h"
++#include "crypto/keypair.h"
++#include "crypto/sign.h"
 +#include "net/dns/mock_host_resolver.h"
 +#include "net/test/embedded_test_server/embedded_test_server.h"
 +
@@ -13771,25 +13772,12 @@ new file mode 100644
 +        content::ShellContentBrowserClient::Get()->GetUserAgent();
 +    std::string sitekey_encryption_input =
 +        sitekey_uri + '\0' + kTestDomain + '\0' + sitekey_ua;
-+    std::unique_ptr<crypto::RSAPrivateKey> key_original(
-+        crypto::RSAPrivateKey::Create(1024));
-+    std::vector<uint8_t> priv_key;
-+    EXPECT_TRUE(key_original->ExportPrivateKey(&priv_key));
-+    std::vector<uint8_t> pub_key;
-+    EXPECT_TRUE(key_original->ExportPublicKey(&pub_key));
-+    std::unique_ptr<crypto::RSAPrivateKey> key(
-+        crypto::RSAPrivateKey::CreateFromPrivateKeyInfo(priv_key));
-+    std::unique_ptr<crypto::SignatureCreator> signer(
-+        crypto::SignatureCreator::Create(key.get(),
-+                                         crypto::SignatureCreator::SHA1));
-+    EXPECT_TRUE(signer.get());
-+    EXPECT_TRUE(signer->Update(
-+        reinterpret_cast<const uint8_t*>(sitekey_encryption_input.c_str()),
-+        sitekey_encryption_input.size()));
-+    std::vector<uint8_t> signature;
-+    EXPECT_TRUE(signer->Final(&signature));
++    const auto key = crypto::keypair::PrivateKey::GenerateRsa2048();
++    const auto signature =
++        crypto::sign::Sign(crypto::sign::RSA_PKCS1_SHA1, key,
++                           base::as_bytes(base::span(sitekey_encryption_input)));
 +    sitekey_signature_ = base::Base64Encode(signature);
-+    sitekey_publickey_ = base::Base64Encode(pub_key);
++    sitekey_publickey_ = base::Base64Encode(key.ToSubjectPublicKeyInfo());
 +  }
 +
 +  std::string sitekey_signature_;
@@ -32602,12 +32590,13 @@ new file mode 100644
 +
 +#include "absl/types/optional.h"
 +#include "base/base64.h"
++#include "base/containers/span.h"
 +#include "base/logging.h"
 +#include "base/memory/scoped_refptr.h"
 +#include "base/trace_event/trace_event.h"
 +#include "components/adblock/core/common/adblock_constants.h"
-+#include "crypto/openssl_util.h"
-+#include "crypto/signature_verifier.h"
++#include "crypto/keypair.h"
++#include "crypto/sign.h"
 +#include "net/http/http_response_headers.h"
 +
 +namespace adblock {
@@ -32732,16 +32721,15 @@ new file mode 100644
 +    return false;
 +  }
 +
-+  crypto::SignatureVerifier verifier;
-+  if (verifier.VerifyInit(crypto::SignatureVerifier::RSA_PKCS1_SHA1,
-+                          base::as_bytes(base::span(signature)),
-+                          base::as_bytes(base::span(public_key)))) {
-+    verifier.VerifyUpdate(base::as_bytes(base::span(data)));
-+    return verifier.VerifyFinal();
++  auto key = crypto::keypair::PublicKey::FromSubjectPublicKeyInfo(
++      base::as_bytes(base::span(public_key)));
++  if (!key || !key->IsRsa()) {
++    DLOG(WARNING) << "[eyeo] Invalid RSA public key";
++    return false;
 +  }
-+
-+  DLOG(WARNING) << "[eyeo] Verifier initialization failed";
-+  return false;
++  return crypto::sign::Verify(crypto::sign::RSA_PKCS1_SHA1, *key,
++                              base::as_bytes(base::span(data)),
++                              base::as_bytes(base::span(signature)));
 +}
 +
 +}  // namespace adblock
@@ -35870,7 +35858,7 @@ diff --git a/components/adblock/core/subscription/regex_matcher.cc b/components/
 new file mode 100644
 --- /dev/null
 +++ b/components/adblock/core/subscription/regex_matcher.cc
-@@ -0,0 +1,162 @@
+@@ -0,0 +1,158 @@
 +/*
 + * This file is part of eyeo Chromium SDK,
 + * Copyright (C) 2006-present eyeo GmbH
@@ -35897,8 +35885,6 @@ new file mode 100644
 +#include "base/timer/elapsed_timer.h"
 +#include "components/adblock/core/common/adblock_utils.h"
 +#include "components/adblock/core/common/regex_filter_pattern.h"
-+#include "re2/re2.h"
-+#include "re2/stringpiece.h"
 +#include "third_party/re2/src/re2/re2.h"
 +#include "unicode/utypes.h"
 +
@@ -36004,9 +35990,7 @@ new file mode 100644
 +  options.set_never_capture(true);
 +  options.set_log_errors(false);
 +  options.set_encoding(re2::RE2::Options::EncodingLatin1);
-+  auto prebuilt_re2 = std::make_unique<re2::RE2>(
-+      re2::StringPiece(regular_expression.data(), regular_expression.size()),
-+      options);
++  auto prebuilt_re2 = std::make_unique<re2::RE2>(regular_expression, options);
 +  if (!prebuilt_re2->ok()) {
 +    return nullptr;
 +  }
