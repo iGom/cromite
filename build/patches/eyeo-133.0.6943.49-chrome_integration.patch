@@ -6,25 +6,28 @@ Based on Chromium 133.0.6943.49
 
 Pre-requisites: eyeo Browser Ad filtering Solution: Base Module
 ---
- chrome/app/chrome_main_delegate.cc            |  7 ++++-
- chrome/browser/BUILD.gn                       |  7 +++++
- chrome/browser/adblock/README.md              |  3 ++
- .../adblock_chrome_content_browser_client.cc  | 27 ++++++++++++++++
- .../adblock_chrome_content_browser_client.h   | 31 +++++++++++++++++++
- chrome/browser/chrome_browser_main.cc         |  8 +++++
- chrome/browser/preferences/BUILD.gn           |  4 +++
- .../prefs/chrome_pref_service_factory.cc      | 11 +++++++
- ...hrome_browser_main_extra_parts_profiles.cc | 22 +++++++++++++
- chrome/browser/resources/BUILD.gn             |  5 +++
- chrome/browser/ui/BUILD.gn                    |  6 ++++
- chrome/browser/ui/prefs/pref_watcher.cc       | 13 ++++++++
- chrome/browser/ui/tab_helpers.cc              | 12 +++++++
- chrome/chrome_paks.gni                        |  5 +++
- chrome/common/BUILD.gn                        |  3 ++
- 15 files changed, 163 insertions(+), 1 deletion(-)
- create mode 100644 chrome/browser/adblock/README.md
- create mode 100644 chrome/browser/adblock/adblock_chrome_content_browser_client.cc
- create mode 100644 chrome/browser/adblock/adblock_chrome_content_browser_client.h
+ chrome/app/chrome_main_delegate.cc                 |    7 ++++-
+ chrome/browser/BUILD.gn                            |    9 ++++++
+ chrome/browser/adblock/README.md                   |    3 ++
+ .../adblock_chrome_content_browser_client.cc       |   27 +++++++++++++++++
+ .../adblock_chrome_content_browser_client.h        |   31 ++++++++++++++++++++
+ chrome/browser/android/BUILD.gn                    |    1 +
+ chrome/browser/android/thin_webview/BUILD.gn       |    1 +
+ chrome/browser/chrome_browser_main.cc              |    8 +++++
+ chrome/browser/preferences/BUILD.gn                |    4 +++
+ chrome/browser/prefs/BUILD.gn                      |    1 +
+ .../browser/prefs/chrome_pref_service_factory.cc   |   11 +++++++
+ chrome/browser/profiles/BUILD.gn                   |    1 +
+ .../chrome_browser_main_extra_parts_profiles.cc    |   22 ++++++++++++++
+ chrome/browser/resources/BUILD.gn                  |    5 +++
+ chrome/browser/ui/BUILD.gn                         |    3 ++
+ chrome/browser/ui/prefs/BUILD.gn                   |    1 +
+ chrome/browser/ui/prefs/pref_watcher.cc            |   13 ++++++++
+ chrome/browser/ui/tabs/BUILD.gn                    |    1 +
+ chrome/browser/ui/tabs/tab_features.cc             |   12 ++++++++
+ chrome/chrome_paks.gni                             |    5 +++
+ chrome/common/BUILD.gn                             |    3 ++
+ 21 files changed, 168 insertions(+), 1 deletion(-)
 
 diff --git a/chrome/app/chrome_main_delegate.cc b/chrome/app/chrome_main_delegate.cc
 --- a/chrome/app/chrome_main_delegate.cc
@@ -40,7 +43,7 @@ diff --git a/chrome/app/chrome_main_delegate.cc b/chrome/app/chrome_main_delegat
  
  #include "chrome/app/chrome_main_delegate.h"
  
-@@ -39,6 +43,7 @@
+@@ -41,6 +45,7 @@
  #include "base/time/time.h"
  #include "base/timer/timer.h"
  #include "build/build_config.h"
@@ -48,7 +51,7 @@ diff --git a/chrome/app/chrome_main_delegate.cc b/chrome/app/chrome_main_delegat
  #include "chrome/common/buildflags.h"
  #include "chrome/common/channel_info.h"
  #include "chrome/common/chrome_constants.h"
-@@ -1753,7 +1758,7 @@ content::ContentBrowserClient*
+@@ -1931,7 +1936,7 @@ content::ContentBrowserClient*
  ChromeMainDelegate::CreateContentBrowserClient() {
  #if !defined(BUILDING_CHROME_RENDERER)
    chrome_content_browser_client_ =
@@ -70,7 +73,7 @@ diff --git a/chrome/browser/BUILD.gn b/chrome/browser/BUILD.gn
  
  import("//base/allocator/allocator.gni")
  import("//build/buildflag_header.gni")
-@@ -839,6 +842,8 @@ source_set("process_singleton_internal") {
+@@ -996,6 +999,8 @@ source_set("process_singleton_internal") {
  source_set("core") {
    sources = [
      "about_flags.cc",
@@ -79,22 +82,31 @@ diff --git a/chrome/browser/BUILD.gn b/chrome/browser/BUILD.gn
      "after_startup_task_utils.cc",
      "browser_about_handler.cc",
      "browser_process_impl.cc",
-@@ -2384,6 +2389,7 @@ source_set("browser") {
-     "//chrome/browser/visited_url_ranking:impl",
-     "//chrome/browser/vr",
-     "//chrome/browser/vr:impl",
+@@ -1063,6 +1068,7 @@ source_set("core") {
+ 
+   deps = [
+     ":active_use_util",
 +    "//components/adblock/content:browser",
-     "//components/certificate_transparency",
-     "//components/certificate_transparency:proto",
-     "//components/collaboration/internal",
-@@ -3422,6 +3428,7 @@ group("browser_public_dependencies") {
-     "//chrome/common/compose:mojo_bindings",
-     "//chrome/services/file_util/public/mojom",
-     "//components/account_id",
+     ":after_startup_task_utils",
+     ":bad_message",
+     ":browser_about_handler",
+@@ -2701,6 +2707,7 @@ source_set("browser") {
+     "//chrome/browser/webdata_services:impl",
+     "//chrome/browser/webid",
+     "//chrome/browser/webid:impl",
 +    "//components/adblock/content:browser",
-     "//components/autofill/content/browser",
-     "//components/autofill/core/browser",
-     "//components/compose/core/browser:mojo_bindings",
+     "//components/autofill/core/common:credit_card_number_validation",
+     "//components/breadcrumbs/core:status",
+     "//components/captive_portal/content",
+@@ -2936,6 +2943,8 @@ source_set("browser") {
+       "//chrome/browser/ui/bookmarks/controllers/android",
+       "//chrome/browser/ui/exclusive_access",
+       "//chrome/browser/ui/side_panel/internal/android",
++      "//components/adblock/android:java_bindings",
++      "//components/adblock/android:jni_headers",
+       "//chrome/browser/ui/side_panel/internal/android:dev",
+       "//chrome/browser/ui/webui/notifications_internals",
+       "//chrome/browser/ui/webui/notifications_internals:impl",
 diff --git a/chrome/browser/adblock/README.md b/chrome/browser/adblock/README.md
 new file mode 100644
 --- /dev/null
@@ -171,6 +183,28 @@ new file mode 100644
 +};
 +
 +#endif  // CHROME_BROWSER_ADBLOCK_ADBLOCK_CHROME_CONTENT_BROWSER_CLIENT_H_
+diff --git a/chrome/browser/android/BUILD.gn b/chrome/browser/android/BUILD.gn
+--- a/chrome/browser/android/BUILD.gn
++++ b/chrome/browser/android/BUILD.gn
+@@ -162,6 +162,7 @@ source_set("tabs_impl") {
+     ":tabs_public",
+     "//chrome/browser:browser_process",
+     "//chrome/browser:chained_back_navigation_tracker",
++    "//components/adblock/content:browser",
+     "//chrome/browser/actor",
+     "//chrome/browser/actor/android",
+     "//chrome/browser/banners",
+diff --git a/chrome/browser/android/thin_webview/BUILD.gn b/chrome/browser/android/thin_webview/BUILD.gn
+--- a/chrome/browser/android/thin_webview/BUILD.gn
++++ b/chrome/browser/android/thin_webview/BUILD.gn
+@@ -44,6 +44,7 @@ source_set("initializer") {
+     "//chrome/browser/profiles:profile",
+     "//chrome/browser/subresource_filter",
+     "//chrome/browser/ui/android:context_menu_helper",
++    "//components/adblock/content:browser",
+     "//chrome/browser/ui/autofill",
+     "//components/content_settings/browser",
+     "//components/performance_manager",
 diff --git a/chrome/browser/chrome_browser_main.cc b/chrome/browser/chrome_browser_main.cc
 --- a/chrome/browser/chrome_browser_main.cc
 +++ b/chrome/browser/chrome_browser_main.cc
@@ -185,7 +219,7 @@ diff --git a/chrome/browser/chrome_browser_main.cc b/chrome/browser/chrome_brows
  
  #include "chrome/browser/chrome_browser_main.h"
  
-@@ -93,6 +97,7 @@
+@@ -94,6 +98,7 @@
  #include "chrome/common/profiler/thread_profiler_configuration.h"
  #include "chrome/grit/branded_strings.h"
  #include "chrome/installer/util/google_update_settings.h"
@@ -193,7 +227,7 @@ diff --git a/chrome/browser/chrome_browser_main.cc b/chrome/browser/chrome_brows
  #include "components/color/color_mixers.h"
  #include "components/device_event_log/device_event_log.h"
  #include "components/embedder_support/origin_trials/component_updater_utils.h"
-@@ -1891,8 +1896,11 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
+@@ -1938,8 +1943,11 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
    // Register WebUI configs before profile creation, so that profile-level
    // prewarming has access to registered WebUI data sources. Also login manager
    // on CrOS is called inside `PostProfileInit()`.
@@ -218,14 +252,25 @@ diff --git a/chrome/browser/preferences/BUILD.gn b/chrome/browser/preferences/BU
  
  import("//build/config/android/rules.gni")
  import("//third_party/jni_zero/jni_zero.gni")
-@@ -59,6 +62,7 @@ java_cpp_strings("java_pref_names_srcjar") {
-     "//chrome/browser/new_tab_page/prefs/ntp_pref_names.h",
+@@ -55,6 +58,7 @@ java_cpp_strings("java_pref_names_srcjar") {
+     "//chrome/browser/ttc/core/prefs.h",
      "//chrome/browser/ui/safety_hub/safety_hub_prefs.h",
      "//chrome/common/pref_names.h",
 +    "//components/adblock/core/common/adblock_prefs.cc",
      "//components/autofill/core/common/autofill_prefs.h",
      "//components/bookmarks/common/bookmark_pref_names.h",
      "//components/commerce/core/pref_names.h",
+diff --git a/chrome/browser/prefs/BUILD.gn b/chrome/browser/prefs/BUILD.gn
+--- a/chrome/browser/prefs/BUILD.gn
++++ b/chrome/browser/prefs/BUILD.gn
+@@ -60,6 +60,7 @@ source_set("impl") {
+     ":prefs",
+     ":util",
+     "//build:cromite_buildflags",
++    "//components/adblock/content:browser",
+     "//chrome/browser:browser_process",
+     "//chrome/browser:browser_process_impl",
+     "//chrome/browser:chrome_content_browser_client",
 diff --git a/chrome/browser/prefs/chrome_pref_service_factory.cc b/chrome/browser/prefs/chrome_pref_service_factory.cc
 --- a/chrome/browser/prefs/chrome_pref_service_factory.cc
 +++ b/chrome/browser/prefs/chrome_pref_service_factory.cc
@@ -261,6 +306,17 @@ diff --git a/chrome/browser/prefs/chrome_pref_service_factory.cc b/chrome/browse
  
      // See note at top, new items added here also need to be added to
      // histograms.xml's TrackedPreference enum.
+diff --git a/chrome/browser/profiles/BUILD.gn b/chrome/browser/profiles/BUILD.gn
+--- a/chrome/browser/profiles/BUILD.gn
++++ b/chrome/browser/profiles/BUILD.gn
+@@ -752,6 +752,7 @@ source_set("profiles_extra_parts_impl") {
+     "//chrome/browser:browser_process",
+     "//chrome/browser:chrome_browser_main",
+     "//chrome/browser:font_pref",
++    "//components/adblock/content:browser",
+     "//chrome/browser/accessibility",
+     "//chrome/browser/account_settings",
+     "//chrome/browser/affiliations",
 diff --git a/chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.cc b/chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.cc
 --- a/chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.cc
 +++ b/chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.cc
@@ -275,7 +331,7 @@ diff --git a/chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.cc
  
  #include "chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.h"
  
-@@ -295,6 +299,15 @@
+@@ -298,6 +302,15 @@
  #include "chrome/browser/webid/federated_identity_permission_context_factory.h"
  #include "chrome/common/buildflags.h"
  #include "chrome/common/chrome_features.h"
@@ -291,7 +347,7 @@ diff --git a/chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.cc
  #include "components/autofill/content/browser/autofill_log_router_factory.h"
  #include "components/breadcrumbs/core/breadcrumbs_status.h"
  #include "components/captive_portal/core/buildflags.h"
-@@ -1064,6 +1077,15 @@ void ChromeBrowserMainExtraPartsProfiles::
+@@ -1043,6 +1056,15 @@ void ChromeBrowserMainExtraPartsProfiles::
    FederatedIdentityApiPermissionContextFactory::GetInstance();
    FederatedIdentityAutoReauthnPermissionContextFactory::GetInstance();
    FederatedIdentityPermissionContextFactory::GetInstance();
@@ -320,7 +376,7 @@ diff --git a/chrome/browser/resources/BUILD.gn b/chrome/browser/resources/BUILD.
  
  import("//build/config/chrome_build.gni")
  import("//chrome/browser/buildflags.gni")
-@@ -424,6 +427,7 @@ group("dev_ui_resources") {
+@@ -443,6 +446,7 @@ group("dev_ui_resources") {
      "subresource_filter:resources",
      "suggest_internals:resources",
      "usb_internals:resources",
@@ -328,7 +384,7 @@ diff --git a/chrome/browser/resources/BUILD.gn b/chrome/browser/resources/BUILD.
      "//components/actor/core/internals/resources",
      "//components/autofill/core/browser/autofill_and_password_manager_internals:resources",
      "//components/commerce/core/internals/resources",
-@@ -515,6 +519,7 @@ repack("dev_ui_paks") {
+@@ -532,6 +536,7 @@ repack("dev_ui_paks") {
      "$root_gen_dir/chrome/subresource_filter_internals_resources.pak",
      "$root_gen_dir/chrome/suggest_internals_resources.pak",
      "$root_gen_dir/chrome/usb_internals_resources.pak",
@@ -349,23 +405,17 @@ diff --git a/chrome/browser/ui/BUILD.gn b/chrome/browser/ui/BUILD.gn
  
  import("//build/config/buildflags_paint_preview.gni")
  import("//build/config/chrome_build.gni")
-@@ -671,6 +674,7 @@ static_library("ui") {
-     "//chrome/app/theme:chrome_unscaled_resources",
-     "//chrome/browser:chained_back_navigation_tracker",
-     "//chrome/browser:chrome_content_browser_client",
+diff --git a/chrome/browser/ui/prefs/BUILD.gn b/chrome/browser/ui/prefs/BUILD.gn
+--- a/chrome/browser/ui/prefs/BUILD.gn
++++ b/chrome/browser/ui/prefs/BUILD.gn
+@@ -36,6 +36,7 @@ source_set("impl") {
+   deps = [
+     ":prefs",
+     "//build:android_buildflags",
 +    "//components/adblock/content:browser",
+     "//chrome/app/resources:platform_locale_settings",
+     "//chrome/browser:browser_process",
      "//chrome/browser:font_pref",
-     "//chrome/browser:renderer_preferences_util",
-     "//chrome/browser:resources_util",
-@@ -1279,6 +1283,8 @@ static_library("ui") {
-       "//chrome/browser/ui/android/hats:impl",
-       "//chrome/browser/ui/android/tab_model",
-       "//chrome/browser/ui/android/tab_model:impl",
-+      "//components/adblock/android:java_bindings",
-+      "//components/adblock/android:jni_headers",
-       "//chrome/browser/ui/exclusive_access",
-       "//chrome/browser/ui/webui/notifications_internals",
-       "//chrome/browser/ui/webui/notifications_internals:impl",
 diff --git a/chrome/browser/ui/prefs/pref_watcher.cc b/chrome/browser/ui/prefs/pref_watcher.cc
 --- a/chrome/browser/ui/prefs/pref_watcher.cc
 +++ b/chrome/browser/ui/prefs/pref_watcher.cc
@@ -388,10 +438,10 @@ diff --git a/chrome/browser/ui/prefs/pref_watcher.cc b/chrome/browser/ui/prefs/p
  #include "components/autofill/core/common/autofill_prefs.h"
  #include "components/keyed_service/core/keyed_service.h"
  #include "components/language/core/browser/pref_names.h"
-@@ -90,6 +95,14 @@ const char* const kWebPrefsToObserve[] = {
-     prefs::kAccessibilityFocusHighlightEnabled,
+@@ -92,6 +97,14 @@ const char* const kWebPrefsToObserve[] = {
  #endif
      prefs::kPageColorsBlockList,
+     prefs::kXSLTDeprecationBannerSuppressed,
 +
 +    adblock::common::prefs::kAdblockAllowedDomainsLegacy,
 +    adblock::common::prefs::kAdblockCustomFiltersLegacy,
@@ -403,42 +453,60 @@ diff --git a/chrome/browser/ui/prefs/pref_watcher.cc b/chrome/browser/ui/prefs/p
  };
  
  }  // namespace
-diff --git a/chrome/browser/ui/tab_helpers.cc b/chrome/browser/ui/tab_helpers.cc
---- a/chrome/browser/ui/tab_helpers.cc
-+++ b/chrome/browser/ui/tab_helpers.cc
-@@ -1,6 +1,10 @@
- // Copyright 2014 The Chromium Authors
- // Use of this source code is governed by a BSD-style license that can be
- // found in the LICENSE file.
-+//
-+// This source code is a part of eyeo Chromium SDK.
-+// Use of this source code is governed by the GPLv3 that can be found in the
-+// components/adblock/LICENSE file.
- 
- #include "chrome/browser/ui/tab_helpers.h"
- 
-@@ -105,6 +109,8 @@
- #include "chrome/common/chrome_features.h"
- #include "chrome/common/chrome_isolated_world_ids.h"
- #include "chrome/common/chrome_switches.h"
+diff --git a/chrome/browser/ui/tabs/BUILD.gn b/chrome/browser/ui/tabs/BUILD.gn
+--- a/chrome/browser/ui/tabs/BUILD.gn
++++ b/chrome/browser/ui/tabs/BUILD.gn
+@@ -696,6 +696,7 @@ if (!is_android) {
+       "//chrome/browser/web_applications",
+       "//chrome/browser/web_applications/isolated_web_apps:isolated_web_apps_no_pwa_core_deps",
+       "//chrome/common",
++      "//components/adblock/content:browser",
+       "//components/blocked_content",
+       "//components/breadcrumbs/core",
+       "//components/breadcrumbs/core:status",
+diff --git a/chrome/browser/ui/tabs/tab_features.cc b/chrome/browser/ui/tabs/tab_features.cc
+--- a/chrome/browser/ui/tabs/tab_features.cc
++++ b/chrome/browser/ui/tabs/tab_features.cc
+@@ -200,6 +200,8 @@
+ #include "chrome/browser/ui/web_applications/pwa_install_page_action.h"
+ #include "chrome/browser/ui/webui/webui_embedding_context.h"
+ #include "chrome/browser/ui/webui_browser/webui_browser.h"
 +#include "components/adblock/content/browser/adblock_webcontents_observer.h"
 +#include "components/adblock/content/browser/factories/embedding_utils.h"
- #include "components/blocked_content/popup_blocker_tab_helper.h"
- #include "components/blocked_content/popup_opener_tab_helper.h"
- #include "components/breadcrumbs/core/breadcrumbs_status.h"
-@@ -351,6 +357,12 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents,
-                                                    optimization_guide_decider);
-     }
-   }
-+
+ #include "components/autofill/core/common/autofill_payments_features.h"
+ #include "components/contextual_tasks/public/features.h"
+ #include "components/download/content/factory/navigation_monitor_factory.h"
+@@ -393,6 +395,14 @@ namespace tabs {
+ 
+ namespace {
+ 
++void AttachAdblockObserver(content::WebContents* contents, Profile* profile) {
 +  auto* original_profile = profile->GetOriginalProfile();
 +  adblock::EnsureBackgroundServicesStarted(original_profile);
-+  adblock::RegisterAdblockWebContentObserver<
-+      adblock::AdblockWebContentObserver>(web_contents, original_profile);
++  adblock::RegisterAdblockWebContentObserver<adblock::AdblockWebContentObserver>(
++      contents, original_profile);
++}
 +
-   // AutofillClientProvider initializes ContentAutofillClient for web_contents,
-   // which is gated by enable_browser_autofill.
-   if (enable_browser_autofill) {
++
+ using page_content_annotations::AnnotatedPageContentRequest;
+ 
+ std::optional<int64_t> GetPageContentAnnotationsTabId(
+@@ -448,6 +458,7 @@ void TabFeatures::Init(TabInterface& tab, Profile* profile) {
+     ChromePasswordManagerClient::CreateForWebContents(tab.GetContents());
+   }
+ 
++  AttachAdblockObserver(tab.GetContents(), profile);
+   CreateSubresourceFilterWebContentsHelper(tab.GetContents());
+ 
+   ChromeTranslateClient::CreateForWebContents(tab.GetContents());
+@@ -1539,6 +1550,7 @@ void TabFeatures::WillDiscardContents(tabs::TabInterface* tab,
+     ChromePasswordManagerClient::CreateForWebContents(new_contents);
+   }
+ 
++  AttachAdblockObserver(new_contents, profile);
+   CreateSubresourceFilterWebContentsHelper(new_contents);
+ 
+   ChromeTranslateClient::CreateForWebContents(new_contents);
 diff --git a/chrome/chrome_paks.gni b/chrome/chrome_paks.gni
 --- a/chrome/chrome_paks.gni
 +++ b/chrome/chrome_paks.gni
@@ -452,7 +520,7 @@ diff --git a/chrome/chrome_paks.gni b/chrome/chrome_paks.gni
  
  import("//ash/ambient/resources/resources.gni")
  import("//build/config/chrome_build.gni")
-@@ -130,6 +133,7 @@ template("chrome_extra_paks") {
+@@ -146,6 +149,7 @@ template("chrome_extra_paks") {
        "$root_gen_dir/chrome/glic_experimental_opt_in_resources.pak",
        "$root_gen_dir/chrome/glic_resources.pak",
        "$root_gen_dir/chrome/saved_tab_groups_unsupported_resources.pak",
@@ -460,7 +528,7 @@ diff --git a/chrome/chrome_paks.gni b/chrome/chrome_paks.gni
        "$root_gen_dir/components/autofill/core/browser/geo/autofill_address_rewriter_resources.pak",
        "$root_gen_dir/components/autofill/core/browser/geo/autofill_alternative_state_name_map_resources.pak",
        "$root_gen_dir/components/chrome_urls_resources.pak",
-@@ -171,6 +175,7 @@ template("chrome_extra_paks") {
+@@ -193,6 +197,7 @@ template("chrome_extra_paks") {
        "//chrome/browser/glic/resources:browser_resources",
        "//chrome/browser/resources",
        "//chrome/common:resources",
@@ -481,4 +549,5 @@ diff --git a/chrome/common/BUILD.gn b/chrome/common/BUILD.gn
  
  import("//build/buildflag_header.gni")
  import("//build/config/chrome_build.gni")
+
 --

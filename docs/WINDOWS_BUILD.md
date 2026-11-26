@@ -1,6 +1,6 @@
 # Building Cromite for Windows x64
 
-This branch targets Chromium `159.0.8154.34`. The patch series is being ported. Run the patch check before allocating time to compilation. It reports the first failing patch by name.
+This branch targets Chromium `159.0.8154.34` on Windows x64. All 301 Windows-relevant patches have been checked and applied in order against the pinned sources. Compiling and launching the Windows executable still require a native test.
 
 ## Install the toolchain
 

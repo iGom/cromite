@@ -6,238 +6,126 @@ Based on Chromium 133.0.6943.49
 
 Pre-requisites: eyeo Browser Ad filtering Solution: Base Module and Android API Module
 ---
- chrome/android/BUILD.gn                       |   7 +
- .../android/java/res/xml/main_preferences.xml |   8 +
- chrome/browser/adblock/android/BUILD.gn       |  85 ++++++
- chrome/browser/adblock/android/README.md      |  13 +
- .../adblock/android/adblock_strings.grd       | 244 ++++++++++++++++++
- .../fragment_adblock_custom_item_add.png      | Bin 0 -> 490 bytes
- .../fragment_adblock_custom_item_remove.png   | Bin 0 -> 296 bytes
- .../fragment_adblock_custom_item_add.png      | Bin 0 -> 321 bytes
- .../fragment_adblock_custom_item_remove.png   | Bin 0 -> 169 bytes
- .../fragment_adblock_custom_item_add.png      | Bin 0 -> 1522 bytes
- .../fragment_adblock_custom_item_remove.png   | Bin 0 -> 696 bytes
- .../fragment_adblock_custom_item_add.png      | Bin 0 -> 747 bytes
- .../fragment_adblock_custom_item_remove.png   | Bin 0 -> 194 bytes
- .../fragment_adblock_custom_item_add.png      | Bin 0 -> 1485 bytes
- .../fragment_adblock_custom_item_remove.png   | Bin 0 -> 284 bytes
- .../fragment_adblock_custom_item_add.png      | Bin 0 -> 3393 bytes
- .../fragment_adblock_custom_item_remove.png   | Bin 0 -> 600 bytes
- .../fragment_adblock_custom_item_add.png      | Bin 0 -> 638 bytes
- .../fragment_adblock_custom_item_remove.png   | Bin 0 -> 240 bytes
- .../fragment_adblock_custom_item_add.png      | Bin 0 -> 933 bytes
- .../fragment_adblock_custom_item_remove.png   | Bin 0 -> 456 bytes
- .../java/res/layout/adblock_custom_item.xml   |  50 ++++
- .../layout/adblock_custom_item_settings.xml   |  65 +++++
- .../layout/adblock_filter_lists_list_item.xml |  36 +++
- .../java/res/xml/adblock_more_options.xml     |  34 +++
- .../java/res/xml/adblock_preferences.xml      |  63 +++++
- .../AdblockAllowedDomainsFragment.java        |  79 ++++++
- .../AdblockCustomFilterListsFragment.java     | 125 +++++++++
- .../AdblockCustomFiltersFragment.java         |  80 ++++++
- .../settings/AdblockCustomItemFragment.java   | 174 +++++++++++++
- .../settings/AdblockFilterListsAdapter.java   | 112 ++++++++
- .../settings/AdblockFilterListsFragment.java  |  57 ++++
- .../settings/AdblockMoreOptionsFragment.java  |  34 +++
- .../settings/AdblockSettingsFragment.java     | 162 ++++++++++++
- .../translations/adblock_strings_af.xtb       |   4 +
- .../translations/adblock_strings_am.xtb       |  13 +
- .../translations/adblock_strings_ar.xtb       |  13 +
- .../translations/adblock_strings_as.xtb       |   4 +
- .../translations/adblock_strings_az.xtb       |   4 +
- .../translations/adblock_strings_be.xtb       |   4 +
- .../translations/adblock_strings_bg.xtb       |  16 ++
- .../translations/adblock_strings_bn.xtb       |  13 +
- .../translations/adblock_strings_bs.xtb       |  13 +
- .../translations/adblock_strings_ca.xtb       |  13 +
- .../translations/adblock_strings_cs.xtb       |  13 +
- .../translations/adblock_strings_da.xtb       |  13 +
- .../translations/adblock_strings_de.xtb       |  13 +
- .../translations/adblock_strings_el.xtb       |  13 +
- .../translations/adblock_strings_en-GB.xtb    |  13 +
- .../translations/adblock_strings_es-419.xtb   |  13 +
- .../translations/adblock_strings_es.xtb       |  13 +
- .../translations/adblock_strings_et.xtb       |  13 +
- .../translations/adblock_strings_eu.xtb       |   4 +
- .../translations/adblock_strings_fa.xtb       |  13 +
- .../translations/adblock_strings_fi.xtb       |  13 +
- .../translations/adblock_strings_fil.xtb      |  13 +
- .../translations/adblock_strings_fr-CA.xtb    |  13 +
- .../translations/adblock_strings_fr.xtb       |  13 +
- .../translations/adblock_strings_gl.xtb       |   4 +
- .../translations/adblock_strings_gu.xtb       |   4 +
- .../translations/adblock_strings_hi.xtb       |  13 +
- .../translations/adblock_strings_hr.xtb       |  13 +
- .../translations/adblock_strings_hu.xtb       |  13 +
- .../translations/adblock_strings_hy.xtb       |   4 +
- .../translations/adblock_strings_id.xtb       |  13 +
- .../translations/adblock_strings_is.xtb       |   4 +
- .../translations/adblock_strings_it.xtb       |  13 +
- .../translations/adblock_strings_iw.xtb       |  13 +
- .../translations/adblock_strings_ja.xtb       |  13 +
- .../translations/adblock_strings_ka.xtb       |   4 +
- .../translations/adblock_strings_kk.xtb       |  13 +
- .../translations/adblock_strings_km.xtb       |  13 +
- .../translations/adblock_strings_kn.xtb       |   4 +
- .../translations/adblock_strings_ko.xtb       |  13 +
- .../translations/adblock_strings_ky.xtb       |   4 +
- .../translations/adblock_strings_lo.xtb       |   4 +
- .../translations/adblock_strings_lt.xtb       |  13 +
- .../translations/adblock_strings_lv.xtb       |  13 +
- .../translations/adblock_strings_mk.xtb       |  13 +
- .../translations/adblock_strings_ml.xtb       |   4 +
- .../translations/adblock_strings_mn.xtb       |   4 +
- .../translations/adblock_strings_mr.xtb       |   4 +
- .../translations/adblock_strings_ms.xtb       |  13 +
- .../translations/adblock_strings_my.xtb       |  13 +
- .../translations/adblock_strings_ne.xtb       |   4 +
- .../translations/adblock_strings_nl.xtb       |  13 +
- .../translations/adblock_strings_no.xtb       |   4 +
- .../translations/adblock_strings_or.xtb       |   4 +
- .../translations/adblock_strings_pa.xtb       |   4 +
- .../translations/adblock_strings_pl.xtb       |  13 +
- .../translations/adblock_strings_pt-BR.xtb    |  13 +
- .../translations/adblock_strings_pt-PT.xtb    |  13 +
- .../translations/adblock_strings_ro.xtb       |  13 +
- .../translations/adblock_strings_ru.xtb       |  13 +
- .../translations/adblock_strings_si.xtb       |   4 +
- .../translations/adblock_strings_sk.xtb       |  13 +
- .../translations/adblock_strings_sl.xtb       |  13 +
- .../translations/adblock_strings_sq.xtb       |   4 +
- .../translations/adblock_strings_sr-Latn.xtb  |   4 +
- .../translations/adblock_strings_sr.xtb       |  13 +
- .../translations/adblock_strings_sv.xtb       |  13 +
- .../translations/adblock_strings_sw.xtb       |  13 +
- .../translations/adblock_strings_ta.xtb       |   4 +
- .../translations/adblock_strings_te.xtb       |   4 +
- .../translations/adblock_strings_th.xtb       |  13 +
- .../translations/adblock_strings_tr.xtb       |  13 +
- .../translations/adblock_strings_uk.xtb       |  13 +
- .../translations/adblock_strings_ur.xtb       |  13 +
- .../translations/adblock_strings_uz.xtb       |   4 +
- .../translations/adblock_strings_vi.xtb       |  13 +
- .../translations/adblock_strings_zh-CN.xtb    |  13 +
- .../translations/adblock_strings_zh-HK.xtb    |   4 +
- .../translations/adblock_strings_zh-TW.xtb    |  13 +
- .../translations/adblock_strings_zu.xtb       |   4 +
+ chrome/android/BUILD.gn                            |    7 +
+ chrome/browser/adblock/android/BUILD.gn            |   85 +++++++
+ chrome/browser/adblock/android/adblock_strings.grd |  244 ++++++++++++++++++++
+ chrome/android/java/res/xml/main_preferences.xml   |    8 +
+ chrome/browser/adblock/android/README.md           |   13 +
+ .../fragment_adblock_custom_item_add.png           |  Bin
+ .../fragment_adblock_custom_item_remove.png        |  Bin
+ .../fragment_adblock_custom_item_add.png           |  Bin
+ .../fragment_adblock_custom_item_remove.png        |  Bin
+ .../fragment_adblock_custom_item_add.png           |  Bin
+ .../fragment_adblock_custom_item_remove.png        |  Bin
+ .../fragment_adblock_custom_item_add.png           |  Bin
+ .../fragment_adblock_custom_item_remove.png        |  Bin
+ .../fragment_adblock_custom_item_add.png           |  Bin
+ .../fragment_adblock_custom_item_remove.png        |  Bin
+ .../fragment_adblock_custom_item_add.png           |  Bin
+ .../fragment_adblock_custom_item_remove.png        |  Bin
+ .../fragment_adblock_custom_item_add.png           |  Bin
+ .../fragment_adblock_custom_item_remove.png        |  Bin
+ .../fragment_adblock_custom_item_add.png           |  Bin
+ .../fragment_adblock_custom_item_remove.png        |  Bin
+ .../java/res/layout/adblock_custom_item.xml        |   50 ++++
+ .../res/layout/adblock_custom_item_settings.xml    |   65 +++++
+ .../res/layout/adblock_filter_lists_list_item.xml  |   36 +++
+ .../android/java/res/xml/adblock_more_options.xml  |   34 +++
+ .../android/java/res/xml/adblock_preferences.xml   |   63 +++++
+ .../settings/AdblockAllowedDomainsFragment.java    |   79 ++++++
+ .../settings/AdblockCustomFilterListsFragment.java |  125 ++++++++++
+ .../settings/AdblockCustomFiltersFragment.java     |   80 +++++++
+ .../settings/AdblockCustomItemFragment.java        |  174 ++++++++++++++
+ .../settings/AdblockFilterListsAdapter.java        |  112 +++++++++
+ .../settings/AdblockFilterListsFragment.java       |   57 +++++
+ .../settings/AdblockMoreOptionsFragment.java       |   34 +++
+ .../adblock/settings/AdblockSettingsFragment.java  |  162 +++++++++++++
+ .../android/translations/adblock_strings_af.xtb    |    4 
+ .../android/translations/adblock_strings_am.xtb    |   13 +
+ .../android/translations/adblock_strings_ar.xtb    |   13 +
+ .../android/translations/adblock_strings_as.xtb    |    4 
+ .../android/translations/adblock_strings_az.xtb    |    4 
+ .../android/translations/adblock_strings_be.xtb    |    4 
+ .../android/translations/adblock_strings_bg.xtb    |   16 +
+ .../android/translations/adblock_strings_bn.xtb    |   13 +
+ .../android/translations/adblock_strings_bs.xtb    |   13 +
+ .../android/translations/adblock_strings_ca.xtb    |   13 +
+ .../android/translations/adblock_strings_cs.xtb    |   13 +
+ .../android/translations/adblock_strings_da.xtb    |   13 +
+ .../android/translations/adblock_strings_de.xtb    |   13 +
+ .../android/translations/adblock_strings_el.xtb    |   13 +
+ .../android/translations/adblock_strings_en-GB.xtb |   13 +
+ .../translations/adblock_strings_es-419.xtb        |   13 +
+ .../android/translations/adblock_strings_es.xtb    |   13 +
+ .../android/translations/adblock_strings_et.xtb    |   13 +
+ .../android/translations/adblock_strings_eu.xtb    |    4 
+ .../android/translations/adblock_strings_fa.xtb    |   13 +
+ .../android/translations/adblock_strings_fi.xtb    |   13 +
+ .../android/translations/adblock_strings_fil.xtb   |   13 +
+ .../android/translations/adblock_strings_fr-CA.xtb |   13 +
+ .../android/translations/adblock_strings_fr.xtb    |   13 +
+ .../android/translations/adblock_strings_gl.xtb    |    4 
+ .../android/translations/adblock_strings_gu.xtb    |    4 
+ .../android/translations/adblock_strings_hi.xtb    |   13 +
+ .../android/translations/adblock_strings_hr.xtb    |   13 +
+ .../android/translations/adblock_strings_hu.xtb    |   13 +
+ .../android/translations/adblock_strings_hy.xtb    |    4 
+ .../android/translations/adblock_strings_id.xtb    |   13 +
+ .../android/translations/adblock_strings_is.xtb    |    4 
+ .../android/translations/adblock_strings_it.xtb    |   13 +
+ .../android/translations/adblock_strings_iw.xtb    |   13 +
+ .../android/translations/adblock_strings_ja.xtb    |   13 +
+ .../android/translations/adblock_strings_ka.xtb    |    4 
+ .../android/translations/adblock_strings_kk.xtb    |   13 +
+ .../android/translations/adblock_strings_km.xtb    |   13 +
+ .../android/translations/adblock_strings_kn.xtb    |    4 
+ .../android/translations/adblock_strings_ko.xtb    |   13 +
+ .../android/translations/adblock_strings_ky.xtb    |    4 
+ .../android/translations/adblock_strings_lo.xtb    |    4 
+ .../android/translations/adblock_strings_lt.xtb    |   13 +
+ .../android/translations/adblock_strings_lv.xtb    |   13 +
+ .../android/translations/adblock_strings_mk.xtb    |   13 +
+ .../android/translations/adblock_strings_ml.xtb    |    4 
+ .../android/translations/adblock_strings_mn.xtb    |    4 
+ .../android/translations/adblock_strings_mr.xtb    |    4 
+ .../android/translations/adblock_strings_ms.xtb    |   13 +
+ .../android/translations/adblock_strings_my.xtb    |   13 +
+ .../android/translations/adblock_strings_ne.xtb    |    4 
+ .../android/translations/adblock_strings_nl.xtb    |   13 +
+ .../android/translations/adblock_strings_no.xtb    |    4 
+ .../android/translations/adblock_strings_or.xtb    |    4 
+ .../android/translations/adblock_strings_pa.xtb    |    4 
+ .../android/translations/adblock_strings_pl.xtb    |   13 +
+ .../android/translations/adblock_strings_pt-BR.xtb |   13 +
+ .../android/translations/adblock_strings_pt-PT.xtb |   13 +
+ .../android/translations/adblock_strings_ro.xtb    |   13 +
+ .../android/translations/adblock_strings_ru.xtb    |   13 +
+ .../android/translations/adblock_strings_si.xtb    |    4 
+ .../android/translations/adblock_strings_sk.xtb    |   13 +
+ .../android/translations/adblock_strings_sl.xtb    |   13 +
+ .../android/translations/adblock_strings_sq.xtb    |    4 
+ .../translations/adblock_strings_sr-Latn.xtb       |    4 
+ .../android/translations/adblock_strings_sr.xtb    |   13 +
+ .../android/translations/adblock_strings_sv.xtb    |   13 +
+ .../android/translations/adblock_strings_sw.xtb    |   13 +
+ .../android/translations/adblock_strings_ta.xtb    |    4 
+ .../android/translations/adblock_strings_te.xtb    |    4 
+ .../android/translations/adblock_strings_th.xtb    |   13 +
+ .../android/translations/adblock_strings_tr.xtb    |   13 +
+ .../android/translations/adblock_strings_uk.xtb    |   13 +
+ .../android/translations/adblock_strings_ur.xtb    |   13 +
+ .../android/translations/adblock_strings_uz.xtb    |    4 
+ .../android/translations/adblock_strings_vi.xtb    |   13 +
+ .../android/translations/adblock_strings_zh-CN.xtb |   13 +
+ .../android/translations/adblock_strings_zh-HK.xtb |    4 
+ .../android/translations/adblock_strings_zh-TW.xtb |   13 +
+ .../android/translations/adblock_strings_zu.xtb    |    4 
  114 files changed, 2219 insertions(+)
- create mode 100644 chrome/browser/adblock/android/BUILD.gn
- create mode 100644 chrome/browser/adblock/android/README.md
- create mode 100644 chrome/browser/adblock/android/adblock_strings.grd
- create mode 100644 chrome/browser/adblock/android/java/res/drawable-hdpi/fragment_adblock_custom_item_add.png
- create mode 100644 chrome/browser/adblock/android/java/res/drawable-hdpi/fragment_adblock_custom_item_remove.png
- create mode 100644 chrome/browser/adblock/android/java/res/drawable-mdpi/fragment_adblock_custom_item_add.png
- create mode 100644 chrome/browser/adblock/android/java/res/drawable-mdpi/fragment_adblock_custom_item_remove.png
- create mode 100644 chrome/browser/adblock/android/java/res/drawable-night-hdpi/fragment_adblock_custom_item_add.png
- create mode 100644 chrome/browser/adblock/android/java/res/drawable-night-hdpi/fragment_adblock_custom_item_remove.png
- create mode 100644 chrome/browser/adblock/android/java/res/drawable-night-mdpi/fragment_adblock_custom_item_add.png
- create mode 100644 chrome/browser/adblock/android/java/res/drawable-night-mdpi/fragment_adblock_custom_item_remove.png
- create mode 100644 chrome/browser/adblock/android/java/res/drawable-night-xhdpi/fragment_adblock_custom_item_add.png
- create mode 100644 chrome/browser/adblock/android/java/res/drawable-night-xhdpi/fragment_adblock_custom_item_remove.png
- create mode 100644 chrome/browser/adblock/android/java/res/drawable-night-xxhdpi/fragment_adblock_custom_item_add.png
- create mode 100644 chrome/browser/adblock/android/java/res/drawable-night-xxhdpi/fragment_adblock_custom_item_remove.png
- create mode 100644 chrome/browser/adblock/android/java/res/drawable-xhdpi/fragment_adblock_custom_item_add.png
- create mode 100644 chrome/browser/adblock/android/java/res/drawable-xhdpi/fragment_adblock_custom_item_remove.png
- create mode 100644 chrome/browser/adblock/android/java/res/drawable-xxhdpi/fragment_adblock_custom_item_add.png
- create mode 100644 chrome/browser/adblock/android/java/res/drawable-xxhdpi/fragment_adblock_custom_item_remove.png
- create mode 100644 chrome/browser/adblock/android/java/res/layout/adblock_custom_item.xml
- create mode 100644 chrome/browser/adblock/android/java/res/layout/adblock_custom_item_settings.xml
- create mode 100644 chrome/browser/adblock/android/java/res/layout/adblock_filter_lists_list_item.xml
- create mode 100644 chrome/browser/adblock/android/java/res/xml/adblock_more_options.xml
- create mode 100644 chrome/browser/adblock/android/java/res/xml/adblock_preferences.xml
- create mode 100644 chrome/browser/adblock/android/java/src/org/chromium/chrome/browser/adblock/settings/AdblockAllowedDomainsFragment.java
- create mode 100644 chrome/browser/adblock/android/java/src/org/chromium/chrome/browser/adblock/settings/AdblockCustomFilterListsFragment.java
- create mode 100644 chrome/browser/adblock/android/java/src/org/chromium/chrome/browser/adblock/settings/AdblockCustomFiltersFragment.java
- create mode 100644 chrome/browser/adblock/android/java/src/org/chromium/chrome/browser/adblock/settings/AdblockCustomItemFragment.java
- create mode 100644 chrome/browser/adblock/android/java/src/org/chromium/chrome/browser/adblock/settings/AdblockFilterListsAdapter.java
- create mode 100644 chrome/browser/adblock/android/java/src/org/chromium/chrome/browser/adblock/settings/AdblockFilterListsFragment.java
- create mode 100644 chrome/browser/adblock/android/java/src/org/chromium/chrome/browser/adblock/settings/AdblockMoreOptionsFragment.java
- create mode 100644 chrome/browser/adblock/android/java/src/org/chromium/chrome/browser/adblock/settings/AdblockSettingsFragment.java
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_af.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_am.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_ar.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_as.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_az.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_be.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_bg.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_bn.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_bs.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_ca.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_cs.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_da.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_de.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_el.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_en-GB.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_es-419.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_es.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_et.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_eu.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_fa.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_fi.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_fil.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_fr-CA.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_fr.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_gl.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_gu.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_hi.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_hr.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_hu.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_hy.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_id.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_is.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_it.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_iw.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_ja.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_ka.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_kk.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_km.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_kn.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_ko.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_ky.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_lo.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_lt.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_lv.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_mk.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_ml.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_mn.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_mr.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_ms.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_my.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_ne.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_nl.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_no.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_or.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_pa.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_pl.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_pt-BR.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_pt-PT.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_ro.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_ru.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_si.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_sk.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_sl.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_sq.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_sr-Latn.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_sr.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_sv.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_sw.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_ta.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_te.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_th.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_tr.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_uk.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_ur.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_uz.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_vi.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_zh-CN.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_zh-HK.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_zh-TW.xtb
- create mode 100644 chrome/browser/adblock/android/translations/adblock_strings_zu.xtb
 
 diff --git a/chrome/android/BUILD.gn b/chrome/android/BUILD.gn
 --- a/chrome/android/BUILD.gn
 +++ b/chrome/android/BUILD.gn
-@@ -184,6 +184,9 @@ if (_is_default_toolchain) {
+@@ -159,6 +159,9 @@ if (_is_default_toolchain) {
        ":ui_locale_string_resources",
        "//chrome/android/webapk/libs/common:splash_resources",
        "//chrome/app:java_strings_grd",
@@ -247,7 +135,7 @@ diff --git a/chrome/android/BUILD.gn b/chrome/android/BUILD.gn
        "//chrome/browser/actor/android:java_resources",
        "//chrome/browser/android/customtabs/branding:java_resources",
        "//chrome/browser/autofill/android:java_resources",
-@@ -871,6 +874,10 @@ if (_is_default_toolchain) {
+@@ -863,6 +866,10 @@ if (_is_default_toolchain) {
        "//chrome/browser/password_entry_edit:public_java",
      ]
  
@@ -258,31 +146,6 @@ diff --git a/chrome/android/BUILD.gn b/chrome/android/BUILD.gn
      deps += feed_deps
  
      srcjar_deps = [
-diff --git a/chrome/android/java/res/xml/main_preferences.xml b/chrome/android/java/res/xml/main_preferences.xml
---- a/chrome/android/java/res/xml/main_preferences.xml
-+++ b/chrome/android/java/res/xml/main_preferences.xml
-@@ -3,6 +3,9 @@
- Copyright 2015 The Chromium Authors
- Use of this source code is governed by a BSD-style license that can be
- found in the LICENSE file.
-+
-+This source code is a part of eyeo Chromium SDK.
-+Use of this source code is governed by the GPLv3 that can be found in the components/adblock/LICENSE file.
- -->
- 
- <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-@@ -85,6 +88,11 @@ found in the LICENSE file.
-     <org.chromium.components.browser_ui.settings.ChromeBasePreference
-         android:key="autofill_options"
-         android:order="17" />
-+    <org.chromium.components.browser_ui.settings.ChromeBasePreference
-+        android:fragment="org.chromium.chrome.browser.adblock.settings.AdblockSettingsFragment"
-+        android:key="adblock"
-+        android:order="17"
-+        android:title="@string/adblock_settings_title" />
- 
-     <org.chromium.components.browser_ui.settings.ChromeBasePreferenceCategory
-         android:key="advanced_section"
 diff --git a/chrome/browser/adblock/android/BUILD.gn b/chrome/browser/adblock/android/BUILD.gn
 new file mode 100644
 --- /dev/null
@@ -373,24 +236,6 @@ new file mode 100644
 +                [ "values-{{source_name_part}}/adblock_strings.xml" ])
 +}
 +### Android UI module end
-diff --git a/chrome/browser/adblock/android/README.md b/chrome/browser/adblock/android/README.md
-new file mode 100644
---- /dev/null
-+++ b/chrome/browser/adblock/android/README.md
-@@ -0,0 +1,13 @@
-+# Translations HOWTO
-+
-+After introducing changes in [grdp file](adblock_strings.grd) it is recommended
-+to run `grit` tool to make sure that translation IDs in [xtb files](translations)
-+are matching definitions from [grdp file](adblock_strings.grd).
-+
-+Command:
-+
-+    ./tools/grit/grit.py -i components/adblock/android/adblock_strings.grd xmb grit_xmb_output.xml
-+
-+will produce output `grit_xmb_output.xml` containing mappings between textual
-+IDs in [grdp file](adblock_strings.grd) (`message name` value) and numerical IDs
-+in [xtb files](translations) (`translation id` value).
 diff --git a/chrome/browser/adblock/android/adblock_strings.grd b/chrome/browser/adblock/android/adblock_strings.grd
 new file mode 100644
 --- /dev/null
@@ -640,6 +485,49 @@ new file mode 100644
 +    </messages>
 +  </release>
 +</grit>
+diff --git a/chrome/android/java/res/xml/main_preferences.xml b/chrome/android/java/res/xml/main_preferences.xml
+--- a/chrome/android/java/res/xml/main_preferences.xml
++++ b/chrome/android/java/res/xml/main_preferences.xml
+@@ -3,6 +3,9 @@
+ Copyright 2015 The Chromium Authors
+ Use of this source code is governed by a BSD-style license that can be
+ found in the LICENSE file.
++
++This source code is a part of eyeo Chromium SDK.
++Use of this source code is governed by the GPLv3 that can be found in the components/adblock/LICENSE file.
+ -->
+ 
+ <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+@@ -85,6 +88,11 @@ found in the LICENSE file.
+     <org.chromium.components.browser_ui.settings.ChromeBasePreference
+         android:key="autofill_options"
+         android:order="17" />
++    <org.chromium.components.browser_ui.settings.ChromeBasePreference
++        android:fragment="org.chromium.chrome.browser.adblock.settings.AdblockSettingsFragment"
++        android:key="adblock"
++        android:order="17"
++        android:title="@string/adblock_settings_title" />
+ 
+     <org.chromium.components.browser_ui.settings.ChromeBasePreferenceCategory
+         android:key="advanced_section"
+diff --git a/chrome/browser/adblock/android/README.md b/chrome/browser/adblock/android/README.md
+new file mode 100644
+--- /dev/null
++++ b/chrome/browser/adblock/android/README.md
+@@ -0,0 +1,13 @@
++# Translations HOWTO
++
++After introducing changes in [grdp file](adblock_strings.grd) it is recommended
++to run `grit` tool to make sure that translation IDs in [xtb files](translations)
++are matching definitions from [grdp file](adblock_strings.grd).
++
++Command:
++
++    ./tools/grit/grit.py -i components/adblock/android/adblock_strings.grd xmb grit_xmb_output.xml
++
++will produce output `grit_xmb_output.xml` containing mappings between textual
++IDs in [grdp file](adblock_strings.grd) (`message name` value) and numerical IDs
++in [xtb files](translations) (`translation id` value).
 diff --git a/chrome/browser/adblock/android/java/res/drawable-hdpi/fragment_adblock_custom_item_add.png b/chrome/browser/adblock/android/java/res/drawable-hdpi/fragment_adblock_custom_item_add.png
 new file mode 100644
 index 0000000000000000000000000000000000000000..0b8634e72bb0fb6325642aeb6221fd7eb18d0c07

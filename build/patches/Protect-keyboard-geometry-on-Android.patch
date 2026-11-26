@@ -21,66 +21,56 @@ WebUI and extension pages retain Chromium's standard keyboard behavior.
 
 License: GPL-2.0-or-later - https://spdx.org/licenses/GPL-2.0-or-later.html
 ---
- chrome/android/chrome_java_sources.gni        |    1 +
- .../chrome/browser/SwipeRefreshHandler.java   |   41 +
- ...ActivityTabWebContentsDelegateAndroid.java |   38 +-
- .../compositor/CompositorViewHolder.java      |  218 ++-
- .../ProtectedViewportScrollView.java          | 1446 +++++++++++++++++
- .../browser/tab/TabWebContentsObserver.java   |   17 +
- .../browser/flags/ChromeFeatureList.java      |    2 +-
- .../sAndroidProtectedKeyboardGeometry.java    |   35 +
- ...otectedKeyboardGeometryContentSetting.java |   94 ++
- .../protected_keyboard_geometry.grdp          |   27 +
- .../protected_keyboard_geometry.inc           |   25 +
- .../protected_keyboard_geometry.inc           |    1 +
- .../android/overscroll_controller_android.cc  |   40 +
- .../android/overscroll_controller_android.h   |   11 +
- .../web_contents/web_contents_android.cc      |    6 +
- .../web_contents/web_contents_android.h       |    1 +
- .../content/browser/input/ImeAdapterImpl.java |  110 ++
- .../browser/webcontents/WebContentsImpl.java  |    8 +
- .../content_public/browser/WebContents.java   |    3 +
- .../browser/test/mock/MockWebContents.java    |    3 +
- .../Android-Protected-Keyboard-Geometry.inc   |   10 +
- .../protected_keyboard_geometry.inc           |    5 +
- .../Android-Protected-Keyboard-Geometry.inc   |    3 +
- .../Android-Protected-Keyboard-Geometry.inc   |    2 +
- .../public/mojom/input/input_handler.mojom    |    4 +
- .../core/frame/local_frame_mojo_handler.cc    |    7 +-
- .../renderer/core/frame/viewport_data.cc      |   13 +-
- .../blink/renderer/core/frame/viewport_data.h |    4 +-
- .../core/frame/web_frame_widget_impl.cc       |   20 +
- .../core/frame/web_frame_widget_impl.h        |    1 +
- third_party/blink/renderer/core/page/page.cc  |   25 +
- third_party/blink/renderer/core/page/page.h   |    2 +
- .../input/frame_widget_input_handler_impl.cc  |    9 +
- .../input/frame_widget_input_handler_impl.h   |    1 +
- .../widget/input/input_handler_proxy.cc       |   28 +-
- .../widget/input/input_handler_proxy.h        |    8 +
- ui/android/event_forwarder.cc                 |   63 +
- ui/android/event_forwarder.h                  |   18 +
- .../chromium/ui/OverscrollRefreshHandler.java |   16 +
- .../org/chromium/ui/base/EventForwarder.java  |   48 +
- ui/android/overscroll_refresh.cc              |   15 +
- ui/android/overscroll_refresh.h               |    5 +
- ui/android/overscroll_refresh_handler.cc      |   24 +
- ui/android/overscroll_refresh_handler.h       |    5 +
+ chrome/android/chrome_java_sources.gni             |    1 
+ .../protected_keyboard_geometry.grdp               |   27 
+ .../protected_keyboard_geometry.inc                |   25 
+ .../protected_keyboard_geometry.inc                |    1 
+ .../browser/web_contents/web_contents_android.cc   |    6 
+ .../browser/web_contents/web_contents_android.h    |    1 
+ .../Android-Protected-Keyboard-Geometry.inc        |   10 
+ .../protected_keyboard_geometry.inc                |    5 
+ .../Android-Protected-Keyboard-Geometry.inc        |    3 
+ .../Android-Protected-Keyboard-Geometry.inc        |    2 
+ .../blink/public/mojom/input/input_handler.mojom   |    4 
+ .../core/frame/local_frame_mojo_handler.cc         |    7 
+ .../blink/renderer/core/frame/viewport_data.cc     |   13 
+ .../blink/renderer/core/frame/viewport_data.h      |    4 
+ .../renderer/core/frame/web_frame_widget_impl.cc   |   20 
+ .../renderer/core/frame/web_frame_widget_impl.h    |    1 
+ third_party/blink/renderer/core/page/page.cc       |   25 
+ third_party/blink/renderer/core/page/page.h        |    2 
+ .../input/frame_widget_input_handler_impl.cc       |    9 
+ .../widget/input/frame_widget_input_handler_impl.h |    1 
+ .../platform/widget/input/input_handler_proxy.cc   |   28 
+ .../platform/widget/input/input_handler_proxy.h    |    8 
+ .../chrome/browser/SwipeRefreshHandler.java        |   41 +
+ .../ActivityTabWebContentsDelegateAndroid.java     |   38 -
+ .../browser/compositor/CompositorViewHolder.java   |  218 +++
+ .../compositor/ProtectedViewportScrollView.java    | 1446 ++++++++++++++++++++
+ .../chrome/browser/tab/TabWebContentsObserver.java |   17 
+ .../chrome/browser/flags/ChromeFeatureList.java    |    2 
+ .../cromite/sAndroidProtectedKeyboardGeometry.java |   35 
+ ...iteProtectedKeyboardGeometryContentSetting.java |   94 +
+ .../android/overscroll_controller_android.cc       |   40 +
+ .../android/overscroll_controller_android.h        |   11 
+ .../content/browser/input/ImeAdapterImpl.java      |  110 ++
+ .../browser/webcontents/WebContentsImpl.java       |    8 
+ .../content_public/browser/WebContents.java        |    3 
+ .../browser/test/mock/MockWebContents.java         |    3 
+ ui/android/event_forwarder.cc                      |   63 +
+ ui/android/event_forwarder.h                       |   18 
+ .../org/chromium/ui/OverscrollRefreshHandler.java  |   16 
+ .../src/org/chromium/ui/base/EventForwarder.java   |   48 +
+ ui/android/overscroll_refresh.cc                   |   15 
+ ui/android/overscroll_refresh.h                    |    5 
+ ui/android/overscroll_refresh_handler.cc           |   24 
+ ui/android/overscroll_refresh_handler.h            |    5 
  44 files changed, 2433 insertions(+), 30 deletions(-)
- create mode 100644 chrome/android/java/src/org/chromium/chrome/browser/compositor/ProtectedViewportScrollView.java
- create mode 100644 chrome/browser/flags/android/java/src/org/chromium/chrome/browser/flags/cromite/sAndroidProtectedKeyboardGeometry.java
- create mode 100644 components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/impl/CromiteProtectedKeyboardGeometryContentSetting.java
- create mode 100644 components/browser_ui/strings/bromite_content_settings/protected_keyboard_geometry.grdp
- create mode 100644 components/content_settings/core/browser/bromite_content_settings/protected_keyboard_geometry.inc
- create mode 100644 components/content_settings/core/common/bromite_content_settings/protected_keyboard_geometry.inc
- create mode 100644 cromite_flags/chrome/browser/about_flags_cc/Android-Protected-Keyboard-Geometry.inc
- create mode 100644 cromite_flags/chrome/browser/flags/android/chrome_feature_list_cc/protected_keyboard_geometry.inc
- create mode 100644 cromite_flags/third_party/blink/common/features_cc/Android-Protected-Keyboard-Geometry.inc
- create mode 100644 cromite_flags/third_party/blink/common/features_h/Android-Protected-Keyboard-Geometry.inc
 
 diff --git a/chrome/android/chrome_java_sources.gni b/chrome/android/chrome_java_sources.gni
 --- a/chrome/android/chrome_java_sources.gni
 +++ b/chrome/android/chrome_java_sources.gni
-@@ -339,6 +339,7 @@ chrome_java_sources = [
+@@ -343,6 +343,7 @@ chrome_java_sources = [
    "java/src/org/chromium/chrome/browser/compositor/CompositorSurfaceManagerImpl.java",
    "java/src/org/chromium/chrome/browser/compositor/CompositorView.java",
    "java/src/org/chromium/chrome/browser/compositor/CompositorViewHolder.java",
@@ -88,6 +78,424 @@ diff --git a/chrome/android/chrome_java_sources.gni b/chrome/android/chrome_java
    "java/src/org/chromium/chrome/browser/compositor/CompositorViewHolderSupplier.java",
    "java/src/org/chromium/chrome/browser/compositor/LayerTitleCache.java",
    "java/src/org/chromium/chrome/browser/compositor/layouts/Layout.java",
+diff --git a/components/browser_ui/strings/bromite_content_settings/protected_keyboard_geometry.grdp b/components/browser_ui/strings/bromite_content_settings/protected_keyboard_geometry.grdp
+new file mode 100644
+--- /dev/null
++++ b/components/browser_ui/strings/bromite_content_settings/protected_keyboard_geometry.grdp
+@@ -0,0 +1,27 @@
++<?xml version="1.0" encoding="utf-8"?>
++<grit-part>
++  <message name="IDS_SITE_SETTINGS_TYPE_PROTECTED_KEYBOARD_GEOMETRY" desc="The label used for site settings controls." formatter_data="android_java">
++    Keyboard Size Protection
++  </message>
++  <message name="IDS_PROTECTED_KEYBOARD_GEOMETRY_PERMISSION_TITLE" desc="Title of the permission to use [CHAR-LIMIT=32]" formatter_data="android_java">
++    Keyboard Size Protection
++  </message>
++  <message name="IDS_SITE_SETTINGS_TYPE_PROTECTED_KEYBOARD_GEOMETRY_MID_SENTENCE" desc="The label used for site settings controls when used mid-sentence." formatter_data="android_java">
++    Keyboard Size Protection
++  </message>
++  <message name="IDS_SETTINGS_SITE_SETTINGS_PROTECTED_KEYBOARD_GEOMETRY_DESCRIPTION" desc="Description of the content setting." formatter_data="android_java">
++    Hides the keyboard size
++  </message>
++  <message name="IDS_WEBSITE_SETTINGS_CATEGORY_PROTECTED_KEYBOARD_GEOMETRY_ENABLED" desc="Summary text explaining is full enabled." formatter_data="android_java">
++    Enabled
++  </message>
++  <message name="IDS_WEBSITE_SETTINGS_CATEGORY_PROTECTED_KEYBOARD_GEOMETRY_DISABLED" desc="Summary text explaining that is full disabled." formatter_data="android_java">
++    Disabled
++  </message>
++  <message name="IDS_SETTINGS_SITE_SETTINGS_PROTECTED_KEYBOARD_GEOMETRY_ALLOWED_EXCEPTIONS" desc="Label for the allowed exceptions site list.">
++    Keyboard size is protected
++  </message>
++  <message name="IDS_SETTINGS_SITE_SETTINGS_PROTECTED_KEYBOARD_GEOMETRY_BLOCKED_EXCEPTIONS" desc="Label for the blocked exceptions site list.">
++    Keyboard size is not protected
++  </message>
++</grit-part>
+diff --git a/components/content_settings/core/browser/bromite_content_settings/protected_keyboard_geometry.inc b/components/content_settings/core/browser/bromite_content_settings/protected_keyboard_geometry.inc
+new file mode 100644
+--- /dev/null
++++ b/components/content_settings/core/browser/bromite_content_settings/protected_keyboard_geometry.inc
+@@ -0,0 +1,25 @@
++#if BUILDFLAG(IS_ANDROID)
++
++  Register(ContentSettingsType::PROTECTED_KEYBOARD_GEOMETRY, "keyboard_size_protection", CONTENT_SETTING_ALLOW,
++           WebsiteSettingsInfo::SYNCABLE,
++           /*allowlisted_schemes=*/{},
++           /*valid_settings=*/{CONTENT_SETTING_ALLOW,
++                               CONTENT_SETTING_BLOCK},
++           WebsiteSettingsInfo::TOP_ORIGIN_ONLY_SCOPE,
++           WebsiteSettingsRegistry::PLATFORM_ANDROID,
++           ContentSettingsInfo::INHERIT_IN_INCOGNITO,
++           PermissionSettingsInfo::EXCEPTIONS_ON_SECURE_AND_INSECURE_ORIGINS);
++
++  content_settings::WebsiteSettingsRegistry::GetInstance()
++    ->GetMutable(ContentSettingsType::PROTECTED_KEYBOARD_GEOMETRY)
++    ->set_show_into_info_page()
++    .set_is_renderer_content_setting()
++    .set_title_ui(IDS_SITE_SETTINGS_TYPE_PROTECTED_KEYBOARD_GEOMETRY)
++    .set_description_ui(IDS_SETTINGS_SITE_SETTINGS_PROTECTED_KEYBOARD_GEOMETRY_DESCRIPTION)
++    .set_allowed_ui(IDS_WEBSITE_SETTINGS_CATEGORY_PROTECTED_KEYBOARD_GEOMETRY_ENABLED)
++    .set_blocked_ui(IDS_WEBSITE_SETTINGS_CATEGORY_PROTECTED_KEYBOARD_GEOMETRY_DISABLED)
++    .set_allowed_exceptions_ui(IDS_SETTINGS_SITE_SETTINGS_PROTECTED_KEYBOARD_GEOMETRY_ALLOWED_EXCEPTIONS)
++    .set_blocked_exceptions_ui(IDS_SETTINGS_SITE_SETTINGS_PROTECTED_KEYBOARD_GEOMETRY_BLOCKED_EXCEPTIONS)
++    .set_mid_sentence_ui(IDS_SITE_SETTINGS_TYPE_PROTECTED_KEYBOARD_GEOMETRY_MID_SENTENCE);
++
++#endif
+diff --git a/components/content_settings/core/common/bromite_content_settings/protected_keyboard_geometry.inc b/components/content_settings/core/common/bromite_content_settings/protected_keyboard_geometry.inc
+new file mode 100644
+--- /dev/null
++++ b/components/content_settings/core/common/bromite_content_settings/protected_keyboard_geometry.inc
+@@ -0,0 +1 @@
++PROTECTED_KEYBOARD_GEOMETRY,
+diff --git a/content/browser/web_contents/web_contents_android.cc b/content/browser/web_contents/web_contents_android.cc
+--- a/content/browser/web_contents/web_contents_android.cc
++++ b/content/browser/web_contents/web_contents_android.cc
+@@ -516,6 +516,12 @@ void WebContentsAndroid::ScrollFocusedEditableNodeIntoView(JNIEnv* env) {
+     input_handler->ScrollFocusedEditableNodeIntoView();
+ }
+ 
++void WebContentsAndroid::UpdateFocusedElementBounds(JNIEnv* env) {
++  auto* input_handler = web_contents_->GetFocusedFrameWidgetInputHandler();
++  if (input_handler)
++    input_handler->UpdateFocusedElementBounds();
++}
++
+ void WebContentsAndroid::SelectAroundCaretAck(
+     int startOffset,
+     int endOffset,
+diff --git a/content/browser/web_contents/web_contents_android.h b/content/browser/web_contents/web_contents_android.h
+--- a/content/browser/web_contents/web_contents_android.h
++++ b/content/browser/web_contents/web_contents_android.h
+@@ -111,6 +111,7 @@ class CONTENT_EXPORT WebContentsAndroid {
+   bool IsFullscreenForCurrentTab(JNIEnv* env);
+   void ExitFullscreen(JNIEnv* env);
+   void ScrollFocusedEditableNodeIntoView(JNIEnv* env);
++  void UpdateFocusedElementBounds(JNIEnv* env);
+   void SelectAroundCaret(JNIEnv* env,
+                          int32_t granularity,
+                          bool should_show_handle,
+diff --git a/cromite_flags/chrome/browser/about_flags_cc/Android-Protected-Keyboard-Geometry.inc b/cromite_flags/chrome/browser/about_flags_cc/Android-Protected-Keyboard-Geometry.inc
+new file mode 100644
+--- /dev/null
++++ b/cromite_flags/chrome/browser/about_flags_cc/Android-Protected-Keyboard-Geometry.inc
+@@ -0,0 +1,10 @@
++#ifdef FLAG_SECTION
++
++    {"android-protected-keyboard-geometry",
++     "Android Protected Keyboard Geometry",
++     "Protects Android on-screen keyboard geometry from being exposed to web "
++     "content. The per-site Viewport Protection setting is also respected.",
++     kOsAndroid,
++     FEATURE_VALUE_TYPE(blink::features::kAndroidProtectedKeyboardGeometry)},
++
++#endif
+diff --git a/cromite_flags/chrome/browser/flags/android/chrome_feature_list_cc/protected_keyboard_geometry.inc b/cromite_flags/chrome/browser/flags/android/chrome_feature_list_cc/protected_keyboard_geometry.inc
+new file mode 100644
+--- /dev/null
++++ b/cromite_flags/chrome/browser/flags/android/chrome_feature_list_cc/protected_keyboard_geometry.inc
+@@ -0,0 +1,5 @@
++#if BUILDFLAG(IS_ANDROID)
++
++SET_CROMITE_FEATURE_ENABLED(kBrowserControlsEarlyResize);
++
++#endif
+diff --git a/cromite_flags/third_party/blink/common/features_cc/Android-Protected-Keyboard-Geometry.inc b/cromite_flags/third_party/blink/common/features_cc/Android-Protected-Keyboard-Geometry.inc
+new file mode 100644
+--- /dev/null
++++ b/cromite_flags/third_party/blink/common/features_cc/Android-Protected-Keyboard-Geometry.inc
+@@ -0,0 +1,3 @@
++CROMITE_FEATURE(kAndroidProtectedKeyboardGeometry,
++                "AndroidProtectedKeyboardGeometry",
++                base::FEATURE_ENABLED_BY_DEFAULT);
+diff --git a/cromite_flags/third_party/blink/common/features_h/Android-Protected-Keyboard-Geometry.inc b/cromite_flags/third_party/blink/common/features_h/Android-Protected-Keyboard-Geometry.inc
+new file mode 100644
+--- /dev/null
++++ b/cromite_flags/third_party/blink/common/features_h/Android-Protected-Keyboard-Geometry.inc
+@@ -0,0 +1,2 @@
++// Conceals Android on-screen keyboard geometry from web content.
++BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kAndroidProtectedKeyboardGeometry);
+diff --git a/third_party/blink/public/mojom/input/input_handler.mojom b/third_party/blink/public/mojom/input/input_handler.mojom
+--- a/third_party/blink/public/mojom/input/input_handler.mojom
++++ b/third_party/blink/public/mojom/input/input_handler.mojom
+@@ -438,6 +438,10 @@ interface FrameWidgetInputHandler {
+   // editable divs).
+   ScrollFocusedEditableNodeIntoView();
+ 
++  // Recomputes and sends the current focused element bounds to the browser.
++  // Used when browser UI resizes the renderer viewport without changing focus.
++  UpdateFocusedElementBounds();
++
+   // Replies when the next PageScaleAnimation has completed. Can only be called
+   // on the outermost main frame. Can be used to reliably wait for a
+   // ScrollFocusedEditableNodeIntoView to complete since that may create a
+diff --git a/third_party/blink/renderer/core/frame/local_frame_mojo_handler.cc b/third_party/blink/renderer/core/frame/local_frame_mojo_handler.cc
+--- a/third_party/blink/renderer/core/frame/local_frame_mojo_handler.cc
++++ b/third_party/blink/renderer/core/frame/local_frame_mojo_handler.cc
+@@ -57,6 +57,7 @@
+ #include "third_party/blink/renderer/core/frame/remote_frame_owner.h"
+ #include "third_party/blink/renderer/core/frame/reporting_context.h"
+ #include "third_party/blink/renderer/core/frame/savable_resources.h"
++#include "third_party/blink/renderer/core/frame/web_frame_widget_impl.h"
+ #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+ #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
+ #include "third_party/blink/renderer/core/html/html_element.h"
+@@ -632,7 +633,11 @@ void LocalFrameMojoHandler::NotifyVirtualKeyboardOverlayRect(
+                         keyboard_rect.width() / scale_factor,
+                         keyboard_rect.height() / scale_factor);
+ 
+-  frame_->SetVirtualKeyboardOverlayGeometry(scaled_rect);
++  if (page->IsAndroidProtectedKeyboardGeometryEnabled(frame_)) {
++    frame_->SetVirtualKeyboardOverlayGeometry(gfx::Rect());
++  } else {
++    frame_->SetVirtualKeyboardOverlayGeometry(scaled_rect);
++  }
+ }
+ 
+ void LocalFrameMojoHandler::ShowInterestInElement(int nodeID) {
+diff --git a/third_party/blink/renderer/core/frame/viewport_data.cc b/third_party/blink/renderer/core/frame/viewport_data.cc
+--- a/third_party/blink/renderer/core/frame/viewport_data.cc
++++ b/third_party/blink/renderer/core/frame/viewport_data.cc
+@@ -76,7 +76,7 @@ ViewportDescription ViewportData::GetViewportDescription() const {
+ 
+   // Setting `navigator.virtualKeyboard.overlaysContent` should override the
+   // virtual-keyboard mode set from the viewport meta tag.
+-  if (virtual_keyboard_overlays_content_) {
++  if (GetVirtualKeyboardOverlaysContent()) {
+     applied_viewport_description.virtual_keyboard_mode =
+         ui::mojom::blink::VirtualKeyboardMode::kOverlaysContent;
+   }
+@@ -84,6 +84,17 @@ ViewportDescription ViewportData::GetViewportDescription() const {
+   return applied_viewport_description;
+ }
+ 
++bool ViewportData::GetVirtualKeyboardOverlaysContent() const {
++  // The bottom-controls policy keeps the author-controlled mode disabled. The
++  // protected keyboard policy is layered by GetVirtualKeyboardOverlaysContent().
++  if (document_->GetFrame() && document_->GetPage()
++        && document_->GetPage()->IsAndroidProtectedKeyboardGeometryEnabled(
++              document_->GetFrame())) {
++    return true;
++  }
++  return virtual_keyboard_overlays_content_;
++}
++
+ void ViewportData::UpdateViewportDescription() {
+   if (!document_->GetFrame())
+     return;
+diff --git a/third_party/blink/renderer/core/frame/viewport_data.h b/third_party/blink/renderer/core/frame/viewport_data.h
+--- a/third_party/blink/renderer/core/frame/viewport_data.h
++++ b/third_party/blink/renderer/core/frame/viewport_data.h
+@@ -47,9 +47,7 @@ class ViewportData final : public GarbageCollected<ViewportData> {
+   }
+ 
+   CORE_EXPORT void SetVirtualKeyboardOverlaysContent(bool overlays_content);
+-  CORE_EXPORT bool GetVirtualKeyboardOverlaysContent() const {
+-    return virtual_keyboard_overlays_content_;
+-  }
++  CORE_EXPORT bool GetVirtualKeyboardOverlaysContent() const;
+ 
+  private:
+   Member<Document> document_;
+diff --git a/third_party/blink/renderer/core/frame/web_frame_widget_impl.cc b/third_party/blink/renderer/core/frame/web_frame_widget_impl.cc
+--- a/third_party/blink/renderer/core/frame/web_frame_widget_impl.cc
++++ b/third_party/blink/renderer/core/frame/web_frame_widget_impl.cc
+@@ -2098,6 +2098,8 @@ void WebFrameWidgetImpl::UpdateVisualProperties(
+              widget_base_->VisibleViewportSize()](RemoteFrame* remote_frame) {
+           remote_frame->DidChangeVisibleViewportSize(visible_viewport_size);
+         });
++
++    UpdateFocusedElementBounds();
+   }
+ 
+   SetWindowShowState(visual_properties.window_show_state);
+@@ -5449,6 +5451,24 @@ void WebFrameWidgetImpl::ScrollFocusedEditableNodeIntoView() {
+   local_frame->ScrollFocusedEditableElementIntoView();
+ }
+ 
++void WebFrameWidgetImpl::UpdateFocusedElementBounds() {
++  Element* focused_element = FocusedElement();
++  if (!focused_element)
++    return;
++
++  EditContext* edit_context =
++      focused_element->GetDocument()
++          .GetFrame()
++          ->GetInputMethodController()
++          .GetActiveEditContext();
++
++  if (!WebElement(focused_element).IsEditable() && !edit_context)
++    return;
++
++  focused_element->GetDocument().SendFocusNotification(
++      focused_element, mojom::blink::FocusType::kNone);
++}
++
+ void WebFrameWidgetImpl::WaitForPageScaleAnimationForTesting(
+     WaitForPageScaleAnimationForTestingCallback callback) {
+   DCHECK(ForMainFrame());
+diff --git a/third_party/blink/renderer/core/frame/web_frame_widget_impl.h b/third_party/blink/renderer/core/frame/web_frame_widget_impl.h
+--- a/third_party/blink/renderer/core/frame/web_frame_widget_impl.h
++++ b/third_party/blink/renderer/core/frame/web_frame_widget_impl.h
+@@ -1048,6 +1048,7 @@ class CORE_EXPORT WebFrameWidgetImpl
+       mojom::blink::SelectionMenuBehavior behavior) override;
+   void MoveRangeSelectionExtent(const gfx::Point& extent_in_dips) override;
+   void ScrollFocusedEditableNodeIntoView() override;
++  void UpdateFocusedElementBounds() override;
+   void WaitForPageScaleAnimationForTesting(
+       WaitForPageScaleAnimationForTestingCallback callback) override;
+   void MoveCaret(const gfx::Point& point_in_dips) override;
+diff --git a/third_party/blink/renderer/core/page/page.cc b/third_party/blink/renderer/core/page/page.cc
+--- a/third_party/blink/renderer/core/page/page.cc
++++ b/third_party/blink/renderer/core/page/page.cc
+@@ -1287,6 +1287,31 @@ void Page::UpdateAcceleratedCompositingSettings() {
+   }
+ }
+ 
++bool Page::IsAndroidProtectedKeyboardGeometryEnabled(LocalFrame* frame) const {
++#if !BUILDFLAG(IS_ANDROID)
++  return false;
++#else
++  if (!frame) return true;
++  if (!base::FeatureList::IsEnabled(
++                    features::kAndroidProtectedKeyboardGeometry)) {
++    return false;
++  }
++
++  WebContentSettingsClient* settings = frame->GetContentSettingsClient();
++  if (!settings) return true;
++  if (!settings->AllowContentSetting(
++                       ContentSettingsType::PROTECTED_KEYBOARD_GEOMETRY,
++                       /*default_value=*/false)) {
++    return false;
++  }
++
++  const String protocol =
++      frame->GetSecurityContext()->GetSecurityOrigin()->Protocol();
++  return !SchemeRegistry::IsWebUIScheme(protocol) &&
++         !CommonSchemeRegistry::IsExtensionScheme(protocol.Ascii());
++#endif
++}
++
+ void Page::CalculateEmulatedScreenSetting(LocalFrame* frame, bool force) {
+   bool isEnabled = base::FeatureList::IsEnabled(features::kViewportProtection);
+   blink::WebContentSettingsClient* settings = frame->GetContentSettingsClient();
+diff --git a/third_party/blink/renderer/core/page/page.h b/third_party/blink/renderer/core/page/page.h
+--- a/third_party/blink/renderer/core/page/page.h
++++ b/third_party/blink/renderer/core/page/page.h
+@@ -523,6 +523,8 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
+     return *v8_compile_hints_consumer_;
+   }
+ 
++  bool IsAndroidProtectedKeyboardGeometryEnabled(LocalFrame* frame) const;
++
+   // Returns the token uniquely identifying the browsing context group this page
+   // lives in.
+   const base::UnguessableToken& BrowsingContextGroupToken();
+diff --git a/third_party/blink/renderer/platform/widget/input/frame_widget_input_handler_impl.cc b/third_party/blink/renderer/platform/widget/input/frame_widget_input_handler_impl.cc
+--- a/third_party/blink/renderer/platform/widget/input/frame_widget_input_handler_impl.cc
++++ b/third_party/blink/renderer/platform/widget/input/frame_widget_input_handler_impl.cc
+@@ -435,6 +435,15 @@ void FrameWidgetInputHandlerImpl::ScrollFocusedEditableNodeIntoView() {
+       main_thread_frame_widget_input_handler_));
+ }
+ 
++void FrameWidgetInputHandlerImpl::UpdateFocusedElementBounds() {
++  RunOnMainThread(base::BindOnce(
++      [](base::WeakPtr<mojom::blink::FrameWidgetInputHandler> handler) {
++        if (handler)
++          handler->UpdateFocusedElementBounds();
++      },
++      main_thread_frame_widget_input_handler_));
++}
++
+ void FrameWidgetInputHandlerImpl::WaitForPageScaleAnimationForTesting(
+     WaitForPageScaleAnimationForTestingCallback callback) {
+   // Ensure the Mojo callback is invoked from the thread on which the message
+diff --git a/third_party/blink/renderer/platform/widget/input/frame_widget_input_handler_impl.h b/third_party/blink/renderer/platform/widget/input/frame_widget_input_handler_impl.h
+--- a/third_party/blink/renderer/platform/widget/input/frame_widget_input_handler_impl.h
++++ b/third_party/blink/renderer/platform/widget/input/frame_widget_input_handler_impl.h
+@@ -101,6 +101,7 @@ class PLATFORM_EXPORT FrameWidgetInputHandlerImpl
+       blink::mojom::SelectionMenuBehavior selection_menu_behavior) override;
+   void MoveRangeSelectionExtent(const gfx::Point& extent) override;
+   void ScrollFocusedEditableNodeIntoView() override;
++  void UpdateFocusedElementBounds() override;
+   void WaitForPageScaleAnimationForTesting(
+       WaitForPageScaleAnimationForTestingCallback callback) override;
+   void MoveCaret(const gfx::Point& point) override;
+diff --git a/third_party/blink/renderer/platform/widget/input/input_handler_proxy.cc b/third_party/blink/renderer/platform/widget/input/input_handler_proxy.cc
+--- a/third_party/blink/renderer/platform/widget/input/input_handler_proxy.cc
++++ b/third_party/blink/renderer/platform/widget/input/input_handler_proxy.cc
+@@ -1245,6 +1245,13 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
+     InputHandlerScrollEnd(std::nullopt);
+   }
+ 
++  // These synthetic events have no physical pointers. Viewport protection is
++  // selected through content settings rather than kViewportProtection.
++  protected_viewport_scroll_sequence_ =
++      !gesture_event.data.scroll_begin.target_viewport &&
++      gesture_event.data.scroll_begin.pointer_count == 0;
++  protected_viewport_accumulated_overscroll_ = gfx::Vector2dF();
++
+   cc::ScrollState scroll_state(CreateScrollStateDataForGesture(gesture_event));
+   cc::InputHandler::ScrollStatus scroll_status;
+   if (gesture_event.data.scroll_begin.target_viewport) {
+@@ -1406,6 +1413,8 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollEnd(
+     const WebGestureEvent& gesture_event,
+     cc::EventMetrics* metrics) {
+   TRACE_EVENT0("input", "InputHandlerProxy::HandleGestureScrollEnd");
++  protected_viewport_scroll_sequence_ = false;
++  protected_viewport_accumulated_overscroll_ = gfx::Vector2dF();
+ 
+   const cc::ElementId latched_element_id =
+       input_handler_->LatchedScrollerElementId();
+@@ -2056,15 +2065,28 @@ void InputHandlerProxy::HandleOverscroll(
+     const cc::InputHandlerScrollResult& scroll_result,
+     const blink::WebGestureDevice source_device) {
+   DCHECK(client_);
+-  if (!scroll_result.did_overscroll_root)
++  const bool forward_protected_unused_delta =
++      protected_viewport_scroll_sequence_ &&
++      !scroll_result.unused_scroll_delta.IsZero();
++  if (!scroll_result.did_overscroll_root &&
++      !forward_protected_unused_delta) {
+     return;
++  }
+ 
+   TRACE_EVENT("input", "InputHandlerProxy::DidOverscroll");
+ 
+   // Bundle overscroll message with triggering event response, saving an IPC.
+   current_overscroll_params_ = std::make_unique<DidOverscrollParams>();
+-  current_overscroll_params_->accumulated_overscroll =
+-      scroll_result.accumulated_root_overscroll;
++  if (forward_protected_unused_delta &&
++      !scroll_result.did_overscroll_root) {
++    protected_viewport_accumulated_overscroll_ +=
++        scroll_result.unused_scroll_delta;
++    current_overscroll_params_->accumulated_overscroll =
++        protected_viewport_accumulated_overscroll_;
++  } else {
++    current_overscroll_params_->accumulated_overscroll =
++        scroll_result.accumulated_root_overscroll;
++  }
+   current_overscroll_params_->latest_overscroll_delta =
+       scroll_result.unused_scroll_delta;
+   current_overscroll_params_->causal_event_viewport_point =
+diff --git a/third_party/blink/renderer/platform/widget/input/input_handler_proxy.h b/third_party/blink/renderer/platform/widget/input/input_handler_proxy.h
+--- a/third_party/blink/renderer/platform/widget/input/input_handler_proxy.h
++++ b/third_party/blink/renderer/platform/widget/input/input_handler_proxy.h
+@@ -435,6 +435,14 @@ class PLATFORM_EXPORT InputHandlerProxy : public cc::InputHandlerClient,
+   // bundled in the event ack, saving an IPC.
+   std::unique_ptr<DidOverscrollParams> current_overscroll_params_;
+ 
++  // True only for the compositor scroll sequence synthesized by the protected
++  // Android viewport after its automatic physical pan reaches its limit.
++  bool protected_viewport_scroll_sequence_ = false;
++
++  // Cumulative unused delta for the protected sequence. Unlike root
++  // overscroll, cc does not populate accumulated_root_overscroll here.
++  gfx::Vector2dF protected_viewport_accumulated_overscroll_;
++
+   std::unique_ptr<CompositorThreadEventQueue> compositor_event_queue_;
+ 
+   // Set only when the compositor input handler is handling a gesture. Tells
 diff --git a/chrome/android/java/src/org/chromium/chrome/browser/SwipeRefreshHandler.java b/chrome/android/java/src/org/chromium/chrome/browser/SwipeRefreshHandler.java
 --- a/chrome/android/java/src/org/chromium/chrome/browser/SwipeRefreshHandler.java
 +++ b/chrome/android/java/src/org/chromium/chrome/browser/SwipeRefreshHandler.java
@@ -2302,74 +2710,6 @@ new file mode 100644
 +        return value != ContentSetting.BLOCK;
 +    }
 +}
-diff --git a/components/browser_ui/strings/bromite_content_settings/protected_keyboard_geometry.grdp b/components/browser_ui/strings/bromite_content_settings/protected_keyboard_geometry.grdp
-new file mode 100644
---- /dev/null
-+++ b/components/browser_ui/strings/bromite_content_settings/protected_keyboard_geometry.grdp
-@@ -0,0 +1,27 @@
-+<?xml version="1.0" encoding="utf-8"?>
-+<grit-part>
-+  <message name="IDS_SITE_SETTINGS_TYPE_PROTECTED_KEYBOARD_GEOMETRY" desc="The label used for site settings controls." formatter_data="android_java">
-+    Keyboard Size Protection
-+  </message>
-+  <message name="IDS_PROTECTED_KEYBOARD_GEOMETRY_PERMISSION_TITLE" desc="Title of the permission to use [CHAR-LIMIT=32]" formatter_data="android_java">
-+    Keyboard Size Protection
-+  </message>
-+  <message name="IDS_SITE_SETTINGS_TYPE_PROTECTED_KEYBOARD_GEOMETRY_MID_SENTENCE" desc="The label used for site settings controls when used mid-sentence." formatter_data="android_java">
-+    Keyboard Size Protection
-+  </message>
-+  <message name="IDS_SETTINGS_SITE_SETTINGS_PROTECTED_KEYBOARD_GEOMETRY_DESCRIPTION" desc="Description of the content setting." formatter_data="android_java">
-+    Hides the keyboard size
-+  </message>
-+  <message name="IDS_WEBSITE_SETTINGS_CATEGORY_PROTECTED_KEYBOARD_GEOMETRY_ENABLED" desc="Summary text explaining is full enabled." formatter_data="android_java">
-+    Enabled
-+  </message>
-+  <message name="IDS_WEBSITE_SETTINGS_CATEGORY_PROTECTED_KEYBOARD_GEOMETRY_DISABLED" desc="Summary text explaining that is full disabled." formatter_data="android_java">
-+    Disabled
-+  </message>
-+  <message name="IDS_SETTINGS_SITE_SETTINGS_PROTECTED_KEYBOARD_GEOMETRY_ALLOWED_EXCEPTIONS" desc="Label for the allowed exceptions site list.">
-+    Keyboard size is protected
-+  </message>
-+  <message name="IDS_SETTINGS_SITE_SETTINGS_PROTECTED_KEYBOARD_GEOMETRY_BLOCKED_EXCEPTIONS" desc="Label for the blocked exceptions site list.">
-+    Keyboard size is not protected
-+  </message>
-+</grit-part>
-diff --git a/components/content_settings/core/browser/bromite_content_settings/protected_keyboard_geometry.inc b/components/content_settings/core/browser/bromite_content_settings/protected_keyboard_geometry.inc
-new file mode 100644
---- /dev/null
-+++ b/components/content_settings/core/browser/bromite_content_settings/protected_keyboard_geometry.inc
-@@ -0,0 +1,25 @@
-+#if BUILDFLAG(IS_ANDROID)
-+
-+  Register(ContentSettingsType::PROTECTED_KEYBOARD_GEOMETRY, "keyboard_size_protection", CONTENT_SETTING_ALLOW,
-+           WebsiteSettingsInfo::SYNCABLE,
-+           /*allowlisted_schemes=*/{},
-+           /*valid_settings=*/{CONTENT_SETTING_ALLOW,
-+                               CONTENT_SETTING_BLOCK},
-+           WebsiteSettingsInfo::TOP_ORIGIN_ONLY_SCOPE,
-+           WebsiteSettingsRegistry::PLATFORM_ANDROID,
-+           ContentSettingsInfo::INHERIT_IN_INCOGNITO,
-+           PermissionSettingsInfo::EXCEPTIONS_ON_SECURE_AND_INSECURE_ORIGINS);
-+
-+  content_settings::WebsiteSettingsRegistry::GetInstance()
-+    ->GetMutable(ContentSettingsType::PROTECTED_KEYBOARD_GEOMETRY)
-+    ->set_show_into_info_page()
-+    .set_is_renderer_content_setting()
-+    .set_title_ui(IDS_SITE_SETTINGS_TYPE_PROTECTED_KEYBOARD_GEOMETRY)
-+    .set_description_ui(IDS_SETTINGS_SITE_SETTINGS_PROTECTED_KEYBOARD_GEOMETRY_DESCRIPTION)
-+    .set_allowed_ui(IDS_WEBSITE_SETTINGS_CATEGORY_PROTECTED_KEYBOARD_GEOMETRY_ENABLED)
-+    .set_blocked_ui(IDS_WEBSITE_SETTINGS_CATEGORY_PROTECTED_KEYBOARD_GEOMETRY_DISABLED)
-+    .set_allowed_exceptions_ui(IDS_SETTINGS_SITE_SETTINGS_PROTECTED_KEYBOARD_GEOMETRY_ALLOWED_EXCEPTIONS)
-+    .set_blocked_exceptions_ui(IDS_SETTINGS_SITE_SETTINGS_PROTECTED_KEYBOARD_GEOMETRY_BLOCKED_EXCEPTIONS)
-+    .set_mid_sentence_ui(IDS_SITE_SETTINGS_TYPE_PROTECTED_KEYBOARD_GEOMETRY_MID_SENTENCE);
-+
-+#endif
-diff --git a/components/content_settings/core/common/bromite_content_settings/protected_keyboard_geometry.inc b/components/content_settings/core/common/bromite_content_settings/protected_keyboard_geometry.inc
-new file mode 100644
---- /dev/null
-+++ b/components/content_settings/core/common/bromite_content_settings/protected_keyboard_geometry.inc
-@@ -0,0 +1 @@
-+PROTECTED_KEYBOARD_GEOMETRY,
 diff --git a/content/browser/android/overscroll_controller_android.cc b/content/browser/android/overscroll_controller_android.cc
 --- a/content/browser/android/overscroll_controller_android.cc
 +++ b/content/browser/android/overscroll_controller_android.cc
@@ -2485,33 +2825,6 @@ diff --git a/content/browser/android/overscroll_controller_android.h b/content/b
    // Stores the last seen position of a touch input event (in pix) to correctly
    // calculate scroll deltas for `refresh_effect_`.
    gfx::Vector2dF last_pos_;
-diff --git a/content/browser/web_contents/web_contents_android.cc b/content/browser/web_contents/web_contents_android.cc
---- a/content/browser/web_contents/web_contents_android.cc
-+++ b/content/browser/web_contents/web_contents_android.cc
-@@ -550,6 +550,12 @@ void WebContentsAndroid::ScrollFocusedEditableNodeIntoView(JNIEnv* env) {
-     input_handler->ScrollFocusedEditableNodeIntoView();
- }
- 
-+void WebContentsAndroid::UpdateFocusedElementBounds(JNIEnv* env) {
-+  auto* input_handler = web_contents_->GetFocusedFrameWidgetInputHandler();
-+  if (input_handler)
-+    input_handler->UpdateFocusedElementBounds();
-+}
-+
- void WebContentsAndroid::SelectAroundCaretAck(
-     int startOffset,
-     int endOffset,
-diff --git a/content/browser/web_contents/web_contents_android.h b/content/browser/web_contents/web_contents_android.h
---- a/content/browser/web_contents/web_contents_android.h
-+++ b/content/browser/web_contents/web_contents_android.h
-@@ -111,6 +111,7 @@ class CONTENT_EXPORT WebContentsAndroid {
-   bool IsFullscreenForCurrentTab(JNIEnv* env);
-   void ExitFullscreen(JNIEnv* env);
-   void ScrollFocusedEditableNodeIntoView(JNIEnv* env);
-+  void UpdateFocusedElementBounds(JNIEnv* env);
-   void SelectAroundCaret(JNIEnv* env,
-                          int32_t granularity,
-                          bool should_show_handle,
 diff --git a/content/public/android/java/src/org/chromium/content/browser/input/ImeAdapterImpl.java b/content/public/android/java/src/org/chromium/content/browser/input/ImeAdapterImpl.java
 --- a/content/public/android/java/src/org/chromium/content/browser/input/ImeAdapterImpl.java
 +++ b/content/public/android/java/src/org/chromium/content/browser/input/ImeAdapterImpl.java
@@ -2725,329 +3038,6 @@ diff --git a/content/public/test/android/javatests/src/org/chromium/content_publ
      @Override
      public void selectAroundCaret(
              @SelectionGranularity int granularity,
-diff --git a/cromite_flags/chrome/browser/about_flags_cc/Android-Protected-Keyboard-Geometry.inc b/cromite_flags/chrome/browser/about_flags_cc/Android-Protected-Keyboard-Geometry.inc
-new file mode 100644
---- /dev/null
-+++ b/cromite_flags/chrome/browser/about_flags_cc/Android-Protected-Keyboard-Geometry.inc
-@@ -0,0 +1,10 @@
-+#ifdef FLAG_SECTION
-+
-+    {"android-protected-keyboard-geometry",
-+     "Android Protected Keyboard Geometry",
-+     "Protects Android on-screen keyboard geometry from being exposed to web "
-+     "content. The per-site Viewport Protection setting is also respected.",
-+     kOsAndroid,
-+     FEATURE_VALUE_TYPE(blink::features::kAndroidProtectedKeyboardGeometry)},
-+
-+#endif
-diff --git a/cromite_flags/chrome/browser/flags/android/chrome_feature_list_cc/protected_keyboard_geometry.inc b/cromite_flags/chrome/browser/flags/android/chrome_feature_list_cc/protected_keyboard_geometry.inc
-new file mode 100644
---- /dev/null
-+++ b/cromite_flags/chrome/browser/flags/android/chrome_feature_list_cc/protected_keyboard_geometry.inc
-@@ -0,0 +1,5 @@
-+#if BUILDFLAG(IS_ANDROID)
-+
-+SET_CROMITE_FEATURE_ENABLED(kBrowserControlsEarlyResize);
-+
-+#endif
-diff --git a/cromite_flags/third_party/blink/common/features_cc/Android-Protected-Keyboard-Geometry.inc b/cromite_flags/third_party/blink/common/features_cc/Android-Protected-Keyboard-Geometry.inc
-new file mode 100644
---- /dev/null
-+++ b/cromite_flags/third_party/blink/common/features_cc/Android-Protected-Keyboard-Geometry.inc
-@@ -0,0 +1,3 @@
-+CROMITE_FEATURE(kAndroidProtectedKeyboardGeometry,
-+                "AndroidProtectedKeyboardGeometry",
-+                base::FEATURE_ENABLED_BY_DEFAULT);
-diff --git a/cromite_flags/third_party/blink/common/features_h/Android-Protected-Keyboard-Geometry.inc b/cromite_flags/third_party/blink/common/features_h/Android-Protected-Keyboard-Geometry.inc
-new file mode 100644
---- /dev/null
-+++ b/cromite_flags/third_party/blink/common/features_h/Android-Protected-Keyboard-Geometry.inc
-@@ -0,0 +1,2 @@
-+// Conceals Android on-screen keyboard geometry from web content.
-+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kAndroidProtectedKeyboardGeometry);
-diff --git a/third_party/blink/public/mojom/input/input_handler.mojom b/third_party/blink/public/mojom/input/input_handler.mojom
---- a/third_party/blink/public/mojom/input/input_handler.mojom
-+++ b/third_party/blink/public/mojom/input/input_handler.mojom
-@@ -435,6 +435,10 @@ interface FrameWidgetInputHandler {
-   // editable divs).
-   ScrollFocusedEditableNodeIntoView();
- 
-+  // Recomputes and sends the current focused element bounds to the browser.
-+  // Used when browser UI resizes the renderer viewport without changing focus.
-+  UpdateFocusedElementBounds();
-+
-   // Replies when the next PageScaleAnimation has completed. Can only be called
-   // on the outermost main frame. Can be used to reliably wait for a
-   // ScrollFocusedEditableNodeIntoView to complete since that may create a
-diff --git a/third_party/blink/renderer/core/frame/local_frame_mojo_handler.cc b/third_party/blink/renderer/core/frame/local_frame_mojo_handler.cc
---- a/third_party/blink/renderer/core/frame/local_frame_mojo_handler.cc
-+++ b/third_party/blink/renderer/core/frame/local_frame_mojo_handler.cc
-@@ -53,6 +53,7 @@
- #include "third_party/blink/renderer/core/frame/remote_frame_owner.h"
- #include "third_party/blink/renderer/core/frame/reporting_context.h"
- #include "third_party/blink/renderer/core/frame/savable_resources.h"
-+#include "third_party/blink/renderer/core/frame/web_frame_widget_impl.h"
- #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
- #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
- #include "third_party/blink/renderer/core/html/html_element.h"
-@@ -586,7 +587,11 @@ void LocalFrameMojoHandler::NotifyVirtualKeyboardOverlayRect(
-                         keyboard_rect.width() / scale_factor,
-                         keyboard_rect.height() / scale_factor);
- 
--  frame_->SetVirtualKeyboardOverlayGeometry(scaled_rect);
-+  if (page->IsAndroidProtectedKeyboardGeometryEnabled(frame_)) {
-+    frame_->SetVirtualKeyboardOverlayGeometry(gfx::Rect());
-+  } else {
-+    frame_->SetVirtualKeyboardOverlayGeometry(scaled_rect);
-+  }
- }
- 
- void LocalFrameMojoHandler::ShowInterestInElement(int nodeID) {
-diff --git a/third_party/blink/renderer/core/frame/viewport_data.cc b/third_party/blink/renderer/core/frame/viewport_data.cc
---- a/third_party/blink/renderer/core/frame/viewport_data.cc
-+++ b/third_party/blink/renderer/core/frame/viewport_data.cc
-@@ -76,7 +76,7 @@ ViewportDescription ViewportData::GetViewportDescription() const {
- 
-   // Setting `navigator.virtualKeyboard.overlaysContent` should override the
-   // virtual-keyboard mode set from the viewport meta tag.
--  if (virtual_keyboard_overlays_content_) {
-+  if (GetVirtualKeyboardOverlaysContent()) {
-     applied_viewport_description.virtual_keyboard_mode =
-         ui::mojom::blink::VirtualKeyboardMode::kOverlaysContent;
-   }
-@@ -84,6 +84,17 @@ ViewportDescription ViewportData::GetViewportDescription() const {
-   return applied_viewport_description;
- }
- 
-+bool ViewportData::GetVirtualKeyboardOverlaysContent() const {
-+  // The bottom-controls policy keeps the author-controlled mode disabled. The
-+  // protected keyboard policy is layered by GetVirtualKeyboardOverlaysContent().
-+  if (document_->GetFrame() && document_->GetPage()
-+        && document_->GetPage()->IsAndroidProtectedKeyboardGeometryEnabled(
-+              document_->GetFrame())) {
-+    return true;
-+  }
-+  return virtual_keyboard_overlays_content_;
-+}
-+
- void ViewportData::UpdateViewportDescription() {
-   if (!document_->GetFrame())
-     return;
-diff --git a/third_party/blink/renderer/core/frame/viewport_data.h b/third_party/blink/renderer/core/frame/viewport_data.h
---- a/third_party/blink/renderer/core/frame/viewport_data.h
-+++ b/third_party/blink/renderer/core/frame/viewport_data.h
-@@ -47,9 +47,7 @@ class ViewportData final : public GarbageCollected<ViewportData> {
-   }
- 
-   CORE_EXPORT void SetVirtualKeyboardOverlaysContent(bool overlays_content);
--  CORE_EXPORT bool GetVirtualKeyboardOverlaysContent() const {
--    return virtual_keyboard_overlays_content_;
--  }
-+  CORE_EXPORT bool GetVirtualKeyboardOverlaysContent() const;
- 
-  private:
-   Member<Document> document_;
-diff --git a/third_party/blink/renderer/core/frame/web_frame_widget_impl.cc b/third_party/blink/renderer/core/frame/web_frame_widget_impl.cc
---- a/third_party/blink/renderer/core/frame/web_frame_widget_impl.cc
-+++ b/third_party/blink/renderer/core/frame/web_frame_widget_impl.cc
-@@ -2021,6 +2021,8 @@ void WebFrameWidgetImpl::UpdateVisualProperties(
-              widget_base_->VisibleViewportSize()](RemoteFrame* remote_frame) {
-           remote_frame->DidChangeVisibleViewportSize(visible_viewport_size);
-         });
-+
-+    UpdateFocusedElementBounds();
-   }
- 
-   SetWindowShowState(visual_properties.window_show_state);
-@@ -5131,6 +5133,24 @@ void WebFrameWidgetImpl::ScrollFocusedEditableNodeIntoView() {
-   local_frame->ScrollFocusedEditableElementIntoView();
- }
- 
-+void WebFrameWidgetImpl::UpdateFocusedElementBounds() {
-+  Element* focused_element = FocusedElement();
-+  if (!focused_element)
-+    return;
-+
-+  EditContext* edit_context =
-+      focused_element->GetDocument()
-+          .GetFrame()
-+          ->GetInputMethodController()
-+          .GetActiveEditContext();
-+
-+  if (!WebElement(focused_element).IsEditable() && !edit_context)
-+    return;
-+
-+  focused_element->GetDocument().SendFocusNotification(
-+      focused_element, mojom::blink::FocusType::kNone);
-+}
-+
- void WebFrameWidgetImpl::WaitForPageScaleAnimationForTesting(
-     WaitForPageScaleAnimationForTestingCallback callback) {
-   DCHECK(ForMainFrame());
-diff --git a/third_party/blink/renderer/core/frame/web_frame_widget_impl.h b/third_party/blink/renderer/core/frame/web_frame_widget_impl.h
---- a/third_party/blink/renderer/core/frame/web_frame_widget_impl.h
-+++ b/third_party/blink/renderer/core/frame/web_frame_widget_impl.h
-@@ -1042,6 +1042,7 @@ class CORE_EXPORT WebFrameWidgetImpl
-       mojom::blink::SelectionMenuBehavior behavior) override;
-   void MoveRangeSelectionExtent(const gfx::Point& extent_in_dips) override;
-   void ScrollFocusedEditableNodeIntoView() override;
-+  void UpdateFocusedElementBounds() override;
-   void WaitForPageScaleAnimationForTesting(
-       WaitForPageScaleAnimationForTestingCallback callback) override;
-   void MoveCaret(const gfx::Point& point_in_dips) override;
-diff --git a/third_party/blink/renderer/core/page/page.cc b/third_party/blink/renderer/core/page/page.cc
---- a/third_party/blink/renderer/core/page/page.cc
-+++ b/third_party/blink/renderer/core/page/page.cc
-@@ -1274,6 +1274,31 @@ void Page::UpdateAcceleratedCompositingSettings() {
-   }
- }
- 
-+bool Page::IsAndroidProtectedKeyboardGeometryEnabled(LocalFrame* frame) const {
-+#if !BUILDFLAG(IS_ANDROID)
-+  return false;
-+#else
-+  if (!frame) return true;
-+  if (!base::FeatureList::IsEnabled(
-+                    features::kAndroidProtectedKeyboardGeometry)) {
-+    return false;
-+  }
-+
-+  WebContentSettingsClient* settings = frame->GetContentSettingsClient();
-+  if (!settings) return true;
-+  if (!settings->AllowContentSetting(
-+                       ContentSettingsType::PROTECTED_KEYBOARD_GEOMETRY,
-+                       /*default_value=*/false)) {
-+    return false;
-+  }
-+
-+  const String protocol =
-+      frame->GetSecurityContext()->GetSecurityOrigin()->Protocol();
-+  return !SchemeRegistry::IsWebUIScheme(protocol) &&
-+         !CommonSchemeRegistry::IsExtensionScheme(protocol.Ascii());
-+#endif
-+}
-+
- void Page::CalculateEmulatedScreenSetting(LocalFrame* frame, bool force) {
-   bool isEnabled = base::FeatureList::IsEnabled(features::kViewportProtection);
-   blink::WebContentSettingsClient* settings = frame->GetContentSettingsClient();
-diff --git a/third_party/blink/renderer/core/page/page.h b/third_party/blink/renderer/core/page/page.h
---- a/third_party/blink/renderer/core/page/page.h
-+++ b/third_party/blink/renderer/core/page/page.h
-@@ -519,6 +519,8 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
-     return *v8_compile_hints_consumer_;
-   }
- 
-+  bool IsAndroidProtectedKeyboardGeometryEnabled(LocalFrame* frame) const;
-+
-   // Returns the token uniquely identifying the browsing context group this page
-   // lives in.
-   const base::UnguessableToken& BrowsingContextGroupToken();
-diff --git a/third_party/blink/renderer/platform/widget/input/frame_widget_input_handler_impl.cc b/third_party/blink/renderer/platform/widget/input/frame_widget_input_handler_impl.cc
---- a/third_party/blink/renderer/platform/widget/input/frame_widget_input_handler_impl.cc
-+++ b/third_party/blink/renderer/platform/widget/input/frame_widget_input_handler_impl.cc
-@@ -435,6 +435,15 @@ void FrameWidgetInputHandlerImpl::ScrollFocusedEditableNodeIntoView() {
-       main_thread_frame_widget_input_handler_));
- }
- 
-+void FrameWidgetInputHandlerImpl::UpdateFocusedElementBounds() {
-+  RunOnMainThread(base::BindOnce(
-+      [](base::WeakPtr<mojom::blink::FrameWidgetInputHandler> handler) {
-+        if (handler)
-+          handler->UpdateFocusedElementBounds();
-+      },
-+      main_thread_frame_widget_input_handler_));
-+}
-+
- void FrameWidgetInputHandlerImpl::WaitForPageScaleAnimationForTesting(
-     WaitForPageScaleAnimationForTestingCallback callback) {
-   // Ensure the Mojo callback is invoked from the thread on which the message
-diff --git a/third_party/blink/renderer/platform/widget/input/frame_widget_input_handler_impl.h b/third_party/blink/renderer/platform/widget/input/frame_widget_input_handler_impl.h
---- a/third_party/blink/renderer/platform/widget/input/frame_widget_input_handler_impl.h
-+++ b/third_party/blink/renderer/platform/widget/input/frame_widget_input_handler_impl.h
-@@ -101,6 +101,7 @@ class PLATFORM_EXPORT FrameWidgetInputHandlerImpl
-       blink::mojom::SelectionMenuBehavior selection_menu_behavior) override;
-   void MoveRangeSelectionExtent(const gfx::Point& extent) override;
-   void ScrollFocusedEditableNodeIntoView() override;
-+  void UpdateFocusedElementBounds() override;
-   void WaitForPageScaleAnimationForTesting(
-       WaitForPageScaleAnimationForTestingCallback callback) override;
-   void MoveCaret(const gfx::Point& point) override;
-diff --git a/third_party/blink/renderer/platform/widget/input/input_handler_proxy.cc b/third_party/blink/renderer/platform/widget/input/input_handler_proxy.cc
---- a/third_party/blink/renderer/platform/widget/input/input_handler_proxy.cc
-+++ b/third_party/blink/renderer/platform/widget/input/input_handler_proxy.cc
-@@ -1210,6 +1210,13 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
-     InputHandlerScrollEnd(std::nullopt);
-   }
- 
-+  // These synthetic events have no physical pointers. Viewport protection is
-+  // selected through content settings rather than kViewportProtection.
-+  protected_viewport_scroll_sequence_ =
-+      !gesture_event.data.scroll_begin.target_viewport &&
-+      gesture_event.data.scroll_begin.pointer_count == 0;
-+  protected_viewport_accumulated_overscroll_ = gfx::Vector2dF();
-+
-   cc::ScrollState scroll_state(CreateScrollStateDataForGesture(gesture_event));
-   cc::InputHandler::ScrollStatus scroll_status;
-   if (gesture_event.data.scroll_begin.target_viewport) {
-@@ -1370,6 +1377,8 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollEnd(
-     const WebGestureEvent& gesture_event,
-     cc::EventMetrics* metrics) {
-   TRACE_EVENT0("input", "InputHandlerProxy::HandleGestureScrollEnd");
-+  protected_viewport_scroll_sequence_ = false;
-+  protected_viewport_accumulated_overscroll_ = gfx::Vector2dF();
- 
-   const cc::ElementId latched_element_id =
-       input_handler_->LatchedScrollerElementId();
-@@ -2013,15 +2022,28 @@ void InputHandlerProxy::HandleOverscroll(
-     const cc::InputHandlerScrollResult& scroll_result,
-     const blink::WebGestureDevice source_device) {
-   DCHECK(client_);
--  if (!scroll_result.did_overscroll_root)
-+  const bool forward_protected_unused_delta =
-+      protected_viewport_scroll_sequence_ &&
-+      !scroll_result.unused_scroll_delta.IsZero();
-+  if (!scroll_result.did_overscroll_root &&
-+      !forward_protected_unused_delta) {
-     return;
-+  }
- 
-   TRACE_EVENT("input", "InputHandlerProxy::DidOverscroll");
- 
-   // Bundle overscroll message with triggering event response, saving an IPC.
-   current_overscroll_params_ = std::make_unique<DidOverscrollParams>();
--  current_overscroll_params_->accumulated_overscroll =
--      scroll_result.accumulated_root_overscroll;
-+  if (forward_protected_unused_delta &&
-+      !scroll_result.did_overscroll_root) {
-+    protected_viewport_accumulated_overscroll_ +=
-+        scroll_result.unused_scroll_delta;
-+    current_overscroll_params_->accumulated_overscroll =
-+        protected_viewport_accumulated_overscroll_;
-+  } else {
-+    current_overscroll_params_->accumulated_overscroll =
-+        scroll_result.accumulated_root_overscroll;
-+  }
-   current_overscroll_params_->latest_overscroll_delta =
-       scroll_result.unused_scroll_delta;
-   current_overscroll_params_->causal_event_viewport_point =
-diff --git a/third_party/blink/renderer/platform/widget/input/input_handler_proxy.h b/third_party/blink/renderer/platform/widget/input/input_handler_proxy.h
---- a/third_party/blink/renderer/platform/widget/input/input_handler_proxy.h
-+++ b/third_party/blink/renderer/platform/widget/input/input_handler_proxy.h
-@@ -431,6 +431,14 @@ class PLATFORM_EXPORT InputHandlerProxy : public cc::InputHandlerClient,
-   // bundled in the event ack, saving an IPC.
-   std::unique_ptr<DidOverscrollParams> current_overscroll_params_;
- 
-+  // True only for the compositor scroll sequence synthesized by the protected
-+  // Android viewport after its automatic physical pan reaches its limit.
-+  bool protected_viewport_scroll_sequence_ = false;
-+
-+  // Cumulative unused delta for the protected sequence. Unlike root
-+  // overscroll, cc does not populate accumulated_root_overscroll here.
-+  gfx::Vector2dF protected_viewport_accumulated_overscroll_;
-+
-   std::unique_ptr<CompositorThreadEventQueue> compositor_event_queue_;
- 
-   // Set only when the compositor input handler is handling a gesture. Tells
 diff --git a/ui/android/event_forwarder.cc b/ui/android/event_forwarder.cc
 --- a/ui/android/event_forwarder.cc
 +++ b/ui/android/event_forwarder.cc

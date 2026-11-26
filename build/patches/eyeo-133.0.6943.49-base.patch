@@ -4,703 +4,373 @@ Subject: eyeo Browser Ad filtering Solution: Base Module
 
 Based on Chromium 133.0.6943.49
 ---
- DEPS                                          |   11 +
- LICENSE                                       |   15 +
- README.md                                     |   12 +
- base/threading/thread_restrictions.h          |    9 +
- base/trace_event/builtin_categories.h         |    1 +
- components/BUILD.gn                           |    1 +
- components/adblock/BUILD.gn                   |   36 +
- components/adblock/CHANGELOG.md               |  746 +++++++++
- components/adblock/LICENSE                    |  674 ++++++++
- components/adblock/README.md                  |   80 +
- components/adblock/content/BUILD.gn           |   22 +
- components/adblock/content/browser/BUILD.gn   |  226 +++
- .../browser/adblock_content_browser_client.h  |  350 ++++
- .../content/browser/adblock_context_data.cc   |   87 +
- .../content/browser/adblock_context_data.h    |   63 +
- .../content/browser/adblock_filter_match.h    |   30 +
- .../browser/adblock_internals_page_handler.cc |  171 ++
- .../browser/adblock_internals_page_handler.h  |   61 +
- .../content/browser/adblock_internals_ui.cc   |   67 +
- .../content/browser/adblock_internals_ui.h    |   49 +
- .../browser/adblock_url_loader_factory.cc     |  807 ++++++++++
- .../browser/adblock_url_loader_factory.h      |  100 ++
- .../adblock_url_loader_factory_for_test.cc    |  466 ++++++
- .../adblock_url_loader_factory_for_test.h     |   78 +
- .../adblock_web_ui_controller_factory.cc      |   62 +
- .../adblock_web_ui_controller_factory.h       |   58 +
- .../browser/adblock_webcontents_observer.cc   |  217 +++
- .../browser/adblock_webcontents_observer.h    |   93 ++
- .../content_security_policy_injector.h        |   61 +
- .../content_security_policy_injector_impl.cc  |  111 ++
- .../content_security_policy_injector_impl.h   |   65 +
- .../adblock/content/browser/element_hider.h   |   70 +
- .../content/browser/element_hider_impl.cc     |  367 +++++
- .../content/browser/element_hider_impl.h      |   55 +
- .../content/browser/eyeo_document_info.cc     |   50 +
- .../content/browser/eyeo_document_info.h      |   58 +
- .../adblock/content/browser/eyeo_page_info.cc |   38 +
- .../adblock/content/browser/eyeo_page_info.h  |   53 +
- .../adblock_request_throttle_factory.cc       |   72 +
- .../adblock_request_throttle_factory.h        |   51 +
- .../adblock_telemetry_service_factory.cc      |  122 ++
- .../adblock_telemetry_service_factory.h       |   55 +
- ...ontent_security_policy_injector_factory.cc |   71 +
- ...content_security_policy_injector_factory.h |   49 +
- .../factories/element_hider_factory.cc        |   65 +
- .../browser/factories/element_hider_factory.h |   47 +
- .../browser/factories/embedding_utils.cc      |   42 +
- .../browser/factories/embedding_utils.h       |   50 +
- .../resource_classification_runner_factory.cc |   73 +
- .../resource_classification_runner_factory.h  |   49 +
- .../factories/session_stats_factory.cc        |   66 +
- .../browser/factories/session_stats_factory.h |   47 +
- .../factories/sitekey_storage_factory.cc      |   61 +
- .../factories/sitekey_storage_factory.h       |   47 +
- ...ubscription_persistent_metadata_factory.cc |   66 +
- ...subscription_persistent_metadata_factory.h |   49 +
- .../factories/subscription_service_factory.cc |  500 ++++++
- .../factories/subscription_service_factory.h  |   76 +
- .../browser/frame_hierarchy_builder.cc        |  137 ++
- .../content/browser/frame_hierarchy_builder.h |   66 +
- .../content/browser/frame_opener_info.cc      |   37 +
- .../content/browser/frame_opener_info.h       |   45 +
- .../adblock/content/browser/mojom/BUILD.gn    |   22 +
- .../browser/mojom/adblock_internals.mojom     |   22 +
- .../content/browser/page_view_stats.cc        |  291 ++++
- .../adblock/content/browser/page_view_stats.h |  131 ++
- .../content/browser/request_initiator.cc      |   58 +
- .../content/browser/request_initiator.h       |   69 +
- .../browser/resource_classification_runner.h  |  108 ++
- .../resource_classification_runner_impl.cc    |  431 +++++
- .../resource_classification_runner_impl.h     |  153 ++
- .../content/browser/session_stats_impl.cc     |   87 +
- .../content/browser/session_stats_impl.h      |   71 +
- .../adblock_acceptable_ads_browsertest.cc     |  211 +++
- .../browser/test/adblock_browsertest_base.cc  |  219 +++
- .../browser/test/adblock_browsertest_base.h   |  128 ++
- ...lock_content_browser_client_browsertest.cc |  110 ++
- .../adblock_content_filters_browsertest.cc    |  290 ++++
- .../test/adblock_debug_url_browsertest.cc     |  331 ++++
- .../test/adblock_filter_list_browsertest.cc   |  710 +++++++++
- ...ck_filtering_configurations_browsertest.cc |  666 ++++++++
- .../test/adblock_non_ascii_browsertest.cc     |   67 +
- .../adblock_page_view_stats_browsertest.cc    |  840 ++++++++++
- .../adblock_request_throttle_browsertest.cc   |  127 ++
- .../adblock_service_workers_browsertest.cc    |  208 +++
- .../test/adblock_sitekey_browsertest.cc       |  177 +++
- .../test/adblock_snippets_browsertest.cc      |   76 +
- ...dblock_subscription_service_browsertest.cc |  202 +++
- .../adblock_telemetry_service_browsertest.cc  |  280 ++++
- .../adblock_trusted_events_browsertest.cc     |  135 ++
- .../test/adblock_url_loader_factory_test.cc   |  512 ++++++
- .../test/adblock_web_bundle_browsertest.cc    |  425 +++++
- .../test/adblock_web_ui_browsertest.cc        |   58 +
- .../test/adblock_webcontents_observer_test.cc |  189 +++
- ...tent_security_policy_injector_impl_test.cc |  218 +++
- .../browser/test/element_hider_impl_test.cc   |  433 +++++
- .../test/frame_hierarchy_builder_test.cc      |  131 ++
- ...dblock_content_security_policy_injector.cc |   28 +
- ...adblock_content_security_policy_injector.h |   44 +
- .../browser/test/mock_element_hider.cc        |   26 +
- .../content/browser/test/mock_element_hider.h |   55 +
- .../test/mock_frame_hierarchy_builder.cc      |   26 +
- .../test/mock_frame_hierarchy_builder.h       |   46 +
- .../mock_resource_classification_runner.cc    |   49 +
- .../mock_resource_classification_runner.h     |   96 ++
- .../browser/test/page_view_stats_test.cc      |  334 ++++
- ...esource_classification_runner_impl_test.cc |  422 +++++
- .../browser/test/session_stats_impl_test.cc   |   74 +
- .../test/subscription_service_factory_test.cc |  488 ++++++
- .../resources/adblock_internals/BUILD.gn      |   32 +
- .../adblock_internals/adblock_internals.html  |   45 +
- .../adblock_internals/adblock_internals.ts    |   65 +
- components/adblock/core/BUILD.gn              |  156 ++
- .../activeping_telemetry_topic_provider.cc    |  299 ++++
- .../activeping_telemetry_topic_provider.h     |   94 ++
- .../adblock/core/adblock_telemetry_service.cc |  308 ++++
- .../adblock/core/adblock_telemetry_service.h  |  132 ++
- components/adblock/core/classifier/BUILD.gn   |   77 +
- .../core/classifier/resource_classifier.cc    |   24 +
- .../core/classifier/resource_classifier.h     |   90 ++
- .../classifier/resource_classifier_impl.cc    |  406 +++++
- .../classifier/resource_classifier_impl.h     |   64 +
- .../test/mock_resource_classifier.cc          |   26 +
- .../test/mock_resource_classifier.h           |   66 +
- .../test/resource_classifier_impl_test.cc     |  626 ++++++++
- .../test/resource_classifier_perftest.cc      |  394 +++++
- components/adblock/core/common/BUILD.gn       |  139 ++
- .../adblock/core/common/adblock_constants.cc  |  174 ++
- .../adblock/core/common/adblock_constants.h   |   54 +
- .../adblock/core/common/adblock_prefs.cc      |  167 ++
- .../adblock/core/common/adblock_prefs.h       |   55 +
- .../adblock/core/common/adblock_switches.cc   |   28 +
- .../adblock/core/common/adblock_switches.h    |   31 +
- .../adblock/core/common/adblock_utils.cc      |   80 +
- .../adblock/core/common/adblock_utils.h       |   43 +
- components/adblock/core/common/app_info.cc    |   46 +
- components/adblock/core/common/app_info.h     |   43 +
- .../adblock/core/common/content_type.cc       |   91 ++
- components/adblock/core/common/content_type.h |   48 +
- .../adblock/core/common/flatbuffer_data.cc    |  105 ++
- .../adblock/core/common/flatbuffer_data.h     |   90 ++
- .../adblock/core/common/header_filter_data.h  |   38 +
- .../core/common/keyword_extractor_utils.cc    |   29 +
- .../core/common/keyword_extractor_utils.h     |   31 +
- .../core/common/regex_filter_pattern.cc       |   31 +
- .../core/common/regex_filter_pattern.h        |   34 +
- components/adblock/core/common/sitekey.h      |   29 +
- .../adblock/core/common/task_scheduler.h      |   35 +
- .../core/common/task_scheduler_impl.cc        |   59 +
- .../adblock/core/common/task_scheduler_impl.h |   50 +
- .../core/common/test/flatbuffer_data_test.cc  |   80 +
- .../core/common/test/mock_task_scheduler.cc   |   25 +
- .../core/common/test/mock_task_scheduler.h    |   40 +
- .../common/test/task_scheduler_impl_test.cc   |   82 +
- .../adblock/core/common/web_ui_constants.cc   |   24 +
- .../adblock/core/common/web_ui_constants.h    |   27 +
- .../adblock/core/configuration/BUILD.gn       |   60 +
- .../configuration/filtering_configuration.h   |   91 ++
- .../persistent_filtering_configuration.cc     |  270 ++++
- .../persistent_filtering_configuration.h      |   84 +
- .../test/fake_filtering_configuration.cc      |  124 ++
- .../test/fake_filtering_configuration.h       |   68 +
- .../test/mock_filtering_configuration.cc      |   34 +
- .../test/mock_filtering_configuration.h       |   82 +
- ...persistent_filtering_configuration_test.cc |  255 +++
- components/adblock/core/converter/BUILD.gn    |   67 +
- .../adblock/core/converter/converter_main.cc  |  117 ++
- .../core/converter/flatbuffer_converter.cc    |  153 ++
- .../core/converter/flatbuffer_converter.h     |   63 +
- .../adblock/core/converter/parser/BUILD.gn    |   67 +
- .../core/converter/parser/content_filter.cc   |  100 ++
- .../core/converter/parser/content_filter.h    |   53 +
- .../core/converter/parser/domain_option.cc    |  146 ++
- .../core/converter/parser/domain_option.h     |   62 +
- .../converter/parser/filter_classifier.cc     |   52 +
- .../core/converter/parser/filter_classifier.h |   49 +
- .../adblock/core/converter/parser/metadata.cc |  145 ++
- .../adblock/core/converter/parser/metadata.h  |   64 +
- .../core/converter/parser/snippet_filter.cc   |   62 +
- .../core/converter/parser/snippet_filter.h    |   48 +
- .../converter/parser/snippet_tokenizer.cc     |  103 ++
- .../core/converter/parser/snippet_tokenizer.h |   46 +
- .../parser/test/content_filter_test.cc        |  263 +++
- .../parser/test/domain_option_test.cc         |  214 +++
- .../parser/test/filter_classifier_test.cc     |   80 +
- .../converter/parser/test/metadata_test.cc    |  198 +++
- .../parser/test/snippet_filter_test.cc        |   79 +
- .../parser/test/snippet_tokenizer_test.cc     |  141 ++
- .../parser/test/url_filter_options_test.cc    |  258 +++
- .../converter/parser/test/url_filter_test.cc  |  163 ++
- .../core/converter/parser/url_filter.cc       |  232 +++
- .../core/converter/parser/url_filter.h        |   50 +
- .../converter/parser/url_filter_options.cc    |  267 ++++
- .../converter/parser/url_filter_options.h     |  122 ++
- .../core/converter/serializer/BUILD.gn        |   46 +
- .../serializer/filter_keyword_extractor.cc    |   63 +
- .../serializer/filter_keyword_extractor.h     |   59 +
- .../serializer/flatbuffer_serializer.cc       |  490 ++++++
- .../serializer/flatbuffer_serializer.h        |  161 ++
- .../core/converter/serializer/serializer.h    |   41 +
- .../test/filter_keyword_extractor_test.cc     |   68 +
- .../test/flatbuffer_converter_perftest.cc     |   83 +
- components/adblock/core/features.cc           |   26 +
- components/adblock/core/features.h            |   31 +
- components/adblock/core/net/BUILD.gn          |   68 +
- .../core/net/adblock_request_throttle.h       |   45 +
- .../core/net/adblock_request_throttle_impl.cc |   71 +
- .../core/net/adblock_request_throttle_impl.h  |   54 +
- .../core/net/adblock_resource_request.h       |   61 +
- .../core/net/adblock_resource_request_impl.cc |  217 +++
- .../core/net/adblock_resource_request_impl.h  |   78 +
- .../adblock_request_throttle_impl_test.cc     |  133 ++
- .../adblock_resource_request_impl_test.cc     |  414 +++++
- .../net/test/mock_adblock_request_throttle.cc |   45 +
- .../net/test/mock_adblock_request_throttle.h  |   42 +
- .../net/test/mock_adblock_resource_request.cc |   25 +
- .../net/test/mock_adblock_resource_request.h  |   49 +
- components/adblock/core/resources/.gitignore  |    1 +
- components/adblock/core/resources/BUILD.gn    |   95 ++
- .../core/resources/adblock_resources.grd      |   38 +
- components/adblock/core/resources/elemhide.js |   43 +
- .../core/resources/elemhide_for_selector.jst  |   53 +
- .../adblock/core/resources/elemhideemu.jst    | 1410 +++++++++++++++++
- .../adblock/core/resources/snippets_deps.py   |   71 +
- components/adblock/core/resources/update.sh   |   33 +
- .../core/schema/filter_list_schema.fbs        |  190 +++
- components/adblock/core/schema/schema_hash.h  |   30 +
- components/adblock/core/session_stats.h       |   42 +
- components/adblock/core/sitekey_storage.h     |   53 +
- .../adblock/core/sitekey_storage_impl.cc      |  164 ++
- .../adblock/core/sitekey_storage_impl.h       |   59 +
- components/adblock/core/subscription/BUILD.gn |  186 +++
- .../core/subscription/conversion_executors.h  |   50 +
- .../core/subscription/domain_splitter.cc      |   74 +
- .../core/subscription/domain_splitter.h       |   56 +
- .../filtering_configuration_maintainer.h      |   55 +
- ...filtering_configuration_maintainer_impl.cc |  516 ++++++
- .../filtering_configuration_maintainer_impl.h |  124 ++
- .../subscription/installed_subscription.cc    |   46 +
- .../subscription/installed_subscription.h     |  147 ++
- .../installed_subscription_impl.cc            |  638 ++++++++
- .../installed_subscription_impl.h             |  147 ++
- .../core/subscription/pattern_matcher.cc      |  277 ++++
- .../core/subscription/pattern_matcher.h       |   35 +
- .../preloaded_subscription_provider.h         |   56 +
- .../preloaded_subscription_provider_impl.cc   |  121 ++
- .../preloaded_subscription_provider_impl.h    |   50 +
- .../recommended_subscription_installer.h      |   43 +
- ...recommended_subscription_installer_impl.cc |  141 ++
- .../recommended_subscription_installer_impl.h |   73 +
- .../recommended_subscription_parser.cc        |   82 +
- .../recommended_subscription_parser.h         |   35 +
- .../core/subscription/regex_matcher.cc        |  162 ++
- .../adblock/core/subscription/regex_matcher.h |   75 +
- .../adblock/core/subscription/subscription.cc |   24 +
- .../adblock/core/subscription/subscription.h  |   81 +
- .../subscription/subscription_collection.h    |   98 ++
- .../subscription_collection_impl.cc           |  382 +++++
- .../subscription_collection_impl.h            |   98 ++
- .../core/subscription/subscription_config.cc  |  428 +++++
- .../core/subscription/subscription_config.h   |  131 ++
- .../subscription/subscription_downloader.h    |   60 +
- .../subscription_downloader_impl.cc           |  279 ++++
- .../subscription_downloader_impl.h            |   97 ++
- .../subscription_persistent_metadata.h        |   99 ++
- .../subscription_persistent_metadata_impl.cc  |  224 +++
- .../subscription_persistent_metadata_impl.h   |   68 +
- .../subscription_persistent_storage.h         |   60 +
- .../subscription_persistent_storage_impl.cc   |  237 +++
- .../subscription_persistent_storage_impl.h    |   80 +
- .../core/subscription/subscription_service.h  |   92 ++
- .../subscription/subscription_service_impl.cc |  265 ++++
- .../subscription/subscription_service_impl.h  |  101 ++
- .../subscription/subscription_validator.h     |   59 +
- .../subscription_validator_impl.cc            |  144 ++
- .../subscription_validator_impl.h             |   53 +
- .../subscription/test/domain_splitter_test.cc |   64 +
- ...ring_configuration_maintainer_impl_test.cc |  991 ++++++++++++
- .../installed_subscription_impl_csp_test.cc   |  236 +++
- ...stalled_subscription_impl_elemhide_test.cc |  566 +++++++
- ...installed_subscription_impl_header_test.cc |  297 ++++
- ...d_subscription_impl_list_converter_test.cc |  107 ++
- ...stalled_subscription_impl_metadata_test.cc |  129 ++
- ...nstalled_subscription_impl_rewrite_test.cc |  190 +++
- ...stalled_subscription_impl_snippets_test.cc |  196 +++
- .../installed_subscription_impl_test_base.cc  |   78 +
- .../installed_subscription_impl_test_base.h   |   54 +
- .../installed_subscription_impl_url_test.cc   | 1307 +++++++++++++++
- .../test/load_gzipped_test_file.cc            |   43 +
- .../test/load_gzipped_test_file.h             |   34 +
- .../test/mock_conversion_executors.cc         |   25 +
- .../test/mock_conversion_executors.h          |   46 +
- ...mock_filtering_configuration_maintainer.cc |   28 +
- .../mock_filtering_configuration_maintainer.h |   48 +
- .../test/mock_installed_subscription.cc       |   26 +
- .../test/mock_installed_subscription.h        |  102 ++
- .../subscription/test/mock_subscription.cc    |   36 +
- .../subscription/test/mock_subscription.h     |   51 +
- .../test/mock_subscription_collection.cc      |   26 +
- .../test/mock_subscription_collection.h       |  102 ++
- .../test/mock_subscription_downloader.cc      |   25 +
- .../test/mock_subscription_downloader.h       |   48 +
- .../mock_subscription_persistent_metadata.cc  |   27 +
- .../mock_subscription_persistent_metadata.h   |   92 ++
- .../test/mock_subscription_service.cc         |   36 +
- .../test/mock_subscription_service.h          |   77 +
- .../test/pattern_matcher_perftest.cc          |   73 +
- .../subscription/test/pattern_matcher_test.cc |  376 +++++
- ...eloaded_subscription_provider_impl_test.cc |  149 ++
- ...mended_subscription_installer_impl_test.cc |  325 ++++
- .../recommended_subscription_parser_test.cc   |  117 ++
- .../test/regex_matcher_perftest.cc            |   86 +
- .../test/subscription_collection_impl_test.cc | 1021 ++++++++++++
- .../test/subscription_downloader_impl_test.cc |  445 ++++++
- ...scription_persistent_metadata_impl_test.cc |  268 ++++
- ...bscription_persistent_storage_impl_test.cc |  346 ++++
- .../test/subscription_service_impl_test.cc    |  378 +++++
- .../test/subscription_validator_impl_test.cc  |  251 +++
- .../test/url_keyword_extractor_test.cc        |   74 +
- .../subscription/url_keyword_extractor.cc     |   66 +
- .../core/subscription/url_keyword_extractor.h |   59 +
- ...ctiveping_telemetry_topic_provider_test.cc |  325 ++++
- .../adblock_telemetry_service_unittest.cc     |  460 ++++++
- .../core/test/bundled_subscription_test.cc    |   49 +
- .../adblock/core/test/mock_sitekey_storage.cc |   26 +
- .../adblock/core/test/mock_sitekey_storage.h  |   49 +
- .../core/test/sitekey_storage_impl_test.cc    |  155 ++
- components/adblock/features.gni               |   51 +
- .../loader/navigation_url_loader_impl.cc      |    2 +-
- .../renderer_host/render_frame_host_impl.cc   |   10 +
- .../renderer_host/render_frame_host_impl.h    |    6 +
- content/public/browser/render_frame_host.h    |    7 +
- content/public/common/isolated_world_ids.h    |    8 +
- content/public/test/fake_local_frame.cc       |    7 +
- content/public/test/fake_local_frame.h        |    5 +
- content/shell/BUILD.gn                        |   16 +
- content/shell/app/shell_main_delegate.cc      |    8 +-
- .../adblock/adblock_shell_browser_context.cc  |   69 +
- .../adblock/adblock_shell_browser_context.h   |   38 +
- .../adblock_shell_content_browser_client.cc   |   30 +
- .../adblock_shell_content_browser_client.h    |   35 +
- content/shell/browser/shell.cc                |    9 +
- content/shell/browser/shell_browser_context.h |    7 +
- .../shell/browser/shell_browser_main_parts.cc |   10 +-
- ...web_request_proxying_url_loader_factory.cc |    6 +-
- net/url_request/redirect_info.h               |    8 +
- .../network/public/cpp/net_ipc_param_traits.h |    5 +
- .../blink/public/mojom/frame/frame.mojom      |    8 +
- third_party/blink/public/web/web_document.h   |   12 +
- .../renderer/core/dom/events/event_target.cc  |    9 +-
- .../renderer/core/exported/web_document.cc    |   50 +
- .../core/frame/local_frame_mojo_handler.cc    |   12 +
- .../core/frame/local_frame_mojo_handler.h     |    5 +
- .../blink/renderer/core/html/html_element.cc  |    8 +-
- .../url_loader/mojo_url_loader_client.cc      |    6 +-
- tools/eyeo/generate_interdiffs.sh             |  150 ++
- tools/eyeo/generate_modules.sh                |  259 +++
- tools/eyeo/git-grafts.txt                     |   60 +
- tools/eyeo/update_git_grafts.py               |  138 ++
- tools/gritsettings/resource_ids.spec          |   12 +
- .../histograms/metadata/extensions/enums.xml  |    8 +-
+ DEPS                                               |   11 
+ LICENSE                                            |   15 
+ README.md                                          |   12 
+ base/threading/thread_restrictions.h               |    9 
+ base/trace_event/builtin_categories.h              |    1 
+ components/BUILD.gn                                |    1 
+ components/adblock/BUILD.gn                        |   36 +
+ components/adblock/CHANGELOG.md                    |  746 +++++++++++
+ components/adblock/LICENSE                         |  674 ++++++++++
+ components/adblock/README.md                       |   80 +
+ components/adblock/content/BUILD.gn                |   22 
+ components/adblock/content/browser/BUILD.gn        |  226 +++
+ .../browser/adblock_content_browser_client.h       |  350 +++++
+ .../content/browser/adblock_context_data.cc        |   87 +
+ .../adblock/content/browser/adblock_context_data.h |   63 +
+ .../adblock/content/browser/adblock_filter_match.h |   30 
+ .../browser/adblock_internals_page_handler.cc      |  171 ++
+ .../browser/adblock_internals_page_handler.h       |   61 +
+ .../content/browser/adblock_internals_ui.cc        |   67 +
+ .../adblock/content/browser/adblock_internals_ui.h |   49 +
+ .../content/browser/adblock_url_loader_factory.cc  |  807 +++++++++++
+ .../content/browser/adblock_url_loader_factory.h   |  100 +
+ .../browser/adblock_url_loader_factory_for_test.cc |  466 +++++++
+ .../browser/adblock_url_loader_factory_for_test.h  |   78 +
+ .../browser/adblock_web_ui_controller_factory.cc   |   62 +
+ .../browser/adblock_web_ui_controller_factory.h    |   58 +
+ .../browser/adblock_webcontents_observer.cc        |  217 +++
+ .../content/browser/adblock_webcontents_observer.h |   93 +
+ .../browser/content_security_policy_injector.h     |   61 +
+ .../content_security_policy_injector_impl.cc       |  111 ++
+ .../content_security_policy_injector_impl.h        |   65 +
+ components/adblock/content/browser/element_hider.h |   70 +
+ .../adblock/content/browser/element_hider_impl.cc  |  367 +++++
+ .../adblock/content/browser/element_hider_impl.h   |   55 +
+ .../adblock/content/browser/eyeo_document_info.cc  |   50 +
+ .../adblock/content/browser/eyeo_document_info.h   |   58 +
+ .../adblock/content/browser/eyeo_page_info.cc      |   38 +
+ .../adblock/content/browser/eyeo_page_info.h       |   53 +
+ .../factories/adblock_request_throttle_factory.cc  |   72 +
+ .../factories/adblock_request_throttle_factory.h   |   51 +
+ .../factories/adblock_telemetry_service_factory.cc |  122 ++
+ .../factories/adblock_telemetry_service_factory.h  |   55 +
+ .../content_security_policy_injector_factory.cc    |   71 +
+ .../content_security_policy_injector_factory.h     |   49 +
+ .../browser/factories/element_hider_factory.cc     |   65 +
+ .../browser/factories/element_hider_factory.h      |   47 +
+ .../content/browser/factories/embedding_utils.cc   |   42 +
+ .../content/browser/factories/embedding_utils.h    |   50 +
+ .../resource_classification_runner_factory.cc      |   73 +
+ .../resource_classification_runner_factory.h       |   49 +
+ .../browser/factories/session_stats_factory.cc     |   66 +
+ .../browser/factories/session_stats_factory.h      |   47 +
+ .../browser/factories/sitekey_storage_factory.cc   |   61 +
+ .../browser/factories/sitekey_storage_factory.h    |   47 +
+ .../subscription_persistent_metadata_factory.cc    |   66 +
+ .../subscription_persistent_metadata_factory.h     |   49 +
+ .../factories/subscription_service_factory.cc      |  500 +++++++
+ .../factories/subscription_service_factory.h       |   76 +
+ .../content/browser/frame_hierarchy_builder.cc     |  137 ++
+ .../content/browser/frame_hierarchy_builder.h      |   66 +
+ .../adblock/content/browser/frame_opener_info.cc   |   37 +
+ .../adblock/content/browser/frame_opener_info.h    |   45 +
+ components/adblock/content/browser/mojom/BUILD.gn  |   22 
+ .../content/browser/mojom/adblock_internals.mojom  |   22 
+ .../adblock/content/browser/page_view_stats.cc     |  291 ++++
+ .../adblock/content/browser/page_view_stats.h      |  131 ++
+ .../adblock/content/browser/request_initiator.cc   |   58 +
+ .../adblock/content/browser/request_initiator.h    |   69 +
+ .../browser/resource_classification_runner.h       |  108 ++
+ .../browser/resource_classification_runner_impl.cc |  431 ++++++
+ .../browser/resource_classification_runner_impl.h  |  153 ++
+ .../adblock/content/browser/session_stats_impl.cc  |   87 +
+ .../adblock/content/browser/session_stats_impl.h   |   71 +
+ .../test/adblock_acceptable_ads_browsertest.cc     |  211 +++
+ .../browser/test/adblock_browsertest_base.cc       |  219 +++
+ .../browser/test/adblock_browsertest_base.h        |  128 ++
+ .../adblock_content_browser_client_browsertest.cc  |  110 ++
+ .../test/adblock_content_filters_browsertest.cc    |  290 ++++
+ .../browser/test/adblock_debug_url_browsertest.cc  |  331 +++++
+ .../test/adblock_filter_list_browsertest.cc        |  710 ++++++++++
+ ...adblock_filtering_configurations_browsertest.cc |  666 +++++++++
+ .../browser/test/adblock_non_ascii_browsertest.cc  |   67 +
+ .../test/adblock_page_view_stats_browsertest.cc    |  840 ++++++++++++
+ .../test/adblock_request_throttle_browsertest.cc   |  127 ++
+ .../test/adblock_service_workers_browsertest.cc    |  208 +++
+ .../browser/test/adblock_sitekey_browsertest.cc    |  177 +++
+ .../browser/test/adblock_snippets_browsertest.cc   |   76 +
+ .../adblock_subscription_service_browsertest.cc    |  202 +++
+ .../test/adblock_telemetry_service_browsertest.cc  |  280 ++++
+ .../test/adblock_trusted_events_browsertest.cc     |  135 ++
+ .../test/adblock_url_loader_factory_test.cc        |  512 +++++++
+ .../browser/test/adblock_web_bundle_browsertest.cc |  425 ++++++
+ .../browser/test/adblock_web_ui_browsertest.cc     |   58 +
+ .../test/adblock_webcontents_observer_test.cc      |  189 +++
+ .../content_security_policy_injector_impl_test.cc  |  218 +++
+ .../browser/test/element_hider_impl_test.cc        |  433 ++++++
+ .../browser/test/frame_hierarchy_builder_test.cc   |  131 ++
+ ...ock_adblock_content_security_policy_injector.cc |   28 
+ ...mock_adblock_content_security_policy_injector.h |   44 +
+ .../content/browser/test/mock_element_hider.cc     |   26 
+ .../content/browser/test/mock_element_hider.h      |   55 +
+ .../browser/test/mock_frame_hierarchy_builder.cc   |   26 
+ .../browser/test/mock_frame_hierarchy_builder.h    |   46 +
+ .../test/mock_resource_classification_runner.cc    |   49 +
+ .../test/mock_resource_classification_runner.h     |   96 +
+ .../content/browser/test/page_view_stats_test.cc   |  334 +++++
+ .../resource_classification_runner_impl_test.cc    |  422 ++++++
+ .../browser/test/session_stats_impl_test.cc        |   74 +
+ .../test/subscription_service_factory_test.cc      |  488 +++++++
+ .../content/resources/adblock_internals/BUILD.gn   |   32 
+ .../adblock_internals/adblock_internals.html       |   45 +
+ .../adblock_internals/adblock_internals.ts         |   65 +
+ components/adblock/core/BUILD.gn                   |  156 ++
+ .../core/activeping_telemetry_topic_provider.cc    |  299 ++++
+ .../core/activeping_telemetry_topic_provider.h     |   94 +
+ .../adblock/core/adblock_telemetry_service.cc      |  308 ++++
+ .../adblock/core/adblock_telemetry_service.h       |  132 ++
+ components/adblock/core/classifier/BUILD.gn        |   77 +
+ .../adblock/core/classifier/resource_classifier.cc |   24 
+ .../adblock/core/classifier/resource_classifier.h  |   90 +
+ .../core/classifier/resource_classifier_impl.cc    |  406 ++++++
+ .../core/classifier/resource_classifier_impl.h     |   64 +
+ .../classifier/test/mock_resource_classifier.cc    |   26 
+ .../classifier/test/mock_resource_classifier.h     |   66 +
+ .../test/resource_classifier_impl_test.cc          |  626 +++++++++
+ .../test/resource_classifier_perftest.cc           |  394 ++++++
+ components/adblock/core/common/BUILD.gn            |  139 ++
+ .../adblock/core/common/adblock_constants.cc       |  174 ++
+ components/adblock/core/common/adblock_constants.h |   54 +
+ components/adblock/core/common/adblock_prefs.cc    |  167 ++
+ components/adblock/core/common/adblock_prefs.h     |   55 +
+ components/adblock/core/common/adblock_switches.cc |   28 
+ components/adblock/core/common/adblock_switches.h  |   31 
+ components/adblock/core/common/adblock_utils.cc    |   80 +
+ components/adblock/core/common/adblock_utils.h     |   43 +
+ components/adblock/core/common/app_info.cc         |   46 +
+ components/adblock/core/common/app_info.h          |   43 +
+ components/adblock/core/common/content_type.cc     |   91 +
+ components/adblock/core/common/content_type.h      |   48 +
+ components/adblock/core/common/flatbuffer_data.cc  |  105 +
+ components/adblock/core/common/flatbuffer_data.h   |   90 +
+ .../adblock/core/common/header_filter_data.h       |   38 +
+ .../adblock/core/common/keyword_extractor_utils.cc |   29 
+ .../adblock/core/common/keyword_extractor_utils.h  |   31 
+ .../adblock/core/common/regex_filter_pattern.cc    |   31 
+ .../adblock/core/common/regex_filter_pattern.h     |   34 
+ components/adblock/core/common/sitekey.h           |   29 
+ components/adblock/core/common/task_scheduler.h    |   35 
+ .../adblock/core/common/task_scheduler_impl.cc     |   59 +
+ .../adblock/core/common/task_scheduler_impl.h      |   50 +
+ .../core/common/test/flatbuffer_data_test.cc       |   80 +
+ .../core/common/test/mock_task_scheduler.cc        |   25 
+ .../adblock/core/common/test/mock_task_scheduler.h |   40 +
+ .../core/common/test/task_scheduler_impl_test.cc   |   82 +
+ components/adblock/core/common/web_ui_constants.cc |   24 
+ components/adblock/core/common/web_ui_constants.h  |   27 
+ components/adblock/core/configuration/BUILD.gn     |   60 +
+ .../core/configuration/filtering_configuration.h   |   91 +
+ .../persistent_filtering_configuration.cc          |  270 ++++
+ .../persistent_filtering_configuration.h           |   84 +
+ .../test/fake_filtering_configuration.cc           |  124 ++
+ .../test/fake_filtering_configuration.h            |   68 +
+ .../test/mock_filtering_configuration.cc           |   34 
+ .../test/mock_filtering_configuration.h            |   82 +
+ .../persistent_filtering_configuration_test.cc     |  255 ++++
+ components/adblock/core/converter/BUILD.gn         |   67 +
+ .../adblock/core/converter/converter_main.cc       |  117 ++
+ .../adblock/core/converter/flatbuffer_converter.cc |  153 ++
+ .../adblock/core/converter/flatbuffer_converter.h  |   63 +
+ components/adblock/core/converter/parser/BUILD.gn  |   67 +
+ .../core/converter/parser/content_filter.cc        |  100 +
+ .../adblock/core/converter/parser/content_filter.h |   53 +
+ .../adblock/core/converter/parser/domain_option.cc |  146 ++
+ .../adblock/core/converter/parser/domain_option.h  |   62 +
+ .../core/converter/parser/filter_classifier.cc     |   52 +
+ .../core/converter/parser/filter_classifier.h      |   49 +
+ .../adblock/core/converter/parser/metadata.cc      |  145 ++
+ .../adblock/core/converter/parser/metadata.h       |   64 +
+ .../core/converter/parser/snippet_filter.cc        |   62 +
+ .../adblock/core/converter/parser/snippet_filter.h |   48 +
+ .../core/converter/parser/snippet_tokenizer.cc     |  103 +
+ .../core/converter/parser/snippet_tokenizer.h      |   46 +
+ .../converter/parser/test/content_filter_test.cc   |  263 ++++
+ .../converter/parser/test/domain_option_test.cc    |  214 +++
+ .../parser/test/filter_classifier_test.cc          |   80 +
+ .../core/converter/parser/test/metadata_test.cc    |  198 +++
+ .../converter/parser/test/snippet_filter_test.cc   |   79 +
+ .../parser/test/snippet_tokenizer_test.cc          |  141 ++
+ .../parser/test/url_filter_options_test.cc         |  258 ++++
+ .../core/converter/parser/test/url_filter_test.cc  |  163 ++
+ .../adblock/core/converter/parser/url_filter.cc    |  232 +++
+ .../adblock/core/converter/parser/url_filter.h     |   50 +
+ .../core/converter/parser/url_filter_options.cc    |  267 ++++
+ .../core/converter/parser/url_filter_options.h     |  122 ++
+ .../adblock/core/converter/serializer/BUILD.gn     |   46 +
+ .../serializer/filter_keyword_extractor.cc         |   63 +
+ .../serializer/filter_keyword_extractor.h          |   59 +
+ .../converter/serializer/flatbuffer_serializer.cc  |  490 +++++++
+ .../converter/serializer/flatbuffer_serializer.h   |  161 ++
+ .../adblock/core/converter/serializer/serializer.h |   41 +
+ .../test/filter_keyword_extractor_test.cc          |   68 +
+ .../test/flatbuffer_converter_perftest.cc          |   83 +
+ components/adblock/core/features.cc                |   26 
+ components/adblock/core/features.h                 |   31 
+ components/adblock/core/net/BUILD.gn               |   68 +
+ .../adblock/core/net/adblock_request_throttle.h    |   45 +
+ .../core/net/adblock_request_throttle_impl.cc      |   71 +
+ .../core/net/adblock_request_throttle_impl.h       |   54 +
+ .../adblock/core/net/adblock_resource_request.h    |   61 +
+ .../core/net/adblock_resource_request_impl.cc      |  217 +++
+ .../core/net/adblock_resource_request_impl.h       |   78 +
+ .../net/test/adblock_request_throttle_impl_test.cc |  133 ++
+ .../net/test/adblock_resource_request_impl_test.cc |  414 ++++++
+ .../core/net/test/mock_adblock_request_throttle.cc |   45 +
+ .../core/net/test/mock_adblock_request_throttle.h  |   42 +
+ .../core/net/test/mock_adblock_resource_request.cc |   25 
+ .../core/net/test/mock_adblock_resource_request.h  |   49 +
+ components/adblock/core/resources/.gitignore       |    1 
+ components/adblock/core/resources/BUILD.gn         |   95 +
+ .../adblock/core/resources/adblock_resources.grd   |   38 +
+ components/adblock/core/resources/elemhide.js      |   43 +
+ .../core/resources/elemhide_for_selector.jst       |   53 +
+ components/adblock/core/resources/elemhideemu.jst  | 1410 ++++++++++++++++++++
+ components/adblock/core/resources/snippets_deps.py |   71 +
+ components/adblock/core/resources/update.sh        |   33 
+ .../adblock/core/schema/filter_list_schema.fbs     |  190 +++
+ components/adblock/core/schema/schema_hash.h       |   30 
+ components/adblock/core/session_stats.h            |   42 +
+ components/adblock/core/sitekey_storage.h          |   53 +
+ components/adblock/core/sitekey_storage_impl.cc    |  164 ++
+ components/adblock/core/sitekey_storage_impl.h     |   59 +
+ components/adblock/core/subscription/BUILD.gn      |  186 +++
+ .../core/subscription/conversion_executors.h       |   50 +
+ .../adblock/core/subscription/domain_splitter.cc   |   74 +
+ .../adblock/core/subscription/domain_splitter.h    |   56 +
+ .../filtering_configuration_maintainer.h           |   55 +
+ .../filtering_configuration_maintainer_impl.cc     |  516 +++++++
+ .../filtering_configuration_maintainer_impl.h      |  124 ++
+ .../core/subscription/installed_subscription.cc    |   46 +
+ .../core/subscription/installed_subscription.h     |  147 ++
+ .../subscription/installed_subscription_impl.cc    |  638 +++++++++
+ .../subscription/installed_subscription_impl.h     |  147 ++
+ .../adblock/core/subscription/pattern_matcher.cc   |  277 ++++
+ .../adblock/core/subscription/pattern_matcher.h    |   35 
+ .../subscription/preloaded_subscription_provider.h |   56 +
+ .../preloaded_subscription_provider_impl.cc        |  121 ++
+ .../preloaded_subscription_provider_impl.h         |   50 +
+ .../recommended_subscription_installer.h           |   43 +
+ .../recommended_subscription_installer_impl.cc     |  141 ++
+ .../recommended_subscription_installer_impl.h      |   73 +
+ .../recommended_subscription_parser.cc             |   82 +
+ .../subscription/recommended_subscription_parser.h |   35 
+ .../adblock/core/subscription/regex_matcher.cc     |  162 ++
+ .../adblock/core/subscription/regex_matcher.h      |   75 +
+ .../adblock/core/subscription/subscription.cc      |   24 
+ .../adblock/core/subscription/subscription.h       |   81 +
+ .../core/subscription/subscription_collection.h    |   98 +
+ .../subscription/subscription_collection_impl.cc   |  382 +++++
+ .../subscription/subscription_collection_impl.h    |   98 +
+ .../core/subscription/subscription_config.cc       |  428 ++++++
+ .../core/subscription/subscription_config.h        |  131 ++
+ .../core/subscription/subscription_downloader.h    |   60 +
+ .../subscription/subscription_downloader_impl.cc   |  279 ++++
+ .../subscription/subscription_downloader_impl.h    |   97 +
+ .../subscription_persistent_metadata.h             |   99 +
+ .../subscription_persistent_metadata_impl.cc       |  224 +++
+ .../subscription_persistent_metadata_impl.h        |   68 +
+ .../subscription/subscription_persistent_storage.h |   60 +
+ .../subscription_persistent_storage_impl.cc        |  237 +++
+ .../subscription_persistent_storage_impl.h         |   80 +
+ .../core/subscription/subscription_service.h       |   92 +
+ .../core/subscription/subscription_service_impl.cc |  265 ++++
+ .../core/subscription/subscription_service_impl.h  |  101 +
+ .../core/subscription/subscription_validator.h     |   59 +
+ .../subscription/subscription_validator_impl.cc    |  144 ++
+ .../subscription/subscription_validator_impl.h     |   53 +
+ .../core/subscription/test/domain_splitter_test.cc |   64 +
+ ...filtering_configuration_maintainer_impl_test.cc |  991 ++++++++++++++
+ .../test/installed_subscription_impl_csp_test.cc   |  236 +++
+ .../installed_subscription_impl_elemhide_test.cc   |  566 ++++++++
+ .../installed_subscription_impl_header_test.cc     |  297 ++++
+ ...talled_subscription_impl_list_converter_test.cc |  107 ++
+ .../installed_subscription_impl_metadata_test.cc   |  129 ++
+ .../installed_subscription_impl_rewrite_test.cc    |  190 +++
+ .../installed_subscription_impl_snippets_test.cc   |  196 +++
+ .../test/installed_subscription_impl_test_base.cc  |   78 +
+ .../test/installed_subscription_impl_test_base.h   |   54 +
+ .../test/installed_subscription_impl_url_test.cc   | 1307 +++++++++++++++++++
+ .../subscription/test/load_gzipped_test_file.cc    |   43 +
+ .../subscription/test/load_gzipped_test_file.h     |   34 
+ .../subscription/test/mock_conversion_executors.cc |   25 
+ .../subscription/test/mock_conversion_executors.h  |   46 +
+ .../mock_filtering_configuration_maintainer.cc     |   28 
+ .../test/mock_filtering_configuration_maintainer.h |   48 +
+ .../test/mock_installed_subscription.cc            |   26 
+ .../test/mock_installed_subscription.h             |  102 +
+ .../core/subscription/test/mock_subscription.cc    |   36 +
+ .../core/subscription/test/mock_subscription.h     |   51 +
+ .../test/mock_subscription_collection.cc           |   26 
+ .../test/mock_subscription_collection.h            |  102 +
+ .../test/mock_subscription_downloader.cc           |   25 
+ .../test/mock_subscription_downloader.h            |   48 +
+ .../test/mock_subscription_persistent_metadata.cc  |   27 
+ .../test/mock_subscription_persistent_metadata.h   |   92 +
+ .../subscription/test/mock_subscription_service.cc |   36 +
+ .../subscription/test/mock_subscription_service.h  |   77 +
+ .../subscription/test/pattern_matcher_perftest.cc  |   73 +
+ .../core/subscription/test/pattern_matcher_test.cc |  376 +++++
+ .../preloaded_subscription_provider_impl_test.cc   |  149 ++
+ ...recommended_subscription_installer_impl_test.cc |  325 +++++
+ .../test/recommended_subscription_parser_test.cc   |  117 ++
+ .../subscription/test/regex_matcher_perftest.cc    |   86 +
+ .../test/subscription_collection_impl_test.cc      | 1021 ++++++++++++++
+ .../test/subscription_downloader_impl_test.cc      |  445 ++++++
+ .../subscription_persistent_metadata_impl_test.cc  |  268 ++++
+ .../subscription_persistent_storage_impl_test.cc   |  346 +++++
+ .../test/subscription_service_impl_test.cc         |  378 +++++
+ .../test/subscription_validator_impl_test.cc       |  251 ++++
+ .../test/url_keyword_extractor_test.cc             |   74 +
+ .../core/subscription/url_keyword_extractor.cc     |   66 +
+ .../core/subscription/url_keyword_extractor.h      |   59 +
+ .../activeping_telemetry_topic_provider_test.cc    |  325 +++++
+ .../test/adblock_telemetry_service_unittest.cc     |  460 +++++++
+ .../adblock/core/test/bundled_subscription_test.cc |   49 +
+ .../adblock/core/test/mock_sitekey_storage.cc      |   26 
+ .../adblock/core/test/mock_sitekey_storage.h       |   49 +
+ .../adblock/core/test/sitekey_storage_impl_test.cc |  155 ++
+ components/adblock/features.gni                    |   51 +
+ .../browser/loader/navigation_url_loader_impl.cc   |    2 
+ .../renderer_host/render_frame_host_impl.cc        |   10 
+ .../browser/renderer_host/render_frame_host_impl.h |    6 
+ content/public/browser/render_frame_host.h         |    7 
+ content/public/common/isolated_world_ids.h         |    8 
+ content/public/test/fake_local_frame.cc            |    7 
+ content/public/test/fake_local_frame.h             |    5 
+ content/shell/BUILD.gn                             |   16 
+ content/shell/app/shell_main_delegate.cc           |    8 
+ .../adblock/adblock_shell_browser_context.cc       |   69 +
+ .../adblock/adblock_shell_browser_context.h        |   38 +
+ .../adblock_shell_content_browser_client.cc        |   30 
+ .../adblock/adblock_shell_content_browser_client.h |   35 
+ content/shell/browser/shell.cc                     |    9 
+ content/shell/browser/shell_browser_context.h      |    7 
+ content/shell/browser/shell_browser_main_parts.cc  |   10 
+ .../web_request_proxying_url_loader_factory.cc     |    6 
+ net/url_request/redirect_info.h                    |    8 
+ services/network/public/cpp/net_ipc_param_traits.h |    5 
+ third_party/blink/public/mojom/frame/frame.mojom   |    8 
+ third_party/blink/public/web/web_document.h        |   12 
+ .../blink/renderer/core/dom/events/event_target.cc |    9 
+ .../blink/renderer/core/exported/web_document.cc   |   50 +
+ .../core/frame/local_frame_mojo_handler.cc         |   12 
+ .../renderer/core/frame/local_frame_mojo_handler.h |    5 
+ .../blink/renderer/core/html/html_element.cc       |    8 
+ .../fetch/url_loader/mojo_url_loader_client.cc     |    6 
+ tools/eyeo/generate_interdiffs.sh                  |  150 ++
+ tools/eyeo/generate_modules.sh                     |  259 ++++
+ tools/eyeo/git-grafts.txt                          |   60 +
+ tools/eyeo/update_git_grafts.py                    |  138 ++
+ tools/gritsettings/resource_ids.spec               |   12 
+ .../histograms/metadata/extensions/enums.xml       |    8 
  361 files changed, 48832 insertions(+), 9 deletions(-)
- create mode 100644 components/adblock/BUILD.gn
- create mode 100644 components/adblock/CHANGELOG.md
- create mode 100644 components/adblock/LICENSE
- create mode 100644 components/adblock/README.md
- create mode 100644 components/adblock/content/BUILD.gn
- create mode 100644 components/adblock/content/browser/BUILD.gn
- create mode 100644 components/adblock/content/browser/adblock_content_browser_client.h
- create mode 100644 components/adblock/content/browser/adblock_context_data.cc
- create mode 100644 components/adblock/content/browser/adblock_context_data.h
- create mode 100644 components/adblock/content/browser/adblock_filter_match.h
- create mode 100644 components/adblock/content/browser/adblock_internals_page_handler.cc
- create mode 100644 components/adblock/content/browser/adblock_internals_page_handler.h
- create mode 100644 components/adblock/content/browser/adblock_internals_ui.cc
- create mode 100644 components/adblock/content/browser/adblock_internals_ui.h
- create mode 100644 components/adblock/content/browser/adblock_url_loader_factory.cc
- create mode 100644 components/adblock/content/browser/adblock_url_loader_factory.h
- create mode 100644 components/adblock/content/browser/adblock_url_loader_factory_for_test.cc
- create mode 100644 components/adblock/content/browser/adblock_url_loader_factory_for_test.h
- create mode 100644 components/adblock/content/browser/adblock_web_ui_controller_factory.cc
- create mode 100644 components/adblock/content/browser/adblock_web_ui_controller_factory.h
- create mode 100644 components/adblock/content/browser/adblock_webcontents_observer.cc
- create mode 100644 components/adblock/content/browser/adblock_webcontents_observer.h
- create mode 100644 components/adblock/content/browser/content_security_policy_injector.h
- create mode 100644 components/adblock/content/browser/content_security_policy_injector_impl.cc
- create mode 100644 components/adblock/content/browser/content_security_policy_injector_impl.h
- create mode 100644 components/adblock/content/browser/element_hider.h
- create mode 100644 components/adblock/content/browser/element_hider_impl.cc
- create mode 100644 components/adblock/content/browser/element_hider_impl.h
- create mode 100644 components/adblock/content/browser/eyeo_document_info.cc
- create mode 100644 components/adblock/content/browser/eyeo_document_info.h
- create mode 100644 components/adblock/content/browser/eyeo_page_info.cc
- create mode 100644 components/adblock/content/browser/eyeo_page_info.h
- create mode 100644 components/adblock/content/browser/factories/adblock_request_throttle_factory.cc
- create mode 100644 components/adblock/content/browser/factories/adblock_request_throttle_factory.h
- create mode 100644 components/adblock/content/browser/factories/adblock_telemetry_service_factory.cc
- create mode 100644 components/adblock/content/browser/factories/adblock_telemetry_service_factory.h
- create mode 100644 components/adblock/content/browser/factories/content_security_policy_injector_factory.cc
- create mode 100644 components/adblock/content/browser/factories/content_security_policy_injector_factory.h
- create mode 100644 components/adblock/content/browser/factories/element_hider_factory.cc
- create mode 100644 components/adblock/content/browser/factories/element_hider_factory.h
- create mode 100644 components/adblock/content/browser/factories/embedding_utils.cc
- create mode 100644 components/adblock/content/browser/factories/embedding_utils.h
- create mode 100644 components/adblock/content/browser/factories/resource_classification_runner_factory.cc
- create mode 100644 components/adblock/content/browser/factories/resource_classification_runner_factory.h
- create mode 100644 components/adblock/content/browser/factories/session_stats_factory.cc
- create mode 100644 components/adblock/content/browser/factories/session_stats_factory.h
- create mode 100644 components/adblock/content/browser/factories/sitekey_storage_factory.cc
- create mode 100644 components/adblock/content/browser/factories/sitekey_storage_factory.h
- create mode 100644 components/adblock/content/browser/factories/subscription_persistent_metadata_factory.cc
- create mode 100644 components/adblock/content/browser/factories/subscription_persistent_metadata_factory.h
- create mode 100644 components/adblock/content/browser/factories/subscription_service_factory.cc
- create mode 100644 components/adblock/content/browser/factories/subscription_service_factory.h
- create mode 100644 components/adblock/content/browser/frame_hierarchy_builder.cc
- create mode 100644 components/adblock/content/browser/frame_hierarchy_builder.h
- create mode 100644 components/adblock/content/browser/frame_opener_info.cc
- create mode 100644 components/adblock/content/browser/frame_opener_info.h
- create mode 100644 components/adblock/content/browser/mojom/BUILD.gn
- create mode 100644 components/adblock/content/browser/mojom/adblock_internals.mojom
- create mode 100644 components/adblock/content/browser/page_view_stats.cc
- create mode 100644 components/adblock/content/browser/page_view_stats.h
- create mode 100644 components/adblock/content/browser/request_initiator.cc
- create mode 100644 components/adblock/content/browser/request_initiator.h
- create mode 100644 components/adblock/content/browser/resource_classification_runner.h
- create mode 100644 components/adblock/content/browser/resource_classification_runner_impl.cc
- create mode 100644 components/adblock/content/browser/resource_classification_runner_impl.h
- create mode 100644 components/adblock/content/browser/session_stats_impl.cc
- create mode 100644 components/adblock/content/browser/session_stats_impl.h
- create mode 100644 components/adblock/content/browser/test/adblock_acceptable_ads_browsertest.cc
- create mode 100644 components/adblock/content/browser/test/adblock_browsertest_base.cc
- create mode 100644 components/adblock/content/browser/test/adblock_browsertest_base.h
- create mode 100644 components/adblock/content/browser/test/adblock_content_browser_client_browsertest.cc
- create mode 100644 components/adblock/content/browser/test/adblock_content_filters_browsertest.cc
- create mode 100644 components/adblock/content/browser/test/adblock_debug_url_browsertest.cc
- create mode 100644 components/adblock/content/browser/test/adblock_filter_list_browsertest.cc
- create mode 100644 components/adblock/content/browser/test/adblock_filtering_configurations_browsertest.cc
- create mode 100644 components/adblock/content/browser/test/adblock_non_ascii_browsertest.cc
- create mode 100644 components/adblock/content/browser/test/adblock_page_view_stats_browsertest.cc
- create mode 100644 components/adblock/content/browser/test/adblock_request_throttle_browsertest.cc
- create mode 100644 components/adblock/content/browser/test/adblock_service_workers_browsertest.cc
- create mode 100644 components/adblock/content/browser/test/adblock_sitekey_browsertest.cc
- create mode 100644 components/adblock/content/browser/test/adblock_snippets_browsertest.cc
- create mode 100644 components/adblock/content/browser/test/adblock_subscription_service_browsertest.cc
- create mode 100644 components/adblock/content/browser/test/adblock_telemetry_service_browsertest.cc
- create mode 100644 components/adblock/content/browser/test/adblock_trusted_events_browsertest.cc
- create mode 100644 components/adblock/content/browser/test/adblock_url_loader_factory_test.cc
- create mode 100644 components/adblock/content/browser/test/adblock_web_bundle_browsertest.cc
- create mode 100644 components/adblock/content/browser/test/adblock_web_ui_browsertest.cc
- create mode 100644 components/adblock/content/browser/test/adblock_webcontents_observer_test.cc
- create mode 100644 components/adblock/content/browser/test/content_security_policy_injector_impl_test.cc
- create mode 100644 components/adblock/content/browser/test/element_hider_impl_test.cc
- create mode 100644 components/adblock/content/browser/test/frame_hierarchy_builder_test.cc
- create mode 100644 components/adblock/content/browser/test/mock_adblock_content_security_policy_injector.cc
- create mode 100644 components/adblock/content/browser/test/mock_adblock_content_security_policy_injector.h
- create mode 100644 components/adblock/content/browser/test/mock_element_hider.cc
- create mode 100644 components/adblock/content/browser/test/mock_element_hider.h
- create mode 100644 components/adblock/content/browser/test/mock_frame_hierarchy_builder.cc
- create mode 100644 components/adblock/content/browser/test/mock_frame_hierarchy_builder.h
- create mode 100644 components/adblock/content/browser/test/mock_resource_classification_runner.cc
- create mode 100644 components/adblock/content/browser/test/mock_resource_classification_runner.h
- create mode 100644 components/adblock/content/browser/test/page_view_stats_test.cc
- create mode 100644 components/adblock/content/browser/test/resource_classification_runner_impl_test.cc
- create mode 100644 components/adblock/content/browser/test/session_stats_impl_test.cc
- create mode 100644 components/adblock/content/browser/test/subscription_service_factory_test.cc
- create mode 100644 components/adblock/content/resources/adblock_internals/BUILD.gn
- create mode 100644 components/adblock/content/resources/adblock_internals/adblock_internals.html
- create mode 100644 components/adblock/content/resources/adblock_internals/adblock_internals.ts
- create mode 100644 components/adblock/core/BUILD.gn
- create mode 100644 components/adblock/core/activeping_telemetry_topic_provider.cc
- create mode 100644 components/adblock/core/activeping_telemetry_topic_provider.h
- create mode 100644 components/adblock/core/adblock_telemetry_service.cc
- create mode 100644 components/adblock/core/adblock_telemetry_service.h
- create mode 100644 components/adblock/core/classifier/BUILD.gn
- create mode 100644 components/adblock/core/classifier/resource_classifier.cc
- create mode 100644 components/adblock/core/classifier/resource_classifier.h
- create mode 100644 components/adblock/core/classifier/resource_classifier_impl.cc
- create mode 100644 components/adblock/core/classifier/resource_classifier_impl.h
- create mode 100644 components/adblock/core/classifier/test/mock_resource_classifier.cc
- create mode 100644 components/adblock/core/classifier/test/mock_resource_classifier.h
- create mode 100644 components/adblock/core/classifier/test/resource_classifier_impl_test.cc
- create mode 100644 components/adblock/core/classifier/test/resource_classifier_perftest.cc
- create mode 100644 components/adblock/core/common/BUILD.gn
- create mode 100644 components/adblock/core/common/adblock_constants.cc
- create mode 100644 components/adblock/core/common/adblock_constants.h
- create mode 100644 components/adblock/core/common/adblock_prefs.cc
- create mode 100644 components/adblock/core/common/adblock_prefs.h
- create mode 100644 components/adblock/core/common/adblock_switches.cc
- create mode 100644 components/adblock/core/common/adblock_switches.h
- create mode 100644 components/adblock/core/common/adblock_utils.cc
- create mode 100644 components/adblock/core/common/adblock_utils.h
- create mode 100644 components/adblock/core/common/app_info.cc
- create mode 100644 components/adblock/core/common/app_info.h
- create mode 100644 components/adblock/core/common/content_type.cc
- create mode 100644 components/adblock/core/common/content_type.h
- create mode 100644 components/adblock/core/common/flatbuffer_data.cc
- create mode 100644 components/adblock/core/common/flatbuffer_data.h
- create mode 100644 components/adblock/core/common/header_filter_data.h
- create mode 100644 components/adblock/core/common/keyword_extractor_utils.cc
- create mode 100644 components/adblock/core/common/keyword_extractor_utils.h
- create mode 100644 components/adblock/core/common/regex_filter_pattern.cc
- create mode 100644 components/adblock/core/common/regex_filter_pattern.h
- create mode 100644 components/adblock/core/common/sitekey.h
- create mode 100644 components/adblock/core/common/task_scheduler.h
- create mode 100644 components/adblock/core/common/task_scheduler_impl.cc
- create mode 100644 components/adblock/core/common/task_scheduler_impl.h
- create mode 100644 components/adblock/core/common/test/flatbuffer_data_test.cc
- create mode 100644 components/adblock/core/common/test/mock_task_scheduler.cc
- create mode 100644 components/adblock/core/common/test/mock_task_scheduler.h
- create mode 100644 components/adblock/core/common/test/task_scheduler_impl_test.cc
- create mode 100644 components/adblock/core/common/web_ui_constants.cc
- create mode 100644 components/adblock/core/common/web_ui_constants.h
- create mode 100644 components/adblock/core/configuration/BUILD.gn
- create mode 100644 components/adblock/core/configuration/filtering_configuration.h
- create mode 100644 components/adblock/core/configuration/persistent_filtering_configuration.cc
- create mode 100644 components/adblock/core/configuration/persistent_filtering_configuration.h
- create mode 100644 components/adblock/core/configuration/test/fake_filtering_configuration.cc
- create mode 100644 components/adblock/core/configuration/test/fake_filtering_configuration.h
- create mode 100644 components/adblock/core/configuration/test/mock_filtering_configuration.cc
- create mode 100644 components/adblock/core/configuration/test/mock_filtering_configuration.h
- create mode 100644 components/adblock/core/configuration/test/persistent_filtering_configuration_test.cc
- create mode 100644 components/adblock/core/converter/BUILD.gn
- create mode 100644 components/adblock/core/converter/converter_main.cc
- create mode 100644 components/adblock/core/converter/flatbuffer_converter.cc
- create mode 100644 components/adblock/core/converter/flatbuffer_converter.h
- create mode 100644 components/adblock/core/converter/parser/BUILD.gn
- create mode 100644 components/adblock/core/converter/parser/content_filter.cc
- create mode 100644 components/adblock/core/converter/parser/content_filter.h
- create mode 100644 components/adblock/core/converter/parser/domain_option.cc
- create mode 100644 components/adblock/core/converter/parser/domain_option.h
- create mode 100644 components/adblock/core/converter/parser/filter_classifier.cc
- create mode 100644 components/adblock/core/converter/parser/filter_classifier.h
- create mode 100644 components/adblock/core/converter/parser/metadata.cc
- create mode 100644 components/adblock/core/converter/parser/metadata.h
- create mode 100644 components/adblock/core/converter/parser/snippet_filter.cc
- create mode 100644 components/adblock/core/converter/parser/snippet_filter.h
- create mode 100644 components/adblock/core/converter/parser/snippet_tokenizer.cc
- create mode 100644 components/adblock/core/converter/parser/snippet_tokenizer.h
- create mode 100644 components/adblock/core/converter/parser/test/content_filter_test.cc
- create mode 100644 components/adblock/core/converter/parser/test/domain_option_test.cc
- create mode 100644 components/adblock/core/converter/parser/test/filter_classifier_test.cc
- create mode 100644 components/adblock/core/converter/parser/test/metadata_test.cc
- create mode 100644 components/adblock/core/converter/parser/test/snippet_filter_test.cc
- create mode 100644 components/adblock/core/converter/parser/test/snippet_tokenizer_test.cc
- create mode 100644 components/adblock/core/converter/parser/test/url_filter_options_test.cc
- create mode 100644 components/adblock/core/converter/parser/test/url_filter_test.cc
- create mode 100644 components/adblock/core/converter/parser/url_filter.cc
- create mode 100644 components/adblock/core/converter/parser/url_filter.h
- create mode 100644 components/adblock/core/converter/parser/url_filter_options.cc
- create mode 100644 components/adblock/core/converter/parser/url_filter_options.h
- create mode 100644 components/adblock/core/converter/serializer/BUILD.gn
- create mode 100644 components/adblock/core/converter/serializer/filter_keyword_extractor.cc
- create mode 100644 components/adblock/core/converter/serializer/filter_keyword_extractor.h
- create mode 100644 components/adblock/core/converter/serializer/flatbuffer_serializer.cc
- create mode 100644 components/adblock/core/converter/serializer/flatbuffer_serializer.h
- create mode 100644 components/adblock/core/converter/serializer/serializer.h
- create mode 100644 components/adblock/core/converter/serializer/test/filter_keyword_extractor_test.cc
- create mode 100644 components/adblock/core/converter/test/flatbuffer_converter_perftest.cc
- create mode 100644 components/adblock/core/features.cc
- create mode 100644 components/adblock/core/features.h
- create mode 100644 components/adblock/core/net/BUILD.gn
- create mode 100644 components/adblock/core/net/adblock_request_throttle.h
- create mode 100644 components/adblock/core/net/adblock_request_throttle_impl.cc
- create mode 100644 components/adblock/core/net/adblock_request_throttle_impl.h
- create mode 100644 components/adblock/core/net/adblock_resource_request.h
- create mode 100644 components/adblock/core/net/adblock_resource_request_impl.cc
- create mode 100644 components/adblock/core/net/adblock_resource_request_impl.h
- create mode 100644 components/adblock/core/net/test/adblock_request_throttle_impl_test.cc
- create mode 100644 components/adblock/core/net/test/adblock_resource_request_impl_test.cc
- create mode 100644 components/adblock/core/net/test/mock_adblock_request_throttle.cc
- create mode 100644 components/adblock/core/net/test/mock_adblock_request_throttle.h
- create mode 100644 components/adblock/core/net/test/mock_adblock_resource_request.cc
- create mode 100644 components/adblock/core/net/test/mock_adblock_resource_request.h
- create mode 100644 components/adblock/core/resources/.gitignore
- create mode 100644 components/adblock/core/resources/BUILD.gn
- create mode 100644 components/adblock/core/resources/adblock_resources.grd
- create mode 100644 components/adblock/core/resources/elemhide.js
- create mode 100644 components/adblock/core/resources/elemhide_for_selector.jst
- create mode 100644 components/adblock/core/resources/elemhideemu.jst
- create mode 100644 components/adblock/core/resources/snippets_deps.py
- create mode 100755 components/adblock/core/resources/update.sh
- create mode 100644 components/adblock/core/schema/filter_list_schema.fbs
- create mode 100644 components/adblock/core/schema/schema_hash.h
- create mode 100644 components/adblock/core/session_stats.h
- create mode 100644 components/adblock/core/sitekey_storage.h
- create mode 100644 components/adblock/core/sitekey_storage_impl.cc
- create mode 100644 components/adblock/core/sitekey_storage_impl.h
- create mode 100644 components/adblock/core/subscription/BUILD.gn
- create mode 100644 components/adblock/core/subscription/conversion_executors.h
- create mode 100644 components/adblock/core/subscription/domain_splitter.cc
- create mode 100644 components/adblock/core/subscription/domain_splitter.h
- create mode 100644 components/adblock/core/subscription/filtering_configuration_maintainer.h
- create mode 100644 components/adblock/core/subscription/filtering_configuration_maintainer_impl.cc
- create mode 100644 components/adblock/core/subscription/filtering_configuration_maintainer_impl.h
- create mode 100644 components/adblock/core/subscription/installed_subscription.cc
- create mode 100644 components/adblock/core/subscription/installed_subscription.h
- create mode 100644 components/adblock/core/subscription/installed_subscription_impl.cc
- create mode 100644 components/adblock/core/subscription/installed_subscription_impl.h
- create mode 100644 components/adblock/core/subscription/pattern_matcher.cc
- create mode 100644 components/adblock/core/subscription/pattern_matcher.h
- create mode 100644 components/adblock/core/subscription/preloaded_subscription_provider.h
- create mode 100644 components/adblock/core/subscription/preloaded_subscription_provider_impl.cc
- create mode 100644 components/adblock/core/subscription/preloaded_subscription_provider_impl.h
- create mode 100644 components/adblock/core/subscription/recommended_subscription_installer.h
- create mode 100644 components/adblock/core/subscription/recommended_subscription_installer_impl.cc
- create mode 100644 components/adblock/core/subscription/recommended_subscription_installer_impl.h
- create mode 100644 components/adblock/core/subscription/recommended_subscription_parser.cc
- create mode 100644 components/adblock/core/subscription/recommended_subscription_parser.h
- create mode 100644 components/adblock/core/subscription/regex_matcher.cc
- create mode 100644 components/adblock/core/subscription/regex_matcher.h
- create mode 100644 components/adblock/core/subscription/subscription.cc
- create mode 100644 components/adblock/core/subscription/subscription.h
- create mode 100644 components/adblock/core/subscription/subscription_collection.h
- create mode 100644 components/adblock/core/subscription/subscription_collection_impl.cc
- create mode 100644 components/adblock/core/subscription/subscription_collection_impl.h
- create mode 100644 components/adblock/core/subscription/subscription_config.cc
- create mode 100644 components/adblock/core/subscription/subscription_config.h
- create mode 100644 components/adblock/core/subscription/subscription_downloader.h
- create mode 100644 components/adblock/core/subscription/subscription_downloader_impl.cc
- create mode 100644 components/adblock/core/subscription/subscription_downloader_impl.h
- create mode 100644 components/adblock/core/subscription/subscription_persistent_metadata.h
- create mode 100644 components/adblock/core/subscription/subscription_persistent_metadata_impl.cc
- create mode 100644 components/adblock/core/subscription/subscription_persistent_metadata_impl.h
- create mode 100644 components/adblock/core/subscription/subscription_persistent_storage.h
- create mode 100644 components/adblock/core/subscription/subscription_persistent_storage_impl.cc
- create mode 100644 components/adblock/core/subscription/subscription_persistent_storage_impl.h
- create mode 100644 components/adblock/core/subscription/subscription_service.h
- create mode 100644 components/adblock/core/subscription/subscription_service_impl.cc
- create mode 100644 components/adblock/core/subscription/subscription_service_impl.h
- create mode 100644 components/adblock/core/subscription/subscription_validator.h
- create mode 100644 components/adblock/core/subscription/subscription_validator_impl.cc
- create mode 100644 components/adblock/core/subscription/subscription_validator_impl.h
- create mode 100644 components/adblock/core/subscription/test/domain_splitter_test.cc
- create mode 100644 components/adblock/core/subscription/test/filtering_configuration_maintainer_impl_test.cc
- create mode 100644 components/adblock/core/subscription/test/installed_subscription_impl_csp_test.cc
- create mode 100644 components/adblock/core/subscription/test/installed_subscription_impl_elemhide_test.cc
- create mode 100644 components/adblock/core/subscription/test/installed_subscription_impl_header_test.cc
- create mode 100644 components/adblock/core/subscription/test/installed_subscription_impl_list_converter_test.cc
- create mode 100644 components/adblock/core/subscription/test/installed_subscription_impl_metadata_test.cc
- create mode 100644 components/adblock/core/subscription/test/installed_subscription_impl_rewrite_test.cc
- create mode 100644 components/adblock/core/subscription/test/installed_subscription_impl_snippets_test.cc
- create mode 100644 components/adblock/core/subscription/test/installed_subscription_impl_test_base.cc
- create mode 100644 components/adblock/core/subscription/test/installed_subscription_impl_test_base.h
- create mode 100644 components/adblock/core/subscription/test/installed_subscription_impl_url_test.cc
- create mode 100644 components/adblock/core/subscription/test/load_gzipped_test_file.cc
- create mode 100644 components/adblock/core/subscription/test/load_gzipped_test_file.h
- create mode 100644 components/adblock/core/subscription/test/mock_conversion_executors.cc
- create mode 100644 components/adblock/core/subscription/test/mock_conversion_executors.h
- create mode 100644 components/adblock/core/subscription/test/mock_filtering_configuration_maintainer.cc
- create mode 100644 components/adblock/core/subscription/test/mock_filtering_configuration_maintainer.h
- create mode 100644 components/adblock/core/subscription/test/mock_installed_subscription.cc
- create mode 100644 components/adblock/core/subscription/test/mock_installed_subscription.h
- create mode 100644 components/adblock/core/subscription/test/mock_subscription.cc
- create mode 100644 components/adblock/core/subscription/test/mock_subscription.h
- create mode 100644 components/adblock/core/subscription/test/mock_subscription_collection.cc
- create mode 100644 components/adblock/core/subscription/test/mock_subscription_collection.h
- create mode 100644 components/adblock/core/subscription/test/mock_subscription_downloader.cc
- create mode 100644 components/adblock/core/subscription/test/mock_subscription_downloader.h
- create mode 100644 components/adblock/core/subscription/test/mock_subscription_persistent_metadata.cc
- create mode 100644 components/adblock/core/subscription/test/mock_subscription_persistent_metadata.h
- create mode 100644 components/adblock/core/subscription/test/mock_subscription_service.cc
- create mode 100644 components/adblock/core/subscription/test/mock_subscription_service.h
- create mode 100644 components/adblock/core/subscription/test/pattern_matcher_perftest.cc
- create mode 100644 components/adblock/core/subscription/test/pattern_matcher_test.cc
- create mode 100644 components/adblock/core/subscription/test/preloaded_subscription_provider_impl_test.cc
- create mode 100644 components/adblock/core/subscription/test/recommended_subscription_installer_impl_test.cc
- create mode 100644 components/adblock/core/subscription/test/recommended_subscription_parser_test.cc
- create mode 100644 components/adblock/core/subscription/test/regex_matcher_perftest.cc
- create mode 100644 components/adblock/core/subscription/test/subscription_collection_impl_test.cc
- create mode 100644 components/adblock/core/subscription/test/subscription_downloader_impl_test.cc
- create mode 100644 components/adblock/core/subscription/test/subscription_persistent_metadata_impl_test.cc
- create mode 100644 components/adblock/core/subscription/test/subscription_persistent_storage_impl_test.cc
- create mode 100644 components/adblock/core/subscription/test/subscription_service_impl_test.cc
- create mode 100644 components/adblock/core/subscription/test/subscription_validator_impl_test.cc
- create mode 100644 components/adblock/core/subscription/test/url_keyword_extractor_test.cc
- create mode 100644 components/adblock/core/subscription/url_keyword_extractor.cc
- create mode 100644 components/adblock/core/subscription/url_keyword_extractor.h
- create mode 100644 components/adblock/core/test/activeping_telemetry_topic_provider_test.cc
- create mode 100644 components/adblock/core/test/adblock_telemetry_service_unittest.cc
- create mode 100644 components/adblock/core/test/bundled_subscription_test.cc
- create mode 100644 components/adblock/core/test/mock_sitekey_storage.cc
- create mode 100644 components/adblock/core/test/mock_sitekey_storage.h
- create mode 100644 components/adblock/core/test/sitekey_storage_impl_test.cc
- create mode 100644 components/adblock/features.gni
- create mode 100644 content/shell/browser/adblock/adblock_shell_browser_context.cc
- create mode 100644 content/shell/browser/adblock/adblock_shell_browser_context.h
- create mode 100644 content/shell/browser/adblock/adblock_shell_content_browser_client.cc
- create mode 100644 content/shell/browser/adblock/adblock_shell_content_browser_client.h
- create mode 100755 tools/eyeo/generate_interdiffs.sh
- create mode 100755 tools/eyeo/generate_modules.sh
- create mode 100644 tools/eyeo/git-grafts.txt
- create mode 100755 tools/eyeo/update_git_grafts.py
 
 diff --git a/DEPS b/DEPS
 --- a/DEPS
 +++ b/DEPS
-@@ -324,6 +324,7 @@ vars = {
+@@ -305,6 +305,7 @@ vars = {
    'download_libvpx_testdata': False,
  
    'android_git': 'https://android.googlesource.com',
@@ -708,10 +378,10 @@ diff --git a/DEPS b/DEPS
    'aomedia_git': 'https://aomedia.googlesource.com',
    'boringssl_git': 'https://boringssl.googlesource.com',
    'chrome_git': 'https://chrome-internal.googlesource.com',
-@@ -554,6 +555,12 @@ vars = {
+@@ -557,6 +558,12 @@ vars = {
    # the commit queue can handle CLs rolling clusterfuzz-data
    # and whatever else without interference from each other.
-   'clusterfuzz_data_revision':'2effd3a9209c0386d509d8d518eb342043884d2c',
+   'clusterfuzz_data_revision':'db1fa22b3f283ddc2cbe9263651ba48fa5625d8e',
 +
 +  # Three lines of non-changing comments so that
 +  # the commit queue can handle CLs rolling feed
@@ -721,7 +391,7 @@ diff --git a/DEPS b/DEPS
    # Three lines of non-changing comments so that
    # the commit queue can handle CLs rolling agents-internal
    # and whatever else without interference from each other.
-@@ -1762,6 +1769,10 @@ deps = {
+@@ -1772,6 +1779,10 @@ deps = {
      'condition': 'checkout_android and checkout_src_internal',
    },
  
@@ -730,7 +400,7 @@ diff --git a/DEPS b/DEPS
 +  },
 +
    'src/docs/website': {
-     'url': Var('chromium_git') + '/website.git' + '@' + 'c3cbe61e9891506afb2075e4430a228ad7658e23',
+     'url': Var('chromium_git') + '/website.git' + '@' + 'd8303f620f61ba5c155466d46501d1c3e096c699',
    },
 diff --git a/LICENSE b/LICENSE
 --- a/LICENSE
@@ -797,7 +467,7 @@ diff --git a/base/threading/thread_restrictions.h b/base/threading/thread_restri
  namespace ash {
  class LoginEventRecorder;
  class StartupCustomizationDocument;
-@@ -675,6 +682,8 @@ class BASE_EXPORT ScopedAllowBlocking {
+@@ -682,6 +689,8 @@ class BASE_EXPORT ScopedAllowBlocking {
    friend class ::ProfileIOSDirectoryBuilder;
  #endif
  
@@ -820,7 +490,7 @@ diff --git a/base/trace_event/builtin_categories.h b/base/trace_event/builtin_ca
 diff --git a/components/BUILD.gn b/components/BUILD.gn
 --- a/components/BUILD.gn
 +++ b/components/BUILD.gn
-@@ -1152,6 +1152,7 @@ if (use_blink) {
+@@ -1173,6 +1173,7 @@ if (use_blink) {
      deps = [
        "//base",
        "//base/test:test_support",
@@ -50212,7 +49882,7 @@ new file mode 100644
 diff --git a/content/browser/loader/navigation_url_loader_impl.cc b/content/browser/loader/navigation_url_loader_impl.cc
 --- a/content/browser/loader/navigation_url_loader_impl.cc
 +++ b/content/browser/loader/navigation_url_loader_impl.cc
-@@ -1609,7 +1609,7 @@ void NavigationURLLoaderImpl::OnReceiveRedirect(
+@@ -1626,7 +1626,7 @@ void NavigationURLLoaderImpl::OnReceiveRedirect(
        bypass_redirect_checks = bypass_redirect_checks_;
      }
  
@@ -50235,7 +49905,7 @@ diff --git a/content/browser/renderer_host/render_frame_host_impl.cc b/content/b
  
  #include "content/browser/renderer_host/render_frame_host_impl.h"
  
-@@ -3922,6 +3926,12 @@ void RenderFrameHostImpl::ExecuteJavaScriptMethod(
+@@ -3979,6 +3983,12 @@ void RenderFrameHostImpl::ExecuteJavaScriptMethod(
        std::move(callback));
  }
  
@@ -50262,7 +49932,7 @@ diff --git a/content/browser/renderer_host/render_frame_host_impl.h b/content/br
  
  #ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_FRAME_HOST_IMPL_H_
  #define CONTENT_BROWSER_RENDERER_HOST_RENDER_FRAME_HOST_IMPL_H_
-@@ -531,6 +535,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
+@@ -529,6 +533,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                 const std::u16string& method_name,
                                 base::ListValue arguments,
                                 JavaScriptResultCallback callback) override;
@@ -50285,7 +49955,7 @@ diff --git a/content/public/browser/render_frame_host.h b/content/public/browser
  
  #ifndef CONTENT_PUBLIC_BROWSER_RENDER_FRAME_HOST_H_
  #define CONTENT_PUBLIC_BROWSER_RENDER_FRAME_HOST_H_
-@@ -589,6 +593,9 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener {
+@@ -610,6 +614,9 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener {
    virtual void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                                     const std::string& message) = 0;
  
@@ -50334,7 +50004,7 @@ diff --git a/content/public/test/fake_local_frame.cc b/content/public/test/fake_
  
  #include "content/public/test/fake_local_frame.h"
  
-@@ -103,6 +107,9 @@ void FakeLocalFrame::RequestVideoFrameAtWithBoundsHint(
+@@ -105,6 +109,9 @@ void FakeLocalFrame::RequestVideoFrameAtWithBoundsHint(
  void FakeLocalFrame::PluginActionAt(const gfx::Point& location,
                                      blink::mojom::PluginActionType action) {}
  
@@ -50358,7 +50028,7 @@ diff --git a/content/public/test/fake_local_frame.h b/content/public/test/fake_l
  
  #ifndef CONTENT_PUBLIC_TEST_FAKE_LOCAL_FRAME_H_
  #define CONTENT_PUBLIC_TEST_FAKE_LOCAL_FRAME_H_
-@@ -87,6 +91,7 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
+@@ -89,6 +93,7 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
        RequestVideoFrameAtWithBoundsHintCallback callback) override;
    void PluginActionAt(const gfx::Point& location,
                        blink::mojom::PluginActionType action) override;
@@ -50398,16 +50068,16 @@ diff --git a/content/shell/BUILD.gn b/content/shell/BUILD.gn
    }
  
    if (is_mac) {
-@@ -331,6 +339,8 @@ static_library("content_shell_lib") {
-     ":shell_controller_mojom",
+@@ -332,6 +340,8 @@ static_library("content_shell_lib") {
      "//base",
      "//base:base_static",
+     "//base:i18n",
 +    "//components/adblock/content:browser",
 +    "//components/adblock/core/common",
      "//components/cdm/renderer",
      "//components/custom_handlers",
      "//components/custom_handlers:test_support",
-@@ -350,6 +360,7 @@ static_library("content_shell_lib") {
+@@ -351,6 +361,7 @@ static_library("content_shell_lib") {
      "//components/services/storage/test_api",
      "//components/surface_embed/renderer",
      "//components/url_formatter",
@@ -50415,7 +50085,7 @@ diff --git a/content/shell/BUILD.gn b/content/shell/BUILD.gn
      "//components/variations/service",
      "//components/web_cache/renderer",
      "//content:content_resources",
-@@ -441,6 +452,7 @@ static_library("content_shell_lib") {
+@@ -443,6 +454,7 @@ static_library("content_shell_lib") {
        "//mojo/public/java/system:test_support",
        "//ui/android",
      ]
@@ -50423,7 +50093,7 @@ diff --git a/content/shell/BUILD.gn b/content/shell/BUILD.gn
    }
  
    if (shell_use_toolkit_views) {
-@@ -531,6 +543,8 @@ repack("pak") {
+@@ -529,6 +541,8 @@ repack("pak") {
  
    sources = [
      "$root_gen_dir/base/tracing/protos/tracing_proto_resources.pak",
@@ -50432,7 +50102,7 @@ diff --git a/content/shell/BUILD.gn b/content/shell/BUILD.gn
      "$root_gen_dir/components/ukm_resources.pak",
      "$root_gen_dir/content/browser/resources/media/media_internals_resources.pak",
      "$root_gen_dir/content/browser/webrtc/resources/webrtc_internals_resources.pak",
-@@ -562,6 +576,8 @@ repack("pak") {
+@@ -560,6 +574,8 @@ repack("pak") {
    deps = [
      ":resources",
      "//base/tracing/protos:chrome_track_event_resources",
@@ -50455,7 +50125,7 @@ diff --git a/content/shell/app/shell_main_delegate.cc b/content/shell/app/shell_
  
  #include "content/shell/app/shell_main_delegate.h"
  
-@@ -33,7 +37,7 @@
+@@ -34,7 +38,7 @@
  #include "content/public/common/main_function_params.h"
  #include "content/public/common/url_constants.h"
  #include "content/shell/app/shell_crash_reporter_client.h"
@@ -50464,7 +50134,7 @@ diff --git a/content/shell/app/shell_main_delegate.cc b/content/shell/app/shell_
  #include "content/shell/common/shell_content_client.h"
  #include "content/shell/common/shell_paths.h"
  #include "content/shell/common/shell_switches.h"
-@@ -482,7 +486,7 @@ ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {
+@@ -494,7 +498,7 @@ ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {
      return browser_client_.get();
    }
  #endif
@@ -50668,7 +50338,7 @@ new file mode 100644
 diff --git a/content/shell/browser/shell.cc b/content/shell/browser/shell.cc
 --- a/content/shell/browser/shell.cc
 +++ b/content/shell/browser/shell.cc
-@@ -21,6 +21,8 @@
+@@ -24,6 +24,8 @@
  #include "base/strings/string_util.h"
  #include "base/strings/utf_string_conversions.h"
  #include "build/build_config.h"
@@ -50677,7 +50347,7 @@ diff --git a/content/shell/browser/shell.cc b/content/shell/browser/shell.cc
  #include "components/custom_handlers/protocol_handler.h"
  #include "components/custom_handlers/protocol_handler_registry.h"
  #include "components/custom_handlers/simple_protocol_handler_registry_factory.h"
-@@ -41,6 +43,7 @@
+@@ -44,6 +46,7 @@
  #include "content/public/browser/web_contents.h"
  #include "content/public/common/content_switches.h"
  #include "content/shell/app/resource.h"
@@ -50685,9 +50355,9 @@ diff --git a/content/shell/browser/shell.cc b/content/shell/browser/shell.cc
  #include "content/shell/browser/shell_content_browser_client.h"
  #include "content/shell/browser/shell_devtools_frontend.h"
  #include "content/shell/browser/shell_javascript_dialog_manager.h"
-@@ -87,6 +90,12 @@ Shell::Shell(std::unique_ptr<WebContents> web_contents,
- 
-   windows_.push_back(this);
+@@ -107,6 +110,12 @@ Shell::Shell(std::unique_ptr<WebContents> web_contents,
+   }
+   g_windows->push_back(this);
  
 +  content::BrowserContext* browser_context =
 +      ShellContentBrowserClient::Get()->browser_context();
@@ -50695,9 +50365,9 @@ diff --git a/content/shell/browser/shell.cc b/content/shell/browser/shell.cc
 +  adblock::RegisterAdblockWebContentObserver<
 +      adblock::AdblockWebContentObserver>(web_contents_.get(), browser_context);
 +
-   if (shell_created_callback_)
-     std::move(shell_created_callback_).Run(this);
- }
+   if (g_shell_created_callback) {
+     base::OnceCallback<void(Shell*)> callback =
+         std::move(*g_shell_created_callback);
 diff --git a/content/shell/browser/shell_browser_context.h b/content/shell/browser/shell_browser_context.h
 --- a/content/shell/browser/shell_browser_context.h
 +++ b/content/shell/browser/shell_browser_context.h
@@ -50751,7 +50421,7 @@ diff --git a/content/shell/browser/shell_browser_main_parts.cc b/content/shell/b
  #include "components/performance_manager/embedder/graph_features.h"
  #include "components/performance_manager/embedder/performance_manager_lifetime.h"
  #include "content/public/browser/browser_thread.h"
-@@ -30,6 +35,7 @@
+@@ -29,6 +34,7 @@
  #include "content/public/common/result_codes.h"
  #include "content/public/common/url_constants.h"
  #include "content/shell/android/shell_descriptors.h"
@@ -50759,7 +50429,7 @@ diff --git a/content/shell/browser/shell_browser_main_parts.cc b/content/shell/b
  #include "content/shell/browser/shell.h"
  #include "content/shell/browser/shell_browser_context.h"
  #include "content/shell/browser/shell_devtools_manager_delegate.h"
-@@ -138,7 +144,7 @@ int ShellBrowserMainParts::PreEarlyInitialization() {
+@@ -137,7 +143,7 @@ int ShellBrowserMainParts::PreEarlyInitialization() {
  }
  
  void ShellBrowserMainParts::InitializeBrowserContexts() {
@@ -50791,7 +50461,7 @@ diff --git a/extensions/browser/api/web_request/web_request_proxying_url_loader_
  #include "extensions/browser/api/web_request/web_request_proxying_url_loader_factory.h"
  
  #include <memory>
-@@ -484,7 +488,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnReceiveRedirect(
+@@ -515,7 +519,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnReceiveRedirect(
      AuthorizeBypassRedirectChecks();
    }
  
@@ -50861,7 +50531,7 @@ diff --git a/third_party/blink/public/mojom/frame/frame.mojom b/third_party/blin
  
  module blink.mojom;
  
-@@ -1004,6 +1008,10 @@ interface LocalFrame {
+@@ -989,6 +993,10 @@ interface LocalFrame {
    PluginActionAt(
        gfx.mojom.Point location, blink.mojom.PluginActionType action);
  
@@ -50886,7 +50556,7 @@ diff --git a/third_party/blink/public/web/web_document.h b/third_party/blink/pub
  #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_DOCUMENT_H_
  #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_DOCUMENT_H_
  
-@@ -161,6 +165,14 @@ class BLINK_EXPORT WebDocument : public WebNode {
+@@ -155,6 +159,14 @@ class BLINK_EXPORT WebDocument : public WebNode {
        WebCssOrigin = WebCssOrigin::kAuthor,
        BackForwardCacheAware = BackForwardCacheAware::kAllow);
  
@@ -50915,7 +50585,7 @@ diff --git a/third_party/blink/renderer/core/dom/events/event_target.cc b/third_
  #include "third_party/blink/renderer/core/dom/events/event_target.h"
  
  #include <memory>
-@@ -854,7 +858,10 @@ bool EventTarget::dispatchEventForBindings(Event* event,
+@@ -871,7 +875,10 @@ bool EventTarget::dispatchEventForBindings(Event* event,
    if (!GetExecutionContext())
      return false;
  
@@ -50930,7 +50600,7 @@ diff --git a/third_party/blink/renderer/core/dom/events/event_target.cc b/third_
 diff --git a/third_party/blink/renderer/core/exported/web_document.cc b/third_party/blink/renderer/core/exported/web_document.cc
 --- a/third_party/blink/renderer/core/exported/web_document.cc
 +++ b/third_party/blink/renderer/core/exported/web_document.cc
-@@ -307,6 +307,56 @@ WebStyleSheetKey WebDocument::InsertStyleSheet(
+@@ -301,6 +301,56 @@ WebStyleSheetKey WebDocument::InsertStyleSheet(
    return injection_key;
  }
  
@@ -51001,8 +50671,8 @@ diff --git a/third_party/blink/renderer/core/frame/local_frame_mojo_handler.cc b
  
  #include "third_party/blink/renderer/core/frame/local_frame_mojo_handler.h"
  
-@@ -358,6 +362,14 @@ LocalFrameMojoHandler::LocalFrameMojoHandler(blink::LocalFrame& frame)
-                     WrapWeakPersistent(this)));
+@@ -376,6 +380,14 @@ LocalFrameMojoHandler::LocalFrameMojoHandler(blink::LocalFrame& frame)
+       WrapWeakPersistent(this)));
  }
  
 +void LocalFrameMojoHandler::InsertAbpElemhideStylesheet(
@@ -51030,7 +50700,7 @@ diff --git a/third_party/blink/renderer/core/frame/local_frame_mojo_handler.h b/
  
  #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LOCAL_FRAME_MOJO_HANDLER_H_
  #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LOCAL_FRAME_MOJO_HANDLER_H_
-@@ -111,6 +115,7 @@ class LocalFrameMojoHandler
+@@ -118,6 +122,7 @@ class LocalFrameMojoHandler
    void AddMessageToConsole(mojom::blink::ConsoleMessageLevel level,
                             const String& message,
                             bool discard_duplicates) final;
@@ -51041,7 +50711,7 @@ diff --git a/third_party/blink/renderer/core/frame/local_frame_mojo_handler.h b/
 diff --git a/third_party/blink/renderer/core/html/html_element.cc b/third_party/blink/renderer/core/html/html_element.cc
 --- a/third_party/blink/renderer/core/html/html_element.cc
 +++ b/third_party/blink/renderer/core/html/html_element.cc
-@@ -3687,7 +3687,13 @@ void HTMLElement::setSpellcheck(bool enable) {
+@@ -3802,7 +3802,13 @@ void HTMLElement::setSpellcheck(bool enable) {
  }
  
  void HTMLElement::click() {
@@ -51720,7 +51390,7 @@ diff --git a/tools/gritsettings/resource_ids.spec b/tools/gritsettings/resource_
  # This file is used to assign starting resource ids for resources and strings
  # used by Chromium.  This is done to ensure that resource ids are unique
  # across all the grd files.  If you are adding a new grd file, please add
-@@ -1415,6 +1419,14 @@
+@@ -1427,6 +1431,14 @@
    "components/user_scripts/browser/resources/browser_resources.grd": {
      "includes": [7625],
    },
@@ -51749,7 +51419,7 @@ diff --git a/tools/metrics/histograms/metadata/extensions/enums.xml b/tools/metr
  -->
  
  <!--
-@@ -201,7 +205,7 @@ Called by update_extension_histograms.py.-->
+@@ -215,7 +219,7 @@ Called by update_extension_histograms.py.-->
    <int value="19" label="APP_WINDOW_ON_MAXIMIZED"/>
    <int value="20" label="APP_WINDOW_ON_MINIMIZED"/>
    <int value="21" label="APP_WINDOW_ON_RESTORED"/>
@@ -51758,13 +51428,14 @@ diff --git a/tools/metrics/histograms/metadata/extensions/enums.xml b/tools/metr
    <int value="23" label="DELETED_AUDIO_MODEM_ON_TRANSMIT_FAIL"/>
    <int value="24" label="DELETED_AUDIO_ON_DEVICE_CHANGED"/>
    <int value="25" label="AUDIO_ON_DEVICES_CHANGED"/>
-@@ -3307,6 +3311,8 @@ Called by update_extension_permission.py.-->
-   <int value="271" label="kBluetoothLowEnergy"/>
-   <int value="272" label="kBluetoothPeripheral"/>
+@@ -3348,6 +3352,8 @@ Called by update_extension_permission.py.-->
    <int value="273" label="kPublicSuffix"/>
+   <int value="274" label="kEnterpriseWebrtc"/>
+   <int value="275" label="kMimeTypesHandlerPdf"/>
 +  <int value="999" label="kAdblockPrivate"/>
 +  <int value="1000" label="kEyeoFilteringPrivate"/>
  </enum>
  
  <enum name="ExtensionPinReason">
+
 --
