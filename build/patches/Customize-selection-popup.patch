@@ -7,28 +7,66 @@ Opens tabs in foreground,  Move web search to the top of items,
 Web search in tab group and Enable smart text selection
 License: GPL-2.0-or-later - https://spdx.org/licenses/GPL-2.0-or-later.html
 ---
- .../SamsungSelectionActionMenuDelegate.java   |  7 +-
- .../browser/ChromeActionModeHandler.java      |  6 +-
- .../chrome/browser/ChromeTabbedActivity.java  | 19 +++-
- .../chrome/browser/WebSearchDelegate.java     |  8 +-
- ...ActivityTabWebContentsDelegateAndroid.java |  4 +
- .../compositor/layouts/LayoutManagerImpl.java |  9 +-
- .../TextSelectionActionMenuDelegate.java      | 10 +--
- .../tab/TabContextMenuItemDelegate.java       |  7 +-
- .../chrome/browser/ui/RootUiCoordinator.java  |  1 +
- .../Customize-selection-popup.grdp            | 34 +++++++
- .../AutofillSelectionMenuItemHelper.java      |  4 +-
- .../res/xml/accessibility_preferences.xml     | 24 +++++
- .../selection/SelectActionMenuHelper.java     | 28 +++---
- .../SelectionPopupControllerImpl.java         |  4 +-
- .../selection/SmartSelectionClient.java       |  4 +
- .../browser/PendingSelectionMenu.java         |  8 +-
- .../browser/SelectionMenuItem.java            | 88 ++++++++++++-------
- .../SelectionActionMenuDelegate.java          | 19 +++-
- .../SelectionDropdownMenuDelegate.java        |  2 +-
+ .../Customize-selection-popup.grdp                 |   34 ++++++++
+ .../SamsungSelectionActionMenuDelegate.java        |    7 +-
+ .../chrome/browser/ChromeActionModeHandler.java    |    6 -
+ .../chrome/browser/ChromeTabbedActivity.java       |   19 +++-
+ .../chromium/chrome/browser/WebSearchDelegate.java |    8 ++
+ .../ActivityTabWebContentsDelegateAndroid.java     |    4 +
+ .../compositor/layouts/LayoutManagerImpl.java      |    9 ++
+ .../selection/TextSelectionActionMenuDelegate.java |   10 +-
+ .../browser/tab/TabContextMenuItemDelegate.java    |    7 +-
+ .../chrome/browser/ui/RootUiCoordinator.java       |    1 
+ .../autofill/AutofillSelectionMenuItemHelper.java  |    4 -
+ .../java/res/xml/accessibility_preferences.xml     |   24 +++++
+ .../browser/selection/SelectActionMenuHelper.java  |   28 +++---
+ .../selection/SelectionPopupControllerImpl.java    |    4 -
+ .../browser/selection/SmartSelectionClient.java    |    4 +
+ .../browser/PendingSelectionMenu.java              |    8 +-
+ .../content_public/browser/SelectionMenuItem.java  |   88 +++++++++++++-------
+ .../selection/SelectionActionMenuDelegate.java     |   19 ++++
+ .../selection/SelectionDropdownMenuDelegate.java   |    2 
  19 files changed, 208 insertions(+), 78 deletions(-)
- create mode 100644 chrome/browser/ui/android/strings/cromite_android_chrome_strings_grd/Customize-selection-popup.grdp
 
+diff --git a/chrome/browser/ui/android/strings/cromite_android_chrome_strings_grd/Customize-selection-popup.grdp b/chrome/browser/ui/android/strings/cromite_android_chrome_strings_grd/Customize-selection-popup.grdp
+new file mode 100644
+--- /dev/null
++++ b/chrome/browser/ui/android/strings/cromite_android_chrome_strings_grd/Customize-selection-popup.grdp
+@@ -0,0 +1,34 @@
++<?xml version="1.0" encoding="utf-8"?>
++<grit-part>
++    <message name="IDS_CUSTOMIZE_SELECTON_POPUP_TITLE" desc="">
++        Customize selection popup
++    </message>
++
++    <message name="IDS_SELECTION_POPUP_TABS_FOREGROUND_TITLE" desc="">
++        Opens tabs in foreground
++    </message>
++    <message name="IDS_SELECTION_POPUP_TABS_FOREGROUND_SUMMARY" desc="">
++        Immediately brings new open tabs to the foreground
++    </message>
++
++    <message name="IDS_SELECTION_POPUP_WEB_SEARCH_TO_TOP_TITLE" desc="">
++        Move web search to the top of items
++    </message>
++    <message name="IDS_SELECTION_POPUP_WEB_SEARCH_TO_TOP_SUMMARY" desc="">
++        Web search as first choice
++    </message>
++
++    <message name="IDS_SELECTION_POPUP_WEB_SEARCH_TO_GROUP_TITLE" desc="">
++        Web search in tab group
++    </message>
++    <message name="IDS_SELECTION_POPUP_WEB_SEARCH_TO_GROUP_SUMMARY" desc="">
++        Opens the search in a tab in the current group, if deactivated opens a new group
++    </message>
++
++    <message name="IDS_SELECTION_POPUP_SMART_TEXT_TITLE" desc="">
++        Enable smart text selection
++    </message>
++    <message name="IDS_SELECTION_POPUP_SMART_TEXT_SUMMARY" desc="">
++        Smart Text selection automatically augments the selected boundaries and classifies the selected text based on the context by sending selection together with its surrounding text
++    </message>
++</grit-part>
 diff --git a/android_webview/java/src/org/chromium/android_webview/selection/SamsungSelectionActionMenuDelegate.java b/android_webview/java/src/org/chromium/android_webview/selection/SamsungSelectionActionMenuDelegate.java
 --- a/android_webview/java/src/org/chromium/android_webview/selection/SamsungSelectionActionMenuDelegate.java
 +++ b/android_webview/java/src/org/chromium/android_webview/selection/SamsungSelectionActionMenuDelegate.java
@@ -249,45 +287,6 @@ diff --git a/chrome/android/java/src/org/chromium/chrome/browser/ui/RootUiCoordi
  import org.chromium.base.DeviceInfo;
  import org.chromium.base.TraceEvent;
  import org.chromium.base.lifetime.Destroyable;
-diff --git a/chrome/browser/ui/android/strings/cromite_android_chrome_strings_grd/Customize-selection-popup.grdp b/chrome/browser/ui/android/strings/cromite_android_chrome_strings_grd/Customize-selection-popup.grdp
-new file mode 100644
---- /dev/null
-+++ b/chrome/browser/ui/android/strings/cromite_android_chrome_strings_grd/Customize-selection-popup.grdp
-@@ -0,0 +1,34 @@
-+<?xml version="1.0" encoding="utf-8"?>
-+<grit-part>
-+    <message name="IDS_CUSTOMIZE_SELECTON_POPUP_TITLE" desc="">
-+        Customize selection popup
-+    </message>
-+
-+    <message name="IDS_SELECTION_POPUP_TABS_FOREGROUND_TITLE" desc="">
-+        Opens tabs in foreground
-+    </message>
-+    <message name="IDS_SELECTION_POPUP_TABS_FOREGROUND_SUMMARY" desc="">
-+        Immediately brings new open tabs to the foreground
-+    </message>
-+
-+    <message name="IDS_SELECTION_POPUP_WEB_SEARCH_TO_TOP_TITLE" desc="">
-+        Move web search to the top of items
-+    </message>
-+    <message name="IDS_SELECTION_POPUP_WEB_SEARCH_TO_TOP_SUMMARY" desc="">
-+        Web search as first choice
-+    </message>
-+
-+    <message name="IDS_SELECTION_POPUP_WEB_SEARCH_TO_GROUP_TITLE" desc="">
-+        Web search in tab group
-+    </message>
-+    <message name="IDS_SELECTION_POPUP_WEB_SEARCH_TO_GROUP_SUMMARY" desc="">
-+        Opens the search in a tab in the current group, if deactivated opens a new group
-+    </message>
-+
-+    <message name="IDS_SELECTION_POPUP_SMART_TEXT_TITLE" desc="">
-+        Enable smart text selection
-+    </message>
-+    <message name="IDS_SELECTION_POPUP_SMART_TEXT_SUMMARY" desc="">
-+        Smart Text selection automatically augments the selected boundaries and classifies the selected text based on the context by sending selection together with its surrounding text
-+    </message>
-+</grit-part>
 diff --git a/components/android_autofill/browser/java/src/org/chromium/components/autofill/AutofillSelectionMenuItemHelper.java b/components/android_autofill/browser/java/src/org/chromium/components/autofill/AutofillSelectionMenuItemHelper.java
 --- a/components/android_autofill/browser/java/src/org/chromium/components/autofill/AutofillSelectionMenuItemHelper.java
 +++ b/components/android_autofill/browser/java/src/org/chromium/components/autofill/AutofillSelectionMenuItemHelper.java

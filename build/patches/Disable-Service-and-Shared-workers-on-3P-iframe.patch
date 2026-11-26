@@ -8,94 +8,73 @@ Workers can be reenabled per top-site-url using "Allow 3P Cookies"
 
 License: GPL-2.0-or-later - https://spdx.org/licenses/GPL-2.0-or-later.html
 ---
- .../content_settings_utils.cc                 | 40 +++++--------------
- 1 file changed, 10 insertions(+), 30 deletions(-)
+ .../embedder_support/content_settings_utils.cc     |   41 +++++++++++++++++---
+ 1 file changed, 35 insertions(+), 6 deletions(-)
 
 diff --git a/components/embedder_support/content_settings_utils.cc b/components/embedder_support/content_settings_utils.cc
 --- a/components/embedder_support/content_settings_utils.cc
 +++ b/components/embedder_support/content_settings_utils.cc
-@@ -30,16 +30,7 @@ namespace {
- //  allowed by default, and access is only blocked due to general third-party
- //  cookie blocking (and not due to a user specified pattern) then storage
- //  access can be allowed.
--bool PartitionedStorageByDefaultAllowed(
--    const content_settings::CookieSettingsBase::CookieSettingWithMetadata&
--        cookie_settings) {
--  return base::FeatureList::IsEnabled(
--             net::features::kThirdPartyStoragePartitioning) &&
--         base::FeatureList::IsEnabled(
--             net::features::kThirdPartyPartitionedStorageAllowedByDefault) &&
--         cookie_settings.BlockedByThirdPartyCookieBlocking();
--}
--
-+// (^^^ removed code)
+@@ -23,6 +23,26 @@ using StorageType =
+ 
+ namespace {
+ 
++// Full (unpartitioned) cookie access for a service or shared worker. As in
++// IsAnyStorageAccessAllowed(), the nonce is dropped from the partition key, but
++// partitioned-only storage access does not count.
++bool WorkerFullCookieAccessAllowed(
++    const GURL& url,
++    const net::SiteForCookies& site_for_cookies,
++    const std::optional<url::Origin>& top_frame_origin,
++    const blink::StorageKey& storage_key,
++    const content_settings::CookieSettings* cookie_settings) {
++  std::optional<net::CookiePartitionKey> cookie_partition_key =
++      net::CookiePartitionKey::FromStorageKeyComponents(
++          storage_key.top_level_site(),
++          net::CookiePartitionKey::BoolToAncestorChainBit(
++              storage_key.IsThirdPartyContext()),
++          /*nonce=*/std::nullopt);
++  return cookie_settings->IsFullCookieAccessAllowed(
++      url, site_for_cookies, top_frame_origin, net::CookieSettingOverrides(),
++      cookie_partition_key);
++}
++
  bool AllowWorkerStorageAccess(
      StorageType storage_type,
      const GURL& url,
-@@ -85,18 +76,11 @@ bool AllowWorkerStorageAccess(
-       net::CookieSettingOverrides(), cookie_partition_key,
-       &cookie_settings_metadata);
- 
--  if (!allow && PartitionedStorageByDefaultAllowed(cookie_settings_metadata)) {
--    allow = true;
--  }
--
-   // Allow storage when --test-third-party-cookie-phaseout is used, but ensure
-   // that only partitioned storage is available. This developer flag is meant to
-   // simulate Chrome's behavior when 3P cookies are turned down to help
-   // developers test their site.
--  if (!allow && net::cookie_util::IsForceThirdPartyCookieBlockingEnabled()) {
--    allow = true;
--  }
--
-+  // (^^^^ removed code)
-   for (const auto& it : render_frames) {
-     auto* rfh = content::RenderFrameHost::FromID(it);
-     if (!rfh) {
-@@ -155,19 +139,16 @@ content::AllowServiceWorkerResult AllowServiceWorker(
- 
-       &cookie_settings_metadata);
- 
--  if (!allow_cookies &&
--      PartitionedStorageByDefaultAllowed(cookie_settings_metadata)) {
--    allow_cookies = true;
+@@ -74,9 +94,13 @@ content::AllowServiceWorkerResult AllowServiceWorker(
+   // Check if cookies/storage are allowed.
+   // TODO(crbug.com/40247160): Consider whether the following check should
+   // also consider the third-party cookie user bypass override.
+-  bool allow_cookies = cookie_settings->IsAnyStorageAccessAllowed(
+-      scope, site_for_cookies, top_frame_origin, net::CookieSettingOverrides(),
+-      storage_key.ToCookiePartitionKey());
++  bool allow_cookies = WorkerFullCookieAccessAllowed(
++      scope, site_for_cookies, top_frame_origin, storage_key, cookie_settings);
++
 +  if (!allow_cookies && (!top_frame_origin.has_value()
 +        || !top_frame_origin->IsSameOriginWith(scope))) {
 +    return content::AllowServiceWorkerResult::No();
-   }
- 
-   // Allow storage when --test-third-party-cookie-phaseout is used, but ensure
-   // that only partitioned storage is available. This developer flag is meant to
-   // simulate Chrome's behavior when 3P cookies are turned down to help
-   // developers test their site.
--  if (!allow_cookies &&
--      net::cookie_util::IsForceThirdPartyCookieBlockingEnabled()) {
--    allow_cookies = true;
--  }
-+  // (^^^^ removed code)
++  }
  
    return content::AllowServiceWorkerResult::FromPolicy(!allow_javascript,
                                                         !allow_cookies);
-@@ -203,17 +184,16 @@ bool AllowSharedWorker(
-       net::CookieSettingOverrides(), cookie_partition_key,
-       &cookie_settings_metadata);
- 
--  if (!allow && PartitionedStorageByDefaultAllowed(cookie_settings_metadata)) {
--    allow = true;
+@@ -92,9 +116,14 @@ bool AllowSharedWorker(
+     int render_process_id,
+     int render_frame_id,
+     const content_settings::CookieSettings* cookie_settings) {
+-  bool allow = cookie_settings->IsAnyStorageAccessAllowed(
+-      worker_url, site_for_cookies, top_frame_origin,
+-      net::CookieSettingOverrides(), storage_key.ToCookiePartitionKey());
++  bool allow = WorkerFullCookieAccessAllowed(
++      worker_url, site_for_cookies, top_frame_origin, storage_key,
++      cookie_settings);
++
 +  if (!allow && (!top_frame_origin.has_value()
 +        || !top_frame_origin->IsSameOriginWith(worker_url))) {
 +    return false;
-   }
- 
-   // Allow storage when --test-third-party-cookie-phaseout is used, but ensure
-   // that only partitioned storage is available. This developer flag is meant to
-   // simulate Chrome's behavior when 3P cookies are turned down to help
-   // developers test their site.
--  if (!allow && net::cookie_util::IsForceThirdPartyCookieBlockingEnabled()) {
--    allow = true;
--  }
-+  // (^^^^ removed code)
++  }
  
    content_settings::PageSpecificContentSettings::SharedWorkerAccessed(
        render_process_id, render_frame_id, worker_url, name, storage_key,
+
 --

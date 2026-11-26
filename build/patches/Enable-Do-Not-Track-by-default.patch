@@ -4,7 +4,7 @@ Subject: Enable Do-Not-Track by default
 
 License: GPL-2.0-or-later - https://spdx.org/licenses/GPL-2.0-or-later.html
 ---
- chrome/browser/ui/browser_ui_prefs.cc | 2 +-
+ chrome/browser/ui/browser_ui_prefs.cc |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/chrome/browser/ui/browser_ui_prefs.cc b/chrome/browser/ui/browser_ui_prefs.cc
@@ -17,6 +17,7 @@ diff --git a/chrome/browser/ui/browser_ui_prefs.cc b/chrome/browser/ui/browser_u
 -      prefs::kEnableDoNotTrack, false,
 +      prefs::kEnableDoNotTrack, true,
        user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-   registry->RegisterBooleanPref(prefs::kEnableGPC, true);
  #if !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_ANDROID)
+   registry->RegisterBooleanPref(prefs::kPrintPreviewUseSystemDefaultPrinter,
+
 --

@@ -6,8 +6,8 @@ Always enable 'inspect fallback' in 'chrome://inspect/#devices'
 
 License: GPL-2.0-or-later - https://spdx.org/licenses/GPL-2.0-or-later.html
 ---
- chrome/browser/resources/inspect/inspect.js | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ chrome/browser/resources/inspect/inspect.js |    6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
 diff --git a/chrome/browser/resources/inspect/inspect.js b/chrome/browser/resources/inspect/inspect.js
 --- a/chrome/browser/resources/inspect/inspect.js
@@ -20,13 +20,17 @@ diff --git a/chrome/browser/resources/inspect/inspect.js b/chrome/browser/resour
    if (!HOST_CHROME_VERSION) {
      return false;
    }
-@@ -600,7 +601,7 @@ function formatValue(data, property) {
+@@ -590,11 +591,6 @@ function formatValue(data, property) {
+ 
  function addFavicon(row, data) {
    const favicon = document.createElement('img');
-   if (data['faviconUrl']) {
--    favicon.src = data['faviconUrl'];
-+    //favicon.src = data['faviconUrl'];
-   }
+-  if (data['faviconUrl']) {
+-    const internalURL = new URL('chrome://favicon2/');
+-    internalURL.searchParams.set('iconUrl', data['faviconUrl']);
+-    favicon.src = internalURL;
+-  }
    const propertiesBox = row.querySelector('.properties-box');
    propertiesBox.insertBefore(favicon, propertiesBox.firstChild);
+ }
+
 --

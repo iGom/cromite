@@ -10,105 +10,38 @@ settings) if you do not know what you are doing.
 
 License: GPL-2.0-or-later - https://spdx.org/licenses/GPL-2.0-or-later.html
 ---
- .../java/res/xml/developer_preferences.xml    |  12 ++
- .../init/ProcessInitializationHandler.java    |   6 +-
- .../tracing/settings/DeveloperSettings.java   |   2 +-
- chrome/browser/BUILD.gn                       |   5 +
- chrome/browser/android/devtools_server.cc     |  10 +
- ...ontent_browser_client_receiver_bindings.cc |  10 +
- .../cromite/cromite_private_api_host.cc       |  74 +++++++
- .../cromite/cromite_private_api_host.h        |  54 +++++
- .../browser/flags/cromite/sActAsWebView.java  |  33 +++
- .../cromite/sEnableCromiteTestSupport.java    |  33 +++
- .../NotificationPermissionController.java     |   1 +
- chrome/browser/ui/startup/bad_flags_prompt.cc |   1 +
- chrome/common/BUILD.gn                        |   1 +
- .../cromite_private_api_extension.mojom       |   7 +
- chrome/renderer/BUILD.gn                      |   2 +
- .../chrome_content_renderer_client.cc         |   2 +
- .../cromite/cromite_private_api_extension.cc  | 203 ++++++++++++++++++
- .../cromite/cromite_private_api_extension.h   |  65 ++++++
- .../component_updater_service.h               |   1 +
- .../browser/devtools/devtools_http_handler.cc |   7 +-
- content/browser/log_console_message.cc        |  15 +-
- content/browser/log_console_message.h         |   3 +-
- .../renderer_host/render_frame_host_impl.cc   |  13 +-
- .../about_flags_cc/Enable-test-support.inc    |  19 ++
- .../Enable-test-support.inc                   |   7 +
- .../Enable-test-support.inc                   |   2 +
+ chrome/browser/BUILD.gn                            |    5 
+ ...ome_content_browser_client_receiver_bindings.cc |   10 +
+ chrome/browser/cromite/cromite_private_api_host.cc |   74 +++++++
+ chrome/browser/cromite/cromite_private_api_host.h  |   54 +++++
+ chrome/browser/ui/startup/bad_flags_prompt.cc      |    1 
+ chrome/common/BUILD.gn                             |    1 
+ chrome/common/cromite_private_api_extension.mojom  |    7 +
+ chrome/renderer/BUILD.gn                           |    2 
+ chrome/renderer/chrome_content_renderer_client.cc  |    2 
+ .../cromite/cromite_private_api_extension.cc       |  203 ++++++++++++++++++++
+ .../cromite/cromite_private_api_extension.h        |   65 ++++++
+ .../component_updater/component_updater_service.h  |    1 
+ content/browser/devtools/devtools_http_handler.cc  |    7 +
+ content/browser/log_console_message.cc             |   15 +
+ content/browser/log_console_message.h              |    3 
+ .../renderer_host/render_frame_host_impl.cc        |   13 +
+ .../browser/about_flags_cc/Enable-test-support.inc |   19 ++
+ .../content_features_cc/Enable-test-support.inc    |    7 +
+ .../content_features_h/Enable-test-support.inc     |    2 
+ .../android/java/res/xml/developer_preferences.xml |   12 +
+ .../browser/init/ProcessInitializationHandler.java |    6 -
+ .../tracing/settings/DeveloperSettings.java        |    2 
+ chrome/browser/android/devtools_server.cc          |   10 +
+ .../browser/flags/cromite/sActAsWebView.java       |   33 +++
+ .../flags/cromite/sEnableCromiteTestSupport.java   |   33 +++
+ .../NotificationPermissionController.java          |    1 
  26 files changed, 581 insertions(+), 7 deletions(-)
- create mode 100644 chrome/browser/cromite/cromite_private_api_host.cc
- create mode 100644 chrome/browser/cromite/cromite_private_api_host.h
- create mode 100644 chrome/browser/flags/android/java/src/org/chromium/chrome/browser/flags/cromite/sActAsWebView.java
- create mode 100644 chrome/browser/flags/android/java/src/org/chromium/chrome/browser/flags/cromite/sEnableCromiteTestSupport.java
- create mode 100644 chrome/common/cromite_private_api_extension.mojom
- create mode 100644 chrome/renderer/cromite/cromite_private_api_extension.cc
- create mode 100644 chrome/renderer/cromite/cromite_private_api_extension.h
- create mode 100644 cromite_flags/chrome/browser/about_flags_cc/Enable-test-support.inc
- create mode 100644 cromite_flags/content/public/common/content_features_cc/Enable-test-support.inc
- create mode 100644 cromite_flags/content/public/common/content_features_h/Enable-test-support.inc
 
-diff --git a/chrome/android/java/res/xml/developer_preferences.xml b/chrome/android/java/res/xml/developer_preferences.xml
---- a/chrome/android/java/res/xml/developer_preferences.xml
-+++ b/chrome/android/java/res/xml/developer_preferences.xml
-@@ -12,6 +12,18 @@ found in the LICENSE file.
-         android:fragment="org.chromium.chrome.browser.tracing.settings.TracingSettings"
-         android:key="tracing"
-         android:title="Tracing" />
-+    <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
-+        android:key="enable_cromite_test_support"
-+        android:title="Enable support for cromite test"
-+        android:summary="Setting allows the activation of specific APIs used for cromite testing. Do not activate if you do not know what you are doing."
-+        app:featureName="enable-cromite-test-support"
-+        app:needRestart="true" />
-+    <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
-+        android:key="act_as_webview"
-+        android:title="Enable webview support for cromite test"
-+        android:summary="Setting allows the activation of specific APIs used for cromite testing. Do not activate if you do not know what you are doing."
-+        app:featureName="act-as-webview"
-+        app:needRestart="true" />
-     <Preference
-         android:key="test_gwp_asan"
-         android:title="Test Gwp Asan"/>
-diff --git a/chrome/android/java/src/org/chromium/chrome/browser/init/ProcessInitializationHandler.java b/chrome/android/java/src/org/chromium/chrome/browser/init/ProcessInitializationHandler.java
---- a/chrome/android/java/src/org/chromium/chrome/browser/init/ProcessInitializationHandler.java
-+++ b/chrome/android/java/src/org/chromium/chrome/browser/init/ProcessInitializationHandler.java
-@@ -145,6 +145,7 @@ import org.chromium.ui.color.ColorProviderBridgeFactory;
- import org.chromium.ui.edge_to_edge.EdgeToEdgeStateProvider;
- import org.chromium.ui.native_theme.OsSettingsProviderAndroidBridge;
- import org.chromium.url.GURL;
-+import org.chromium.chrome.browser.flags.cromite.sActAsWebView;
- 
- import java.io.File;
- import java.nio.charset.StandardCharsets;
-@@ -694,7 +695,10 @@ public class ProcessInitializationHandler {
- 
-         tasks.add(
-                 () -> {
--                    mDevToolsServer = new DevToolsServer(DEV_TOOLS_SERVER_SOCKET_PREFIX);
-+                    String socketPrefix = DEV_TOOLS_SERVER_SOCKET_PREFIX;
-+                    if (sActAsWebView.getInstance().isEnabled())
-+                        socketPrefix = "webview";
-+                    mDevToolsServer = new DevToolsServer(socketPrefix);
-                     mDevToolsServer.setRemoteDebuggingEnabled(
-                             true, DevToolsServer.Security.ALLOW_DEBUG_PERMISSION);
-                 });
-diff --git a/chrome/android/java/src/org/chromium/chrome/browser/tracing/settings/DeveloperSettings.java b/chrome/android/java/src/org/chromium/chrome/browser/tracing/settings/DeveloperSettings.java
---- a/chrome/android/java/src/org/chromium/chrome/browser/tracing/settings/DeveloperSettings.java
-+++ b/chrome/android/java/src/org/chromium/chrome/browser/tracing/settings/DeveloperSettings.java
-@@ -42,7 +42,7 @@ public class DeveloperSettings extends ChromeBaseSettingsFragment implements Emb
-     private final NonNullObservableSupplier<String> mPageTitle =
-             ObservableSuppliers.createNonNull(MSG_DEVELOPER_OPTIONS_TITLE);
- 
--    private static @TriState int sIsEnabledForTests;
-+    private static @TriState int sIsEnabledForTests = TriState.TRUE;
- 
-     public static boolean shouldShowDeveloperSettings() {
-         // Always enabled on canary, dev and local builds, otherwise can be enabled by tapping the
 diff --git a/chrome/browser/BUILD.gn b/chrome/browser/BUILD.gn
 --- a/chrome/browser/BUILD.gn
 +++ b/chrome/browser/BUILD.gn
-@@ -901,6 +901,11 @@ source_set("core") {
+@@ -1056,6 +1056,11 @@ source_set("core") {
      defines += [ "USE_OFFICIAL_ENTERPRISE_CONNECTORS_API_KEYS=1" ]
    }
  
@@ -120,58 +53,10 @@ diff --git a/chrome/browser/BUILD.gn b/chrome/browser/BUILD.gn
    deps = [
      ":active_use_util",
      ":after_startup_task_utils",
-diff --git a/chrome/browser/android/devtools_server.cc b/chrome/browser/android/devtools_server.cc
---- a/chrome/browser/android/devtools_server.cc
-+++ b/chrome/browser/android/devtools_server.cc
-@@ -12,6 +12,7 @@
- #include "base/command_line.h"
- #include "base/compiler_specific.h"
- #include "base/files/file_path.h"
-+#include "base/feature_list.h"
- #include "base/functional/bind.h"
- #include "base/functional/callback.h"
- #include "base/strings/string_number_conversions.h"
-@@ -32,6 +33,7 @@
- #include "content/public/browser/render_view_host.h"
- #include "content/public/browser/web_contents.h"
- #include "content/public/browser/web_contents_delegate.h"
-+#include "content/public/common/content_features.h"
- #include "content/public/common/content_switches.h"
- #include "content/public/common/url_constants.h"
- #include "net/base/net_errors.h"
-@@ -64,6 +66,8 @@ const int kBackLog = 4096;
- 
- bool AuthorizeSocketAccessWithDebugPermission(
-     const net::UnixDomainServerSocket::Credentials& credentials) {
-+  if (base::FeatureList::IsEnabled(features::kEnableCromiteTestSupport))
-+    return true;
-   JNIEnv* env = base::android::AttachCurrentThread();
-   return Java_DevToolsServer_checkDebugPermission(env, credentials.process_id,
-                                                   credentials.user_id) ||
-@@ -127,6 +131,10 @@ DevToolsServer::DevToolsServer(const std::string& socket_name_prefix)
-     : socket_name_(base::StringPrintf(kDevToolsChannelNameFormat,
-                                       socket_name_prefix.c_str())),
-       is_started_(false) {
-+  if (base::FeatureList::IsEnabled(features::kActAsWebView)) {
-+    socket_name_ = base::StringPrintf("%s_devtools_remote_%d",
-+        socket_name_prefix.c_str(), getpid());
-+  }
-   // Override the socket name if one is specified on the command line.
-   const base::CommandLine& command_line =
-       *base::CommandLine::ForCurrentProcess();
-@@ -144,6 +152,8 @@ void DevToolsServer::Start(bool allow_debug_permission) {
-   if (is_started_)
-     return;
- 
-+  LOG(INFO) << "---DevToolsServer::Start allow_debug_permission=" << allow_debug_permission;
-+  LOG(INFO) << "---socket_name_=" << socket_name_;
-   net::UnixDomainServerSocket::AuthCallback auth_callback =
-       allow_debug_permission
-           ? base::BindRepeating(&AuthorizeSocketAccessWithDebugPermission)
 diff --git a/chrome/browser/chrome_content_browser_client_receiver_bindings.cc b/chrome/browser/chrome_content_browser_client_receiver_bindings.cc
 --- a/chrome/browser/chrome_content_browser_client_receiver_bindings.cc
 +++ b/chrome/browser/chrome_content_browser_client_receiver_bindings.cc
-@@ -10,6 +10,7 @@
+@@ -11,6 +11,7 @@
  #include "build/build_config.h"
  #include "chrome/browser/browser_process.h"
  #include "chrome/browser/chrome_browser_interface_binders.h"
@@ -179,10 +64,10 @@ diff --git a/chrome/browser/chrome_content_browser_client_receiver_bindings.cc b
  #include "chrome/browser/chrome_browser_interface_binders_webui.h"
  #include "chrome/browser/chrome_content_browser_client.h"
  #include "chrome/browser/chrome_content_browser_client_parts.h"
-@@ -535,6 +536,15 @@ void ChromeContentBrowserClient::
-                                                     render_frame_host);
-       },
-       &render_frame_host));
+@@ -524,6 +525,15 @@ void ChromeContentBrowserClient::
+         },
+         &render_frame_host));
+   }
 +  associated_registry.AddInterface<
 +      chrome::mojom::CromitePrivateApiExtension>(base::BindRepeating(
 +      [](content::RenderFrameHost* render_frame_host,
@@ -333,97 +218,10 @@ new file mode 100644
 +};
 +
 +#endif  // CHROME_BROWSER_CROMITE_PRIVATE_API_HOST_H_
-diff --git a/chrome/browser/flags/android/java/src/org/chromium/chrome/browser/flags/cromite/sActAsWebView.java b/chrome/browser/flags/android/java/src/org/chromium/chrome/browser/flags/cromite/sActAsWebView.java
-new file mode 100644
---- /dev/null
-+++ b/chrome/browser/flags/android/java/src/org/chromium/chrome/browser/flags/cromite/sActAsWebView.java
-@@ -0,0 +1,33 @@
-+/*
-+    This file is part of Cromite.
-+
-+    Cromite is free software: you can redistribute it and/or modify
-+    it under the terms of the GNU General Public License as published by
-+    the Free Software Foundation, either version 3 of the License, or
-+    (at your option) any later version.
-+
-+    Cromite is distributed in the hope that it will be useful,
-+    but WITHOUT ANY WARRANTY; without even the implied warranty of
-+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+    GNU General Public License for more details.
-+
-+    You should have received a copy of the GNU General Public License
-+    along with Cromite. If not, see <https://www.gnu.org/licenses/>.
-+*/
-+
-+package org.chromium.chrome.browser.flags.cromite;
-+
-+import org.chromium.components.cached_flags.CachedFlag;
-+import org.chromium.chrome.browser.flags.ChromeFeatureMap;
-+
-+public class sActAsWebView {
-+    private static final CachedFlag sInstance =
-+        new CachedFlag(ChromeFeatureMap.getInstance(),
-+            "ActAsWebView", false);
-+
-+    private sActAsWebView() {}
-+
-+    public static CachedFlag getInstance() {
-+        return sInstance;
-+    }
-+}
-diff --git a/chrome/browser/flags/android/java/src/org/chromium/chrome/browser/flags/cromite/sEnableCromiteTestSupport.java b/chrome/browser/flags/android/java/src/org/chromium/chrome/browser/flags/cromite/sEnableCromiteTestSupport.java
-new file mode 100644
---- /dev/null
-+++ b/chrome/browser/flags/android/java/src/org/chromium/chrome/browser/flags/cromite/sEnableCromiteTestSupport.java
-@@ -0,0 +1,33 @@
-+/*
-+    This file is part of Cromite.
-+
-+    Cromite is free software: you can redistribute it and/or modify
-+    it under the terms of the GNU General Public License as published by
-+    the Free Software Foundation, either version 3 of the License, or
-+    (at your option) any later version.
-+
-+    Cromite is distributed in the hope that it will be useful,
-+    but WITHOUT ANY WARRANTY; without even the implied warranty of
-+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+    GNU General Public License for more details.
-+
-+    You should have received a copy of the GNU General Public License
-+    along with Cromite. If not, see <https://www.gnu.org/licenses/>.
-+*/
-+
-+package org.chromium.chrome.browser.flags.cromite;
-+
-+import org.chromium.components.cached_flags.CachedFlag;
-+import org.chromium.chrome.browser.flags.ChromeFeatureMap;
-+
-+public class sEnableCromiteTestSupport {
-+    private static final CachedFlag sInstance =
-+        new CachedFlag(ChromeFeatureMap.getInstance(),
-+            "EnableCromiteTestSupport", false);
-+
-+    private sEnableCromiteTestSupport() {}
-+
-+    public static CachedFlag getInstance() {
-+        return sInstance;
-+    }
-+}
-diff --git a/chrome/browser/notifications/android/java/src/org/chromium/chrome/browser/notifications/permissions/NotificationPermissionController.java b/chrome/browser/notifications/android/java/src/org/chromium/chrome/browser/notifications/permissions/NotificationPermissionController.java
---- a/chrome/browser/notifications/android/java/src/org/chromium/chrome/browser/notifications/permissions/NotificationPermissionController.java
-+++ b/chrome/browser/notifications/android/java/src/org/chromium/chrome/browser/notifications/permissions/NotificationPermissionController.java
-@@ -175,6 +175,7 @@ public class NotificationPermissionController {
-      * @return True if any UI was shown (either rationale dialog or OS prompt), false otherwise.
-      */
-     public boolean requestPermissionIfNeeded(boolean contextual) {
-+        if (!contextual) return false;
-         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU || DeviceInfo.isRetailDemoMode()) {
-             return false;
-         }
 diff --git a/chrome/browser/ui/startup/bad_flags_prompt.cc b/chrome/browser/ui/startup/bad_flags_prompt.cc
 --- a/chrome/browser/ui/startup/bad_flags_prompt.cc
 +++ b/chrome/browser/ui/startup/bad_flags_prompt.cc
-@@ -230,6 +230,7 @@ static const std::variant<const base::Feature*, const char*>
+@@ -238,6 +238,7 @@ static const std::variant<const base::Feature*, const char*>
  
  #if BUILDFLAG(IS_ANDROID)
          &chrome::android::kCommandLineOnNonRooted,
@@ -434,7 +232,7 @@ diff --git a/chrome/browser/ui/startup/bad_flags_prompt.cc b/chrome/browser/ui/s
 diff --git a/chrome/common/BUILD.gn b/chrome/common/BUILD.gn
 --- a/chrome/common/BUILD.gn
 +++ b/chrome/common/BUILD.gn
-@@ -686,6 +686,7 @@ mojom("mojo_bindings") {
+@@ -678,6 +678,7 @@ mojom("mojo_bindings") {
      "actor.mojom",
      "chrome_render_frame.mojom",
      "google_accounts_private_api_extension.mojom",
@@ -457,7 +255,7 @@ new file mode 100644
 diff --git a/chrome/renderer/BUILD.gn b/chrome/renderer/BUILD.gn
 --- a/chrome/renderer/BUILD.gn
 +++ b/chrome/renderer/BUILD.gn
-@@ -76,6 +76,8 @@ static_library("renderer") {
+@@ -77,6 +77,8 @@ static_library("renderer") {
      "chrome_render_thread_observer.cc",
      "chrome_render_thread_observer.h",
      "custom_menu_commands.h",
@@ -469,7 +267,7 @@ diff --git a/chrome/renderer/BUILD.gn b/chrome/renderer/BUILD.gn
 diff --git a/chrome/renderer/chrome_content_renderer_client.cc b/chrome/renderer/chrome_content_renderer_client.cc
 --- a/chrome/renderer/chrome_content_renderer_client.cc
 +++ b/chrome/renderer/chrome_content_renderer_client.cc
-@@ -59,6 +59,7 @@
+@@ -58,6 +58,7 @@
  #include "chrome/renderer/chrome_render_frame_observer.h"
  #include "chrome/renderer/chrome_render_thread_observer.h"
  #include "chrome/renderer/controlled_frame/controlled_frame_extensions_renderer_api_provider.h"
@@ -477,7 +275,7 @@ diff --git a/chrome/renderer/chrome_content_renderer_client.cc b/chrome/renderer
  #include "chrome/renderer/google_accounts_private_api_extension.h"
  #include "chrome/renderer/loadtimes_bindings.h"
  #include "chrome/renderer/media/flash_embed_rewrite.h"
-@@ -706,6 +707,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
+@@ -721,6 +722,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
    }
  #endif
    GoogleAccountsPrivateApiExtension::Create(render_frame);
@@ -766,7 +564,7 @@ new file mode 100644
 diff --git a/components/component_updater/component_updater_service.h b/components/component_updater/component_updater_service.h
 --- a/components/component_updater/component_updater_service.h
 +++ b/components/component_updater/component_updater_service.h
-@@ -254,6 +254,7 @@ class OnDemandUpdater {
+@@ -262,6 +262,7 @@ class OnDemandUpdater {
    // the update will be applied. The caller can subscribe to component update
    // service notifications and provide an optional callback to get the result
    // of the call. The function does not implement any cooldown interval.
@@ -777,15 +575,15 @@ diff --git a/components/component_updater/component_updater_service.h b/componen
 diff --git a/content/browser/devtools/devtools_http_handler.cc b/content/browser/devtools/devtools_http_handler.cc
 --- a/content/browser/devtools/devtools_http_handler.cc
 +++ b/content/browser/devtools/devtools_http_handler.cc
-@@ -16,6 +16,7 @@
- #include "base/command_line.h"
+@@ -17,6 +17,7 @@
  #include "base/compiler_specific.h"
  #include "base/files/file_util.h"
+ #include "base/files/important_file_writer.h"
 +#include "base/feature_list.h"
  #include "base/functional/bind.h"
  #include "base/functional/callback_helpers.h"
  #include "base/json/json_writer.h"
-@@ -46,6 +47,7 @@
+@@ -48,6 +49,7 @@
  #include "content/public/browser/devtools_socket_factory.h"
  #include "content/public/common/content_client.h"
  #include "content/public/common/content_constants.h"
@@ -793,7 +591,7 @@ diff --git a/content/browser/devtools/devtools_http_handler.cc b/content/browser
  #include "content/public/common/content_switches.h"
  #include "content/public/common/url_constants.h"
  #include "net/base/io_buffer.h"
-@@ -614,9 +616,12 @@ void DevToolsHttpHandler::OnJsonRequest(
+@@ -638,9 +640,12 @@ void DevToolsHttpHandler::OnJsonRequest(
  
    if (command == "version") {
      base::DictValue version;
@@ -804,9 +602,9 @@ diff --git a/content/browser/devtools/devtools_http_handler.cc b/content/browser
      version.Set("WebKit-Version", GetWebKitVersion());
 -    version.Set("Browser", GetContentClient()->browser()->GetProduct());
 +    version.Set("Browser", browser);
+     version.Set("File-Path-Style", kNativeFilePathStyle);
      version.Set("User-Agent", GetContentClient()->browser()->GetUserAgent());
      version.Set("V8-Version", V8_VERSION_STRING);
-     std::string host = info.GetHeaderValue("host");
 diff --git a/content/browser/log_console_message.cc b/content/browser/log_console_message.cc
 --- a/content/browser/log_console_message.cc
 +++ b/content/browser/log_console_message.cc
@@ -851,7 +649,7 @@ diff --git a/content/browser/log_console_message.h b/content/browser/log_console
 diff --git a/content/browser/renderer_host/render_frame_host_impl.cc b/content/browser/renderer_host/render_frame_host_impl.cc
 --- a/content/browser/renderer_host/render_frame_host_impl.cc
 +++ b/content/browser/renderer_host/render_frame_host_impl.cc
-@@ -351,6 +351,8 @@
+@@ -349,6 +349,8 @@
  #include "url/origin.h"
  #include "url/url_constants.h"
  
@@ -860,7 +658,7 @@ diff --git a/content/browser/renderer_host/render_frame_host_impl.cc b/content/b
  #if BUILDFLAG(IS_ANDROID)
  #include "base/android/scoped_service_binding_batch.h"
  #include "content/browser/accessibility/browser_accessibility_manager_android.h"
-@@ -5158,7 +5160,8 @@ void RenderFrameHostImpl::DidAddMessageToConsole(
+@@ -5441,7 +5443,8 @@ void RenderFrameHostImpl::DidAddMessageToConsole(
    if (delegate_->DidAddMessageToConsole(this, log_level, message, line_no,
                                          updated_source_id,
                                          untrusted_stack_trace)) {
@@ -870,7 +668,7 @@ diff --git a/content/browser/renderer_host/render_frame_host_impl.cc b/content/b
    }
  
    // Pass through log severity only on builtin components pages to limit console
-@@ -5175,8 +5178,14 @@ void RenderFrameHostImpl::DidAddMessageToConsole(
+@@ -5458,8 +5461,14 @@ void RenderFrameHostImpl::DidAddMessageToConsole(
    const bool is_off_the_record =
        GetSiteInstance()->GetBrowserContext()->IsOffTheRecord();
  
@@ -929,4 +727,197 @@ new file mode 100644
 @@ -0,0 +1,2 @@
 +CONTENT_EXPORT BASE_DECLARE_FEATURE(kEnableCromiteTestSupport);
 +CONTENT_EXPORT BASE_DECLARE_FEATURE(kActAsWebView);
+
+diff --git a/chrome/android/java/res/xml/developer_preferences.xml b/chrome/android/java/res/xml/developer_preferences.xml
+--- a/chrome/android/java/res/xml/developer_preferences.xml
++++ b/chrome/android/java/res/xml/developer_preferences.xml
+@@ -12,6 +12,18 @@ found in the LICENSE file.
+         android:fragment="org.chromium.chrome.browser.tracing.settings.TracingSettings"
+         android:key="tracing"
+         android:title="Tracing" />
++    <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
++        android:key="enable_cromite_test_support"
++        android:title="Enable support for cromite test"
++        android:summary="Setting allows the activation of specific APIs used for cromite testing. Do not activate if you do not know what you are doing."
++        app:featureName="enable-cromite-test-support"
++        app:needRestart="true" />
++    <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
++        android:key="act_as_webview"
++        android:title="Enable webview support for cromite test"
++        android:summary="Setting allows the activation of specific APIs used for cromite testing. Do not activate if you do not know what you are doing."
++        app:featureName="act-as-webview"
++        app:needRestart="true" />
+     <Preference
+         android:key="test_gwp_asan"
+         android:title="Test Gwp Asan"/>
+diff --git a/chrome/android/java/src/org/chromium/chrome/browser/init/ProcessInitializationHandler.java b/chrome/android/java/src/org/chromium/chrome/browser/init/ProcessInitializationHandler.java
+--- a/chrome/android/java/src/org/chromium/chrome/browser/init/ProcessInitializationHandler.java
++++ b/chrome/android/java/src/org/chromium/chrome/browser/init/ProcessInitializationHandler.java
+@@ -145,6 +145,7 @@ import org.chromium.ui.color.ColorProviderBridgeFactory;
+ import org.chromium.ui.edge_to_edge.EdgeToEdgeStateProvider;
+ import org.chromium.ui.native_theme.OsSettingsProviderAndroidBridge;
+ import org.chromium.url.GURL;
++import org.chromium.chrome.browser.flags.cromite.sActAsWebView;
+ 
+ import java.io.File;
+ import java.nio.charset.StandardCharsets;
+@@ -694,7 +695,10 @@ public class ProcessInitializationHandler {
+ 
+         tasks.add(
+                 () -> {
+-                    mDevToolsServer = new DevToolsServer(DEV_TOOLS_SERVER_SOCKET_PREFIX);
++                    String socketPrefix = DEV_TOOLS_SERVER_SOCKET_PREFIX;
++                    if (sActAsWebView.getInstance().isEnabled())
++                        socketPrefix = "webview";
++                    mDevToolsServer = new DevToolsServer(socketPrefix);
+                     mDevToolsServer.setRemoteDebuggingEnabled(
+                             true, DevToolsServer.Security.ALLOW_DEBUG_PERMISSION);
+                 });
+diff --git a/chrome/android/java/src/org/chromium/chrome/browser/tracing/settings/DeveloperSettings.java b/chrome/android/java/src/org/chromium/chrome/browser/tracing/settings/DeveloperSettings.java
+--- a/chrome/android/java/src/org/chromium/chrome/browser/tracing/settings/DeveloperSettings.java
++++ b/chrome/android/java/src/org/chromium/chrome/browser/tracing/settings/DeveloperSettings.java
+@@ -42,7 +42,7 @@ public class DeveloperSettings extends ChromeBaseSettingsFragment implements Emb
+     private final NonNullObservableSupplier<String> mPageTitle =
+             ObservableSuppliers.createNonNull(MSG_DEVELOPER_OPTIONS_TITLE);
+ 
+-    private static @TriState int sIsEnabledForTests;
++    private static @TriState int sIsEnabledForTests = TriState.TRUE;
+ 
+     public static boolean shouldShowDeveloperSettings() {
+         // Always enabled on canary, dev and local builds, otherwise can be enabled by tapping the
+diff --git a/chrome/browser/android/devtools_server.cc b/chrome/browser/android/devtools_server.cc
+--- a/chrome/browser/android/devtools_server.cc
++++ b/chrome/browser/android/devtools_server.cc
+@@ -12,6 +12,7 @@
+ #include "base/command_line.h"
+ #include "base/compiler_specific.h"
+ #include "base/files/file_path.h"
++#include "base/feature_list.h"
+ #include "base/functional/bind.h"
+ #include "base/functional/callback.h"
+ #include "base/strings/string_number_conversions.h"
+@@ -32,6 +33,7 @@
+ #include "content/public/browser/render_view_host.h"
+ #include "content/public/browser/web_contents.h"
+ #include "content/public/browser/web_contents_delegate.h"
++#include "content/public/common/content_features.h"
+ #include "content/public/common/content_switches.h"
+ #include "content/public/common/url_constants.h"
+ #include "net/base/net_errors.h"
+@@ -64,6 +66,8 @@ const int kBackLog = 4096;
+ 
+ bool AuthorizeSocketAccessWithDebugPermission(
+     const net::UnixDomainServerSocket::Credentials& credentials) {
++  if (base::FeatureList::IsEnabled(features::kEnableCromiteTestSupport))
++    return true;
+   JNIEnv* env = base::android::AttachCurrentThread();
+   return Java_DevToolsServer_checkDebugPermission(env, credentials.process_id,
+                                                   credentials.user_id) ||
+@@ -127,6 +131,10 @@ DevToolsServer::DevToolsServer(const std::string& socket_name_prefix)
+     : socket_name_(base::StringPrintf(kDevToolsChannelNameFormat,
+                                       socket_name_prefix.c_str())),
+       is_started_(false) {
++  if (base::FeatureList::IsEnabled(features::kActAsWebView)) {
++    socket_name_ = base::StringPrintf("%s_devtools_remote_%d",
++        socket_name_prefix.c_str(), getpid());
++  }
+   // Override the socket name if one is specified on the command line.
+   const base::CommandLine& command_line =
+       *base::CommandLine::ForCurrentProcess();
+@@ -144,6 +152,8 @@ void DevToolsServer::Start(bool allow_debug_permission) {
+   if (is_started_)
+     return;
+ 
++  LOG(INFO) << "---DevToolsServer::Start allow_debug_permission=" << allow_debug_permission;
++  LOG(INFO) << "---socket_name_=" << socket_name_;
+   net::UnixDomainServerSocket::AuthCallback auth_callback =
+       allow_debug_permission
+           ? base::BindRepeating(&AuthorizeSocketAccessWithDebugPermission)
+diff --git a/chrome/browser/flags/android/java/src/org/chromium/chrome/browser/flags/cromite/sActAsWebView.java b/chrome/browser/flags/android/java/src/org/chromium/chrome/browser/flags/cromite/sActAsWebView.java
+new file mode 100644
+--- /dev/null
++++ b/chrome/browser/flags/android/java/src/org/chromium/chrome/browser/flags/cromite/sActAsWebView.java
+@@ -0,0 +1,33 @@
++/*
++    This file is part of Cromite.
++
++    Cromite is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Cromite is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Cromite. If not, see <https://www.gnu.org/licenses/>.
++*/
++
++package org.chromium.chrome.browser.flags.cromite;
++
++import org.chromium.components.cached_flags.CachedFlag;
++import org.chromium.chrome.browser.flags.ChromeFeatureMap;
++
++public class sActAsWebView {
++    private static final CachedFlag sInstance =
++        new CachedFlag(ChromeFeatureMap.getInstance(),
++            "ActAsWebView", false);
++
++    private sActAsWebView() {}
++
++    public static CachedFlag getInstance() {
++        return sInstance;
++    }
++}
+diff --git a/chrome/browser/flags/android/java/src/org/chromium/chrome/browser/flags/cromite/sEnableCromiteTestSupport.java b/chrome/browser/flags/android/java/src/org/chromium/chrome/browser/flags/cromite/sEnableCromiteTestSupport.java
+new file mode 100644
+--- /dev/null
++++ b/chrome/browser/flags/android/java/src/org/chromium/chrome/browser/flags/cromite/sEnableCromiteTestSupport.java
+@@ -0,0 +1,33 @@
++/*
++    This file is part of Cromite.
++
++    Cromite is free software: you can redistribute it and/or modify
++    it under the terms of the GNU General Public License as published by
++    the Free Software Foundation, either version 3 of the License, or
++    (at your option) any later version.
++
++    Cromite is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++    GNU General Public License for more details.
++
++    You should have received a copy of the GNU General Public License
++    along with Cromite. If not, see <https://www.gnu.org/licenses/>.
++*/
++
++package org.chromium.chrome.browser.flags.cromite;
++
++import org.chromium.components.cached_flags.CachedFlag;
++import org.chromium.chrome.browser.flags.ChromeFeatureMap;
++
++public class sEnableCromiteTestSupport {
++    private static final CachedFlag sInstance =
++        new CachedFlag(ChromeFeatureMap.getInstance(),
++            "EnableCromiteTestSupport", false);
++
++    private sEnableCromiteTestSupport() {}
++
++    public static CachedFlag getInstance() {
++        return sInstance;
++    }
++}
+diff --git a/chrome/browser/notifications/android/java/src/org/chromium/chrome/browser/notifications/permissions/NotificationPermissionController.java b/chrome/browser/notifications/android/java/src/org/chromium/chrome/browser/notifications/permissions/NotificationPermissionController.java
+--- a/chrome/browser/notifications/android/java/src/org/chromium/chrome/browser/notifications/permissions/NotificationPermissionController.java
++++ b/chrome/browser/notifications/android/java/src/org/chromium/chrome/browser/notifications/permissions/NotificationPermissionController.java
+@@ -175,6 +175,7 @@ public class NotificationPermissionController {
+      * @return True if any UI was shown (either rationale dialog or OS prompt), false otherwise.
+      */
+     public boolean requestPermissionIfNeeded(boolean contextual) {
++        if (!contextual) return false;
+         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU || DeviceInfo.isRetailDemoMode()) {
+             return false;
+         }
 --

@@ -9,19 +9,18 @@ not have the necessary licences.
 Context: https://github.com/uazo/cromite/pull/856
 License: GPL-2.0-or-later - https://spdx.org/licenses/GPL-2.0-or-later.html
 ---
- .../Enable-platform-aac-audio-and-h264-video.inc    |  7 +++++++
- media/BUILD.gn                                      |  2 ++
- .../src/org/chromium/media/AudioManagerAndroid.java |  2 ++
- media/base/android/media_codec_util.cc              |  4 ++++
- media/base/win/mf_helpers.cc                        |  4 ++++
- media/filters/ffmpeg_audio_decoder.cc               | 10 ++++++++++
- media/filters/ffmpeg_demuxer.cc                     |  1 +
- media/filters/ffmpeg_video_decoder.cc               | 11 +++++++++++
- media/filters/win/media_foundation_audio_decoder.cc |  9 +++++++++
- media/gpu/windows/supported_profile_helpers.cc      | 13 ++++++++++++-
- media/media_options.gni                             |  8 ++++++++
+ .../Enable-platform-aac-audio-and-h264-video.inc   |    7 +++++++
+ media/BUILD.gn                                     |    2 ++
+ media/base/win/mf_helpers.cc                       |    4 ++++
+ media/filters/ffmpeg_audio_decoder.cc              |   10 ++++++++++
+ media/filters/ffmpeg_demuxer.cc                    |    1 +
+ media/filters/ffmpeg_video_decoder.cc              |   11 +++++++++++
+ .../filters/win/media_foundation_audio_decoder.cc  |    9 +++++++++
+ media/gpu/windows/supported_profile_helpers.cc     |   13 ++++++++++++-
+ media/media_options.gni                            |    8 ++++++++
+ .../org/chromium/media/AudioManagerAndroid.java    |    2 ++
+ media/base/android/media_codec_util.cc             |    4 ++++
  11 files changed, 70 insertions(+), 1 deletion(-)
- create mode 100644 cromite_flags/media/base/media_switches_cc/Enable-platform-aac-audio-and-h264-video.inc
 
 diff --git a/cromite_flags/media/base/media_switches_cc/Enable-platform-aac-audio-and-h264-video.inc b/cromite_flags/media/base/media_switches_cc/Enable-platform-aac-audio-and-h264-video.inc
 new file mode 100644
@@ -44,46 +43,13 @@ diff --git a/media/BUILD.gn b/media/BUILD.gn
    flags = [
 +    "ENABLE_PLATFORM_AAC_AUDIO=$enable_platform_aac_audio",
 +    "ENABLE_PLATFORM_H264_VIDEO=$enable_platform_h264_video",
-     "ALLOW_OOP_VIDEO_DECODER=$allow_oop_video_decoder",
-     "ALLOW_HOSTING_OOP_VIDEO_DECODER=$allow_hosting_oop_video_decoder",
+     "ENABLE_OOP_VIDEO_DECODER=$enable_oop_video_decoder",
      "ALTERNATE_CDM_STORAGE_ID_KEY=\"$alternate_cdm_storage_id_key\"",
-diff --git a/media/base/android/java/src/org/chromium/media/AudioManagerAndroid.java b/media/base/android/java/src/org/chromium/media/AudioManagerAndroid.java
---- a/media/base/android/java/src/org/chromium/media/AudioManagerAndroid.java
-+++ b/media/base/android/java/src/org/chromium/media/AudioManagerAndroid.java
-@@ -679,6 +679,8 @@ class AudioManagerAndroid {
-                             break;
-                     }
-                 }
-+                // only PCM_LINEAR allowed via hdmi in cromite
-+                mask &= AudioEncodingFormat.PCM_LINEAR;
- 
-                 // Require all devices to support a format
-                 if (first) {
-diff --git a/media/base/android/media_codec_util.cc b/media/base/android/media_codec_util.cc
---- a/media/base/android/media_codec_util.cc
-+++ b/media/base/android/media_codec_util.cc
-@@ -16,6 +16,7 @@
- #include "base/numerics/safe_conversions.h"
- #include "base/strings/string_util.h"
- #include "base/system/sys_info.h"
-+#include "media/media_buildflags.h"
- #include "media/base/android/media_codec_bridge.h"
- #include "media/base/video_codecs.h"
- #include "third_party/re2/src/re2/re2.h"
-@@ -127,6 +128,9 @@ std::string MediaCodecUtil::CodecToAndroidMimeType(AudioCodec codec) {
- // static
- std::string MediaCodecUtil::CodecToAndroidMimeType(AudioCodec codec,
-                                                    SampleFormat sample_format) {
-+#if BUILDFLAG(ENABLE_PLATFORM_AAC_AUDIO)
-+  if (codec == AudioCodec::kAAC) return kAacMimeType;
-+#endif
-   // Passthrough is possible for some bitstream formats.
-   if (sample_format == kSampleFormatDts ||
-       sample_format == kSampleFormatDtsxP2 ||
+     "CHROME_WIDE_ECHO_CANCELLATION=$chrome_wide_echo_cancellation_supported",
 diff --git a/media/base/win/mf_helpers.cc b/media/base/win/mf_helpers.cc
 --- a/media/base/win/mf_helpers.cc
 +++ b/media/base/win/mf_helpers.cc
-@@ -539,7 +539,11 @@ HRESULT GetAacAudioType(const AudioDecoderConfig& decoder_config,
+@@ -540,7 +540,11 @@ HRESULT GetAacAudioType(const AudioDecoderConfig& decoder_config,
  
    size_t extra_size = wave_format_size - sizeof(WAVEFORMATEX);
    aac_wave_format->wfx.cbSize = static_cast<WORD>(extra_size);
@@ -98,7 +64,7 @@ diff --git a/media/base/win/mf_helpers.cc b/media/base/win/mf_helpers.cc
 diff --git a/media/filters/ffmpeg_audio_decoder.cc b/media/filters/ffmpeg_audio_decoder.cc
 --- a/media/filters/ffmpeg_audio_decoder.cc
 +++ b/media/filters/ffmpeg_audio_decoder.cc
-@@ -128,6 +128,16 @@ void FFmpegAudioDecoder::Initialize(const AudioDecoderConfig& config,
+@@ -154,6 +154,16 @@ void FFmpegAudioDecoder::Initialize(const AudioDecoderConfig& config,
      return;
    }
  
@@ -118,7 +84,7 @@ diff --git a/media/filters/ffmpeg_audio_decoder.cc b/media/filters/ffmpeg_audio_
 diff --git a/media/filters/ffmpeg_demuxer.cc b/media/filters/ffmpeg_demuxer.cc
 --- a/media/filters/ffmpeg_demuxer.cc
 +++ b/media/filters/ffmpeg_demuxer.cc
-@@ -756,6 +756,7 @@ void FFmpegDemuxerStream::InitBitstreamConverter() {
+@@ -770,6 +770,7 @@ void FFmpegDemuxerStream::InitBitstreamConverter() {
        // FFmpeg doesn't understand xHE-AAC profiles yet, which can't be put in
        // ADTS anyways, so skip bitstream conversion when the profile is
        // unknown.
@@ -137,7 +103,7 @@ diff --git a/media/filters/ffmpeg_video_decoder.cc b/media/filters/ffmpeg_video_
  #include "media/base/decoder_buffer.h"
  #include "media/base/limits.h"
  #include "media/base/media_log.h"
-@@ -117,6 +118,16 @@ static void ReleaseVideoBufferImpl(void* opaque, uint8_t* data) {
+@@ -118,6 +119,16 @@ static void ReleaseVideoBufferImpl(void* opaque, uint8_t* data) {
  
  // static
  bool FFmpegVideoDecoder::IsCodecSupported(VideoCodec codec) {
@@ -157,7 +123,7 @@ diff --git a/media/filters/ffmpeg_video_decoder.cc b/media/filters/ffmpeg_video_
 diff --git a/media/filters/win/media_foundation_audio_decoder.cc b/media/filters/win/media_foundation_audio_decoder.cc
 --- a/media/filters/win/media_foundation_audio_decoder.cc
 +++ b/media/filters/win/media_foundation_audio_decoder.cc
-@@ -101,11 +101,15 @@ std::optional<MFT_REGISTER_TYPE_INFO> GetTypeInfo(
+@@ -100,11 +100,15 @@ std::optional<MFT_REGISTER_TYPE_INFO> GetTypeInfo(
  #endif
  #if BUILDFLAG(USE_PROPRIETARY_CODECS)
      case AudioCodec::kAAC:
@@ -173,7 +139,7 @@ diff --git a/media/filters/win/media_foundation_audio_decoder.cc b/media/filters
  #endif
  #if BUILDFLAG(ENABLE_PLATFORM_AC4_AUDIO)
      case AudioCodec::kAC4:
-@@ -334,8 +338,13 @@ void MediaFoundationAudioDecoder::Reset(base::OnceClosure reset_cb) {
+@@ -333,8 +337,13 @@ void MediaFoundationAudioDecoder::Reset(base::OnceClosure reset_cb) {
  }
  
  bool MediaFoundationAudioDecoder::NeedsBitstreamConversion() const {
@@ -221,7 +187,7 @@ diff --git a/media/gpu/windows/supported_profile_helpers.cc b/media/gpu/windows/
 diff --git a/media/media_options.gni b/media/media_options.gni
 --- a/media/media_options.gni
 +++ b/media/media_options.gni
-@@ -65,6 +65,14 @@ declare_args() {
+@@ -53,6 +53,14 @@ declare_args() {
      media_use_symphonia = false
    }
  
@@ -236,4 +202,38 @@ diff --git a/media/media_options.gni b/media/media_options.gni
    # Enable usage of OpenH264 within the media library. Used for software based
    # encoding of H264 content.
    media_use_openh264 = true
+
+diff --git a/media/base/android/java/src/org/chromium/media/AudioManagerAndroid.java b/media/base/android/java/src/org/chromium/media/AudioManagerAndroid.java
+--- a/media/base/android/java/src/org/chromium/media/AudioManagerAndroid.java
++++ b/media/base/android/java/src/org/chromium/media/AudioManagerAndroid.java
+@@ -679,6 +679,8 @@ class AudioManagerAndroid {
+                             break;
+                     }
+                 }
++                // only PCM_LINEAR allowed via hdmi in cromite
++                mask &= AudioEncodingFormat.PCM_LINEAR;
+ 
+                 // Require all devices to support a format
+                 if (first) {
+diff --git a/media/base/android/media_codec_util.cc b/media/base/android/media_codec_util.cc
+--- a/media/base/android/media_codec_util.cc
++++ b/media/base/android/media_codec_util.cc
+@@ -16,6 +16,7 @@
+ #include "base/numerics/safe_conversions.h"
+ #include "base/strings/string_util.h"
+ #include "base/system/sys_info.h"
++#include "media/media_buildflags.h"
+ #include "media/base/android/media_codec_bridge.h"
+ #include "media/base/video_codecs.h"
+ #include "third_party/re2/src/re2/re2.h"
+@@ -127,6 +128,9 @@ std::string MediaCodecUtil::CodecToAndroidMimeType(AudioCodec codec) {
+ // static
+ std::string MediaCodecUtil::CodecToAndroidMimeType(AudioCodec codec,
+                                                    SampleFormat sample_format) {
++#if BUILDFLAG(ENABLE_PLATFORM_AAC_AUDIO)
++  if (codec == AudioCodec::kAAC) return kAacMimeType;
++#endif
+   // Passthrough is possible for some bitstream formats.
+   if (sample_format == kSampleFormatDts ||
+       sample_format == kSampleFormatDtsxP2 ||
 --
